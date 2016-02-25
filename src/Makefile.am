@@ -15,6 +15,7 @@ libpanel_gtk_@API_VERSION@_la_SOURCES = \
 	$(NULL)
 
 libpanel_gtk_@API_VERSION@_la_CFLAGS = \
+	-DPANEL_GTK_COMPILATION \
 	$(PANEL_GTK_CFLAGS) \
 	$(WARN_CFLAGS) \
 	$(NULL)

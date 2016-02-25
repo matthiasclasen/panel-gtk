@@ -1,4 +1,4 @@
-#include "pnl-dock.h"
+#include "panel-gtk.h"
 
 static void
 add_child (GtkWidget *parent)

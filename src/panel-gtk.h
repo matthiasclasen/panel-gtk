@@ -26,6 +26,7 @@ G_BEGIN_DECLS
 #define PANEL_GTK_INSIDE
 # include "pnl-dock.h"
 # include "pnl-dock-edge.h"
+# include "pnl-dock-edge-child.h"
 # include "pnl-panel-child.h"
 # include "pnl-panel.h"
 # include "pnl-version.h"

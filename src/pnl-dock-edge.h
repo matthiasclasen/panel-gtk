@@ -16,6 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if !defined(PANEL_GTK_INSIDE) && !defined(PANEL_GTK_COMPILATION)
+# error "Only <panel-gtk.h> can be included directly."
+#endif
+
 #ifndef PNL_DOCK_EDGE_H
 #define PNL_DOCK_EDGE_H
 
