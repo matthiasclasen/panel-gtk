@@ -50,8 +50,15 @@ enum {
   LAST_CHILD_PROP
 };
 
+enum {
+  STYLE_PROP_0,
+  STYLE_PROP_HANDLE_SIZE,
+  LAST_STYLE_PROP
+};
+
 static GParamSpec *properties [LAST_CHILD_PROP];
 static GParamSpec *child_properties [LAST_CHILD_PROP];
+static GParamSpec *style_properties [LAST_STYLE_PROP];
 
 static void
 pnl_multi_paned_reset_fractions (PnlMultiPaned *self)
@@ -187,6 +194,29 @@ pnl_multi_paned_create_child_handle (PnlMultiPaned      *self,
   gtk_widget_register_window (GTK_WIDGET (self), child->handle);
 
   g_clear_object (&attributes.cursor);
+}
+
+static gint
+pnl_multi_paned_calc_handle_size (PnlMultiPaned *self)
+{
+  PnlMultiPanedPrivate *priv = pnl_multi_paned_get_instance_private (self);
+  gint visible_children = 0;
+  gint handle_size = 1;
+  guint i;
+
+  g_assert (PNL_IS_MULTI_PANED (self));
+
+  gtk_widget_style_get (GTK_WIDGET (self), "handle-size", &handle_size, NULL);
+
+  for (i = 0; i < priv->children->len; i++)
+    {
+      PnlMultiPanedChild *child = &g_array_index (priv->children, PnlMultiPanedChild, i);
+
+      if (gtk_widget_get_visible (child->widget))
+        visible_children++;
+    }
+
+  return MAX (0, (visible_children - 1) * handle_size);
 }
 
 static void
@@ -393,6 +423,14 @@ pnl_multi_paned_get_preferred_height (GtkWidget *widget,
         }
     }
 
+  if (priv->orientation == GTK_ORIENTATION_VERTICAL)
+    {
+      gint handle_size = pnl_multi_paned_calc_handle_size (self);
+
+      real_min_height += handle_size;
+      real_nat_height += handle_size;
+    }
+
   *min_height = real_min_height;
   *nat_height = real_nat_height;
 }
@@ -470,6 +508,14 @@ pnl_multi_paned_get_preferred_height_for_width (GtkWidget *widget,
                                                         width,
                                                         min_height,
                                                         nat_height);
+
+  if (priv->orientation == GTK_ORIENTATION_VERTICAL)
+    {
+      gint handle_size = pnl_multi_paned_calc_handle_size (self);
+
+      *min_height += handle_size;
+      *nat_height += handle_size;
+    }
 }
 
 static void
@@ -508,6 +554,14 @@ pnl_multi_paned_get_preferred_width (GtkWidget *widget,
               real_nat_width += child_nat_width;
             }
         }
+    }
+
+  if (priv->orientation == GTK_ORIENTATION_HORIZONTAL)
+    {
+      gint handle_size = pnl_multi_paned_calc_handle_size (self);
+
+      real_min_width += handle_size;
+      real_nat_width += handle_size;
     }
 
   *min_width = real_min_width;
@@ -584,6 +638,14 @@ pnl_multi_paned_get_preferred_width_for_height (GtkWidget *widget,
                                                         height,
                                                         min_width,
                                                         nat_width);
+
+  if (priv->orientation == GTK_ORIENTATION_HORIZONTAL)
+    {
+      gint handle_size = pnl_multi_paned_calc_handle_size (self);
+
+      *min_width += handle_size;
+      *nat_width += handle_size;
+    }
 }
 
 static void
@@ -592,7 +654,8 @@ pnl_multi_paned_child_size_allocate (PnlMultiPaned      *self,
                                      gint                n_children,
                                      GtkAllocation      *allocation,
                                      gint                total_width,
-                                     gint                total_height)
+                                     gint                total_height,
+                                     gint                handle_size)
 {
   PnlMultiPanedPrivate *priv = pnl_multi_paned_get_instance_private (self);
   PnlMultiPanedChild *child = children;
@@ -652,8 +715,8 @@ pnl_multi_paned_child_size_allocate (PnlMultiPaned      *self,
       else
         child_alloc.width = allocation->width - neighbor_min_width;
 
-      allocation->x += child_alloc.width;
-      allocation->width -= child_alloc.width;
+      allocation->x += child_alloc.width + handle_size;
+      allocation->width -= child_alloc.width + handle_size;
     }
   else
     {
@@ -681,8 +744,8 @@ pnl_multi_paned_child_size_allocate (PnlMultiPaned      *self,
       else
         child_alloc.height = allocation->height - neighbor_min_height;
 
-      allocation->y += child_alloc.height;
-      allocation->height -= child_alloc.height;
+      allocation->y += child_alloc.height + handle_size;
+      allocation->height -= child_alloc.height + handle_size;
     }
 
   if (child->handle != NULL)
@@ -713,7 +776,8 @@ next_child:
                                        n_children - 1,
                                        allocation,
                                        total_width,
-                                       total_height);
+                                       total_height,
+                                       handle_size);
 }
 
 static void
@@ -723,19 +787,39 @@ pnl_multi_paned_size_allocate (GtkWidget     *widget,
   PnlMultiPaned *self = (PnlMultiPaned *)widget;
   PnlMultiPanedPrivate *priv = pnl_multi_paned_get_instance_private (self);
   GtkAllocation old_allocation;
+  gint single_handle_size = 1;
+  gint handle_size;
+  gint total_width;
+  gint total_height;
 
   g_assert (PNL_IS_MULTI_PANED (self));
+  g_assert (allocation != NULL);
 
   gtk_widget_get_allocation (widget, &old_allocation);
   gtk_widget_set_allocation (widget, allocation);
 
-  if (priv->children->len > 0)
-    pnl_multi_paned_child_size_allocate (self,
-                                         (PnlMultiPanedChild *)(gpointer)priv->children->data,
-                                         priv->children->len,
-                                         allocation,
-                                         allocation->width,
-                                         allocation->height);
+  if (priv->children->len == 0)
+    return;
+
+  gtk_widget_style_get (GTK_WIDGET (self), "handle-size", &single_handle_size, NULL);
+
+  total_width = allocation->width;
+  total_height = allocation->height;
+
+  handle_size = pnl_multi_paned_calc_handle_size (self);
+
+  if (priv->orientation == GTK_ORIENTATION_HORIZONTAL)
+    total_width -= handle_size;
+  else
+    total_height -= handle_size;
+
+  pnl_multi_paned_child_size_allocate (self,
+                                       (PnlMultiPanedChild *)(gpointer)priv->children->data,
+                                       priv->children->len,
+                                       allocation,
+                                       total_width,
+                                       total_height,
+                                       single_handle_size);
 }
 
 static void
@@ -812,6 +896,63 @@ pnl_multi_paned_unmap (GtkWidget *widget)
     }
 
   GTK_WIDGET_CLASS (pnl_multi_paned_parent_class)->unmap (widget);
+}
+
+static gboolean
+pnl_multi_paned_draw (GtkWidget *widget,
+                      cairo_t   *cr)
+{
+  PnlMultiPaned *self = (PnlMultiPaned *)widget;
+  PnlMultiPanedPrivate *priv = pnl_multi_paned_get_instance_private (self);
+  gboolean ret;
+
+  g_assert (PNL_IS_MULTI_PANED (self));
+  g_assert (cr != NULL);
+
+  ret = GTK_WIDGET_CLASS (pnl_multi_paned_parent_class)->draw (widget, cr);
+
+  if (ret != GDK_EVENT_STOP)
+    {
+      GtkStyleContext *style_context;
+      gint handle_size = 1;
+      guint i;
+
+      style_context = gtk_widget_get_style_context (GTK_WIDGET (self));
+
+      gtk_widget_style_get (widget, "handle-size", &handle_size, NULL);
+
+      for (i = 0; i < priv->children->len; i++)
+        {
+          PnlMultiPanedChild *child = &g_array_index (priv->children, PnlMultiPanedChild, i);
+          GtkAllocation alloc;
+
+          if (!gtk_widget_get_realized (child->widget) ||
+              !gtk_widget_get_visible (child->widget))
+            continue;
+
+          gtk_widget_get_allocation (child->widget, &alloc);
+
+          if (!pnl_multi_paned_is_last_visible_child (self, child))
+            {
+              if (priv->orientation == GTK_ORIENTATION_HORIZONTAL)
+                gtk_render_handle (style_context,
+                                   cr,
+                                   alloc.x + alloc.width,
+                                   alloc.y,
+                                   handle_size,
+                                   alloc.height);
+              else
+                gtk_render_handle (style_context,
+                                   cr,
+                                   alloc.x,
+                                   alloc.y + alloc.height,
+                                   alloc.width,
+                                   handle_size);
+            }
+        }
+    }
+
+  return ret;
 }
 
 static void
@@ -927,12 +1068,15 @@ pnl_multi_paned_class_init (PnlMultiPanedClass *klass)
   widget_class->unrealize = pnl_multi_paned_unrealize;
   widget_class->map = pnl_multi_paned_map;
   widget_class->unmap = pnl_multi_paned_unmap;
+  widget_class->draw = pnl_multi_paned_draw;
 
   container_class->add = pnl_multi_paned_add;
   container_class->remove = pnl_multi_paned_remove;
   container_class->get_child_property = pnl_multi_paned_get_child_property;
   container_class->set_child_property = pnl_multi_paned_set_child_property;
   container_class->forall = pnl_multi_paned_forall;
+
+  gtk_widget_class_set_css_name (widget_class, "multipaned");
 
   properties [PROP_ORIENTATION] =
     g_param_spec_enum ("orientation",
@@ -954,6 +1098,17 @@ pnl_multi_paned_class_init (PnlMultiPanedClass *klass)
                          (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   gtk_container_class_install_child_properties (container_class, LAST_CHILD_PROP, child_properties);
+
+  style_properties [STYLE_PROP_HANDLE_SIZE] =
+    g_param_spec_int ("handle-size",
+                      "Handle Size",
+                      "Width of the resize handle",
+                      0,
+                      G_MAXINT,
+                      1,
+                      (G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+  gtk_widget_class_install_style_property (widget_class,
+                                           style_properties [STYLE_PROP_HANDLE_SIZE]);
 }
 
 static void
