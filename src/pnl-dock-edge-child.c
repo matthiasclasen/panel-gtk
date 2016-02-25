@@ -114,6 +114,29 @@ pnl_dock_edge_child_get_preferred_width (GtkWidget *widget,
     }
 }
 
+static GtkSizeRequestMode
+pnl_dock_edge_child_get_request_mode (GtkWidget *widget)
+{
+  PnlDockEdgeChild *self = (PnlDockEdgeChild *)widget;
+  GtkWidget *parent;
+
+  g_assert (PNL_IS_DOCK_EDGE_CHILD (self));
+
+  parent = gtk_widget_get_parent (GTK_WIDGET (self));
+
+  if (PNL_IS_DOCK_EDGE (parent))
+    {
+      GtkPositionType edge = pnl_dock_edge_get_edge (PNL_DOCK_EDGE (parent));
+
+      if (edge == GTK_POS_LEFT || edge == GTK_POS_RIGHT)
+         return GTK_SIZE_REQUEST_HEIGHT_FOR_WIDTH;
+      else
+        return GTK_SIZE_REQUEST_WIDTH_FOR_HEIGHT;
+    }
+
+  return GTK_SIZE_REQUEST_CONSTANT_SIZE;
+}
+
 static void
 pnl_dock_edge_child_get_property (GObject    *object,
                                   guint       prop_id,
@@ -163,6 +186,7 @@ pnl_dock_edge_child_class_init (PnlDockEdgeChildClass *klass)
 
   widget_class->get_preferred_height = pnl_dock_edge_child_get_preferred_height;
   widget_class->get_preferred_width = pnl_dock_edge_child_get_preferred_width;
+  widget_class->get_request_mode = pnl_dock_edge_child_get_request_mode;
   widget_class->draw = pnl_dock_edge_child_draw;
 
   properties [PROP_POSITION] =
