@@ -1001,6 +1001,8 @@ pnl_multi_paned_finalize (GObject *object)
   PnlMultiPaned *self = (PnlMultiPaned *)object;
   PnlMultiPanedPrivate *priv = pnl_multi_paned_get_instance_private (self);
 
+  g_assert (priv->children->len == 0);
+
   g_clear_pointer (&priv->children, g_array_unref);
 
   G_OBJECT_CLASS (pnl_multi_paned_parent_class)->finalize (object);
