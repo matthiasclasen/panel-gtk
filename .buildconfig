@@ -1,0 +1,7 @@
+[default]
+name=Panel GTK (JHBuild)
+device=local
+runtime=jhbuild
+prefix=/opt/gnome
+default=true
+config-opts=--disable-Werror

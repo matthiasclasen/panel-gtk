@@ -1,0 +1,80 @@
+/* license */
+#ifndef PANEL_GTK_VERSION_H
+#define PANEL_GTK_VERSION_H
+
+#if !defined(PANEL_GTK_INSIDE) && !defined(PANEL_GTK_COMPILATION)
+# error "Only <panel-gtk.h> can be included directly."
+#endif
+
+/**
+ * SECTION:panel-gtk-version
+ * @short_description: panel-gtk version checking
+ *
+ * panel-gtk provides macros to check the version of the library
+ * at compile-time
+ */
+
+/**
+ * PANEL_GTK_MAJOR_VERSION:
+ *
+ * panel-gtk major version component (e.g. 1 if %PANEL_GTK_VERSION is 1.2.3)
+ */
+#define PANEL_GTK_MAJOR_VERSION (@MAJOR_VERSION@)
+
+/**
+ * PANEL_GTK_MINOR_VERSION:
+ *
+ * panel-gtk minor version component (e.g. 2 if %PANEL_GTK_VERSION is 1.2.3)
+ */
+#define PANEL_GTK_MINOR_VERSION (@MINOR_VERSION@)
+
+/**
+ * PANEL_GTK_MICRO_VERSION:
+ *
+ * panel-gtk micro version component (e.g. 3 if %PANEL_GTK_VERSION is 1.2.3)
+ */
+#define PANEL_GTK_MICRO_VERSION (@MICRO_VERSION@)
+
+/**
+ * PANEL_GTK_VERSION
+ *
+ * panel-gtk version.
+ */
+#define PANEL_GTK_VERSION (@VERSION@)
+
+/**
+ * PANEL_GTK_VERSION_S:
+ *
+ * panel-gtk version, encoded as a string, useful for printing and
+ * concatenation.
+ */
+#define PANEL_GTK_VERSION_S "@VERSION@"
+
+#define PANEL_GTK_ENCODE_VERSION(major,minor,micro) \
+        ((major) << 24 | (minor) << 16 | (micro) << 8)
+
+/**
+ * PANEL_GTK_VERSION_HEX:
+ *
+ * panel-gtk version, encoded as an hexadecimal number, useful for
+ * integer comparisons.
+ */
+#define PANEL_GTK_VERSION_HEX \
+        (PANEL_GTK_ENCODE_VERSION (PANEL_GTK_MAJOR_VERSION, PANEL_GTK_MINOR_VERSION, PANEL_GTK_MICRO_VERSION))
+
+/**
+ * PANEL_GTK_CHECK_VERSION:
+ * @major: required major version
+ * @minor: required minor version
+ * @micro: required micro version
+ *
+ * Compile-time version checking. Evaluates to %TRUE if the version
+ * of panel-gtk is greater than the required one.
+ */
+#define PANEL_GTK_CHECK_VERSION(major,minor,micro)   \
+        (PANEL_GTK_MAJOR_VERSION > (major) || \
+         (PANEL_GTK_MAJOR_VERSION == (major) && PANEL_GTK_MINOR_VERSION > (minor)) || \
+         (PANEL_GTK_MAJOR_VERSION == (major) && PANEL_GTK_MINOR_VERSION == (minor) && \
+          PANEL_GTK_MICRO_VERSION >= (micro)))
+
+#endif /* PANEL_GTK_VERSION_H */

@@ -1,0 +1,16 @@
+
+dockedge.left > dockedgechild {
+ box-shadow: -1px 0px 1px alpha(@borders, 0.4) inset;
+}
+
+dockedge.right > dockedgechild {
+ box-shadow: 1px 0px 1px alpha(@borders, 0.4) inset;
+}
+
+dockedge.top > dockedgechild {
+ box-shadow: 0px -1px 1px alpha(@borders, 0.4) inset;
+}
+
+dockedge.bottom > dockedgechild {
+ box-shadow: 0px 1px 1px alpha(@borders, 0.4) inset;
+}
