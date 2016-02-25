@@ -12,6 +12,25 @@ add_child (GtkWidget *parent)
   gtk_container_add (GTK_CONTAINER (parent), child);
 }
 
+static void
+toggle_all (GtkButton *button,
+            PnlDock   *dock)
+{
+  GtkRevealer *edge;
+
+  edge = GTK_REVEALER (pnl_dock_get_left_edge (dock));
+  gtk_revealer_set_reveal_child (edge, !gtk_revealer_get_reveal_child (edge));
+
+  edge = GTK_REVEALER (pnl_dock_get_right_edge (dock));
+  gtk_revealer_set_reveal_child (edge, !gtk_revealer_get_reveal_child (edge));
+
+  edge = GTK_REVEALER (pnl_dock_get_top_edge (dock));
+  gtk_revealer_set_reveal_child (edge, !gtk_revealer_get_reveal_child (edge));
+
+  edge = GTK_REVEALER (pnl_dock_get_bottom_edge (dock));
+  gtk_revealer_set_reveal_child (edge, !gtk_revealer_get_reveal_child (edge));
+}
+
 gint
 main (gint   argc,
       gchar *argv[])
@@ -121,6 +140,13 @@ main (gint   argc,
                            "visible", TRUE,
                            NULL);
   gtk_container_add (GTK_CONTAINER (scroller), GTK_WIDGET (textview));
+
+  button = g_object_new (GTK_TYPE_TOGGLE_BUTTON,
+                         "visible", TRUE,
+                         "label", "Toggle All",
+                         NULL);
+  g_signal_connect (button, "clicked", G_CALLBACK (toggle_all), dock);
+  gtk_container_add (GTK_CONTAINER (header), button);
 
   gtk_window_present (GTK_WINDOW (window));
   g_signal_connect (window, "delete-event", gtk_main_quit, NULL);
