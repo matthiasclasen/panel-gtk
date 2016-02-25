@@ -1,4 +1,4 @@
-/* panel-gtk.h
+/* pnl-multi-paned.h
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,23 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PANEL_GTK_H
-#define PANEL_GTK_H
+#ifndef PNL_MULTI_PANED_H
+#define PNL_MULTI_PANED_H
 
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
-#define PANEL_GTK_INSIDE
-# include "pnl-dock.h"
-# include "pnl-dock-edge.h"
-# include "pnl-dock-edge-child.h"
-# include "pnl-multi-paned.h"
-# include "pnl-panel-child.h"
-# include "pnl-panel.h"
-# include "pnl-version.h"
-#undef PANEL_GTK_INSIDE
+#define PNL_TYPE_MULTI_PANED (pnl_multi_paned_get_type())
+
+G_DECLARE_DERIVABLE_TYPE (PnlMultiPaned, pnl_multi_paned, PNL, MULTI_PANED, GtkContainer)
+
+struct _PnlMultiPanedClass
+{
+  GtkContainerClass parent;
+};
+
+GtkWidget *pnl_multi_paned_new (void);
 
 G_END_DECLS
 
-#endif /* PANEL_GTK_H */
+#endif /* PNL_MULTI_PANED_H */

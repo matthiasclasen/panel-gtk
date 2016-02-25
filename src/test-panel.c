@@ -3,13 +3,29 @@
 static void
 add_child (GtkWidget *parent)
 {
+  GtkOrientation orientation = GTK_ORIENTATION_VERTICAL;
   GtkWidget *child;
+  GtkPositionType edge;
+  guint i;
 
-  child = g_object_new (GTK_TYPE_LABEL,
-                        "label", "This is the label",
+  edge = pnl_dock_edge_get_edge (PNL_DOCK_EDGE (parent));
+  if (edge == GTK_POS_TOP || edge == GTK_POS_BOTTOM)
+    orientation = GTK_ORIENTATION_HORIZONTAL;
+
+  child = g_object_new (PNL_TYPE_MULTI_PANED,
+                        "orientation", orientation,
                         "visible", TRUE,
                         NULL);
   gtk_container_add (GTK_CONTAINER (parent), child);
+
+  for (i = 0; i < 3; i++)
+    {
+      GtkWidget *label = g_object_new (GTK_TYPE_LABEL,
+                                       "label", "Testing text",
+                                       "visible", TRUE,
+                                       NULL);
+      gtk_container_add (GTK_CONTAINER (child), label);
+    }
 }
 
 static void
