@@ -1,4 +1,4 @@
-/* pnl-panel.h
+/* pnl-panel.c
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,24 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PNL_PANEL_H
-#define PNL_PANEL_H
+#include "pnl-panel.h"
 
-#include "pnl-multi-paned.h"
-
-G_BEGIN_DECLS
-
-#define PNL_TYPE_PANEL (pnl_panel_get_type())
-
-G_DECLARE_DERIVABLE_TYPE (PnlPanel, pnl_panel, PNL, PANEL, PnlMultiPaned)
-
-struct _PnlPanelClass
+typedef struct
 {
-  PnlMultiPanedClass parent_class;
-};
+} PnlPanelPrivate;
 
-GtkWidget *pnl_panel_new (void);
+G_DEFINE_TYPE (PnlPanel, pnl_panel, PNL_TYPE_MULTI_PANED)
 
-G_END_DECLS
+static void
+pnl_panel_class_init (PnlPanelClass *klass)
+{
+}
 
-#endif /* PNL_PANEL_H */
+static void
+pnl_panel_init (PnlPanel *self)
+{
+}

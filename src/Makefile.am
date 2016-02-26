@@ -11,6 +11,7 @@ libpanel_gtk_@API_VERSION@_la_SOURCES = \
 	pnl-dock-edge-child.h \
 	pnl-multi-paned.c \
 	pnl-multi-paned.h \
+	pnl-panel.c \
 	pnl-panel.h \
 	pnl-panel-child.h \
 	pnl-version.h \
