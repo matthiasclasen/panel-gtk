@@ -30,8 +30,14 @@ typedef struct
 
 typedef struct
 {
-  GArray         *children;
-  GtkOrientation  orientation;
+  GArray             *children;
+  GtkGesturePan      *gesture;
+  GtkOrientation      orientation;
+  PnlMultiPanedChild *drag_begin;
+  PnlMultiPanedChild *drag_end;
+  gdouble             drag_begin_x;
+  gdouble             drag_begin_y;
+  gint                drag_total_size;
 } PnlMultiPanedPrivate;
 
 G_DEFINE_TYPE_EXTENDED (PnlMultiPaned, pnl_multi_paned, GTK_TYPE_CONTAINER, 0,
@@ -85,9 +91,9 @@ pnl_multi_paned_reset_fractions (PnlMultiPaned *self)
     }
 }
 
-static gboolean
-pnl_multi_paned_is_last_visible_child (PnlMultiPaned      *self,
-                                       PnlMultiPanedChild *child)
+static PnlMultiPanedChild *
+pnl_multi_paned_get_next_visible_child (PnlMultiPaned      *self,
+                                        PnlMultiPanedChild *child)
 {
   PnlMultiPanedPrivate *priv = pnl_multi_paned_get_instance_private (self);
   guint i;
@@ -104,10 +110,20 @@ pnl_multi_paned_is_last_visible_child (PnlMultiPaned      *self,
       PnlMultiPanedChild *next = &g_array_index (priv->children, PnlMultiPanedChild, i);
 
       if (gtk_widget_get_visible (next->widget))
-        return FALSE;
+        return next;
     }
 
-  return TRUE;
+  return NULL;
+}
+
+static gboolean
+pnl_multi_paned_is_last_visible_child (PnlMultiPaned      *self,
+                                       PnlMultiPanedChild *child)
+{
+  g_assert (PNL_IS_MULTI_PANED (self));
+  g_assert (child != NULL);
+
+  return !pnl_multi_paned_get_next_visible_child (self, child);
 }
 
 static void
@@ -956,6 +972,204 @@ pnl_multi_paned_draw (GtkWidget *widget,
 }
 
 static void
+pnl_multi_paned_pan_gesture_drag_begin (PnlMultiPaned *self,
+                                        gdouble        x,
+                                        gdouble        y,
+                                        GtkGesturePan *gesture)
+{
+  PnlMultiPanedPrivate *priv = pnl_multi_paned_get_instance_private (self);
+  GdkEventSequence *sequence;
+  const GdkEvent *event;
+  GtkAllocation begin_alloc;
+  GtkAllocation end_alloc;
+  gint handle_size = 1;
+  guint i;
+
+  g_assert (PNL_IS_MULTI_PANED (self));
+  g_assert (GTK_IS_GESTURE_PAN (gesture));
+  g_assert (gesture == priv->gesture);
+
+  sequence = gtk_gesture_single_get_current_sequence (GTK_GESTURE_SINGLE (gesture));
+  event = gtk_gesture_get_last_event (GTK_GESTURE (gesture), sequence);
+
+  priv->drag_begin = NULL;
+  priv->drag_end = NULL;
+
+  for (i = 0; i < priv->children->len; i++)
+    {
+      PnlMultiPanedChild *child = &g_array_index (priv->children, PnlMultiPanedChild, i);
+
+      if (child->handle == event->any.window)
+        {
+          priv->drag_begin = child;
+          priv->drag_end = pnl_multi_paned_get_next_visible_child (self, child);
+          break;
+        }
+    }
+
+  if (priv->drag_begin == NULL || priv->drag_end == NULL)
+    {
+      gtk_gesture_set_state (GTK_GESTURE (gesture), GTK_EVENT_SEQUENCE_DENIED);
+      return;
+    }
+
+  gtk_widget_style_get (GTK_WIDGET (self), "handle-size", &handle_size, NULL);
+
+  gtk_widget_get_allocation (priv->drag_begin->widget, &begin_alloc);
+  gtk_widget_get_allocation (priv->drag_end->widget, &end_alloc);
+
+  priv->drag_begin_x = x - begin_alloc.x;
+  priv->drag_begin_y = y - begin_alloc.y;
+
+  if (priv->orientation == GTK_ORIENTATION_HORIZONTAL)
+    priv->drag_total_size = begin_alloc.width + handle_size + end_alloc.width;
+  else
+    priv->drag_total_size = begin_alloc.height + handle_size + end_alloc.height;
+
+  if (priv->drag_total_size <= 0)
+    {
+      gtk_gesture_set_state (GTK_GESTURE (gesture), GTK_EVENT_SEQUENCE_DENIED);
+      return;
+    }
+
+  gtk_gesture_pan_set_orientation (gesture, priv->orientation);
+  gtk_gesture_set_state (GTK_GESTURE (gesture), GTK_EVENT_SEQUENCE_CLAIMED);
+}
+
+static void
+pnl_multi_paned_pan_gesture_drag_end (PnlMultiPaned *self,
+                                      gdouble        x,
+                                      gdouble        y,
+                                      GtkGesturePan *gesture)
+{
+  PnlMultiPanedPrivate *priv = pnl_multi_paned_get_instance_private (self);
+  GdkEventSequence *sequence;
+  GtkEventSequenceState state;
+  GtkAllocation alloc;
+  guint i;
+
+  g_assert (PNL_IS_MULTI_PANED (self));
+  g_assert (GTK_IS_GESTURE_PAN (gesture));
+  g_assert (gesture == priv->gesture);
+
+  sequence = gtk_gesture_single_get_current_sequence (GTK_GESTURE_SINGLE (gesture));
+  state = gtk_gesture_get_sequence_state (GTK_GESTURE (gesture), sequence);
+
+  if (state != GTK_EVENT_SEQUENCE_CLAIMED)
+    goto cleanup;
+
+  g_assert (priv->drag_begin != NULL);
+  g_assert (priv->drag_end != NULL);
+
+  gtk_widget_get_allocation (GTK_WIDGET (self), &alloc);
+
+  if (alloc.width == 0 || alloc.height == 0)
+    {
+      pnl_multi_paned_reset_fractions (self);
+      goto cleanup;
+    }
+
+  for (i = 0; i < priv->children->len; i++)
+    {
+      PnlMultiPanedChild *child = &g_array_index (priv->children, PnlMultiPanedChild, i);
+      GtkAllocation child_alloc = { 0 };
+
+      if (gtk_widget_get_visible (child->widget))
+        gtk_widget_get_allocation (child->widget, &child_alloc);
+
+      child->fraction = child_alloc.width / (gdouble)alloc.width;
+
+      gtk_container_child_notify_by_pspec (GTK_CONTAINER (self), child->widget,
+                                           child_properties [CHILD_PROP_FRACTION]);
+    }
+
+cleanup:
+  priv->drag_begin = NULL;
+  priv->drag_end = NULL;
+  priv->drag_total_size = 0;
+}
+
+static void
+pnl_multi_paned_pan_gesture_pan (PnlMultiPaned   *self,
+                                 GtkPanDirection  direction,
+                                 gdouble          offset,
+                                 GtkGesturePan   *gesture)
+{
+  PnlMultiPanedPrivate *priv = pnl_multi_paned_get_instance_private (self);
+  GtkAllocation alloc;
+
+  g_assert (PNL_IS_MULTI_PANED (self));
+  g_assert (GTK_IS_GESTURE_PAN (gesture));
+  g_assert (gesture == priv->gesture);
+  g_assert (priv->drag_begin != NULL);
+  g_assert (priv->drag_end != NULL);
+  g_assert (priv->drag_total_size > 0);
+
+  gtk_widget_get_allocation (GTK_WIDGET (self), &alloc);
+
+  if (priv->orientation == GTK_ORIENTATION_HORIZONTAL)
+    {
+      if (direction == GTK_PAN_DIRECTION_LEFT)
+        offset = -offset;
+
+      offset = MAX (0.0, priv->drag_begin_x + offset);
+      offset = MIN (priv->drag_total_size, offset);
+
+      priv->drag_begin->fraction = offset / (gdouble)alloc.width;
+      priv->drag_end->fraction = (priv->drag_total_size - offset) / (gdouble)alloc.width;
+    }
+  else
+    {
+
+      if (direction == GTK_PAN_DIRECTION_UP)
+        offset = -offset;
+
+      offset = MAX (0.0, priv->drag_begin_y + offset);
+      offset = MIN (priv->drag_total_size, offset);
+
+      priv->drag_begin->fraction = offset / (gdouble)alloc.height;
+      priv->drag_end->fraction = (priv->drag_total_size - offset) / (gdouble)alloc.height;
+    }
+
+  gtk_widget_queue_allocate (GTK_WIDGET (self));
+}
+
+static void
+pnl_multi_paned_create_pan_gesture (PnlMultiPaned *self)
+{
+  PnlMultiPanedPrivate *priv = pnl_multi_paned_get_instance_private (self);
+  GtkGesture *gesture;
+
+  g_assert (PNL_IS_MULTI_PANED (self));
+  g_assert (priv->gesture == NULL);
+
+  gesture = gtk_gesture_pan_new (GTK_WIDGET (self), GTK_ORIENTATION_HORIZONTAL);
+  gtk_gesture_single_set_touch_only (GTK_GESTURE_SINGLE (gesture), FALSE);
+  gtk_event_controller_set_propagation_phase (GTK_EVENT_CONTROLLER (gesture), GTK_PHASE_CAPTURE);
+
+  g_signal_connect_object (gesture,
+                           "drag-begin",
+                           G_CALLBACK (pnl_multi_paned_pan_gesture_drag_begin),
+                           self,
+                           G_CONNECT_SWAPPED);
+
+  g_signal_connect_object (gesture,
+                           "drag-end",
+                           G_CALLBACK (pnl_multi_paned_pan_gesture_drag_end),
+                           self,
+                           G_CONNECT_SWAPPED);
+
+  g_signal_connect_object (gesture,
+                           "pan",
+                           G_CALLBACK (pnl_multi_paned_pan_gesture_pan),
+                           self,
+                           G_CONNECT_SWAPPED);
+
+  priv->gesture = GTK_GESTURE_PAN (gesture);
+}
+
+
+static void
 pnl_multi_paned_get_child_property (GtkContainer *container,
                                     GtkWidget    *widget,
                                     guint         prop_id,
@@ -1004,6 +1218,7 @@ pnl_multi_paned_finalize (GObject *object)
   g_assert (priv->children->len == 0);
 
   g_clear_pointer (&priv->children, g_array_unref);
+  g_clear_object (&priv->gesture);
 
   G_OBJECT_CLASS (pnl_multi_paned_parent_class)->finalize (object);
 }
@@ -1121,6 +1336,8 @@ pnl_multi_paned_init (PnlMultiPaned *self)
   gtk_widget_set_has_window (GTK_WIDGET (self), FALSE);
 
   priv->children = g_array_new (FALSE, TRUE, sizeof (PnlMultiPanedChild));
+
+  pnl_multi_paned_create_pan_gesture (self);
 }
 
 GtkWidget *
