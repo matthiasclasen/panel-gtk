@@ -262,9 +262,9 @@ pnl_dock_forall (GtkContainer *container,
   g_assert (PNL_IS_DOCK (self));
   g_assert (callback != NULL);
 
-  for (i = 0; i < G_N_ELEMENTS (priv->children); i++)
+  for (i = G_N_ELEMENTS (priv->children); i > 0; i--)
     {
-      PnlDockChild *child = &priv->children [i];
+      PnlDockChild *child = &priv->children [i - 1];
 
       if (child->widget != NULL)
         callback (GTK_WIDGET (child->widget), user_data);
