@@ -1196,6 +1196,23 @@ pnl_multi_paned_create_pan_gesture (PnlMultiPaned *self)
   priv->gesture = GTK_GESTURE_PAN (gesture);
 }
 
+static void
+pnl_multi_paned_resize_drag_begin (PnlMultiPaned *self,
+                                   GtkWidget     *child)
+{
+  g_assert (PNL_IS_MULTI_PANED (self));
+  g_assert (GTK_IS_WIDGET (child));
+
+}
+
+static void
+pnl_multi_paned_resize_drag_end (PnlMultiPaned *self,
+                                 GtkWidget     *child)
+{
+  g_assert (PNL_IS_MULTI_PANED (self));
+  g_assert (GTK_IS_WIDGET (child));
+
+}
 
 static void
 pnl_multi_paned_get_child_property (GtkContainer *container,
@@ -1320,6 +1337,9 @@ pnl_multi_paned_class_init (PnlMultiPanedClass *klass)
   container_class->get_child_property = pnl_multi_paned_get_child_property;
   container_class->set_child_property = pnl_multi_paned_set_child_property;
   container_class->forall = pnl_multi_paned_forall;
+
+  klass->resize_drag_begin = pnl_multi_paned_resize_drag_begin;
+  klass->resize_drag_end = pnl_multi_paned_resize_drag_end;
 
   gtk_widget_class_set_css_name (widget_class, "multipaned");
 
