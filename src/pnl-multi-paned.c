@@ -59,9 +59,16 @@ enum {
   LAST_STYLE_PROP
 };
 
+enum {
+  RESIZE_DRAG_BEGIN,
+  RESIZE_DRAG_END,
+  LAST_SIGNAL
+};
+
 static GParamSpec *properties [LAST_CHILD_PROP];
 static GParamSpec *child_properties [LAST_CHILD_PROP];
 static GParamSpec *style_properties [LAST_STYLE_PROP];
+static guint signals [LAST_SIGNAL];
 
 static void
 pnl_multi_paned_reset_positions (PnlMultiPaned *self)
@@ -1069,6 +1076,8 @@ pnl_multi_paned_pan_gesture_drag_begin (PnlMultiPaned *self,
 
   gtk_gesture_pan_set_orientation (gesture, priv->orientation);
   gtk_gesture_set_state (GTK_GESTURE (gesture), GTK_EVENT_SEQUENCE_CLAIMED);
+
+  g_signal_emit (self, signals [RESIZE_DRAG_BEGIN], 0, priv->drag_begin->widget);
 }
 
 static void
@@ -1111,6 +1120,8 @@ pnl_multi_paned_pan_gesture_drag_end (PnlMultiPaned *self,
                                            child->widget,
                                            child_properties [CHILD_PROP_POSITION]);
     }
+
+  g_signal_emit (self, signals [RESIZE_DRAG_END], 0, priv->drag_begin->widget);
 
 cleanup:
   priv->drag_begin = NULL;
@@ -1342,6 +1353,22 @@ pnl_multi_paned_class_init (PnlMultiPanedClass *klass)
                       1,
                       (G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
   gtk_widget_class_install_style_property (widget_class, style_properties [STYLE_PROP_HANDLE_SIZE]);
+
+  signals [RESIZE_DRAG_BEGIN] =
+    g_signal_new ("resize-drag-begin",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (PnlMultiPanedClass, resize_drag_begin),
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE, 1, GTK_TYPE_WIDGET);
+
+  signals [RESIZE_DRAG_END] =
+    g_signal_new ("resize-drag-end",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (PnlMultiPanedClass, resize_drag_end),
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE, 1, GTK_TYPE_WIDGET);
 }
 
 static void

@@ -30,6 +30,11 @@ G_DECLARE_DERIVABLE_TYPE (PnlMultiPaned, pnl_multi_paned, PNL, MULTI_PANED, GtkC
 struct _PnlMultiPanedClass
 {
   GtkContainerClass parent;
+
+  void (*resize_drag_begin) (PnlMultiPaned *self,
+                             GtkWidget     *child);
+  void (*resize_drag_end)   (PnlMultiPaned *self,
+                             GtkWidget     *child);
 };
 
 GtkWidget *pnl_multi_paned_new (void);
