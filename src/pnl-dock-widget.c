@@ -27,16 +27,49 @@ typedef struct
   GtkRevealer   *revealer;
 } PnlDockWidgetPrivate;
 
-G_DEFINE_TYPE_WITH_PRIVATE (PnlDockWidget, pnl_dock_widget, GTK_TYPE_BIN)
+G_DEFINE_TYPE_EXTENDED (PnlDockWidget, pnl_dock_widget, GTK_TYPE_BIN, 0,
+                        G_ADD_PRIVATE (PnlDockWidget)
+                        G_IMPLEMENT_INTERFACE (GTK_TYPE_ORIENTABLE, NULL))
 
 enum {
   PROP_0,
+  PROP_ORIENTATION,
   PROP_REVEAL_CHILD,
   PROP_TITLE,
   N_PROPS
 };
 
 static GParamSpec *properties [N_PROPS];
+
+static GtkOrientation
+pnl_dock_widget_get_orientation (PnlDockWidget *self)
+{
+  PnlDockWidgetPrivate *priv = pnl_dock_widget_get_instance_private (self);
+
+  g_return_val_if_fail (PNL_IS_DOCK_WIDGET (self), GTK_ORIENTATION_HORIZONTAL);
+
+  return gtk_orientable_get_orientation (GTK_ORIENTABLE (priv->box));
+}
+
+static void
+pnl_dock_widget_set_orientation (PnlDockWidget  *self,
+                                 GtkOrientation  orientation)
+{
+  PnlDockWidgetPrivate *priv = pnl_dock_widget_get_instance_private (self);
+
+  g_return_if_fail (PNL_IS_DOCK_WIDGET (self));
+
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (priv->box), orientation);
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (priv->title), !orientation);
+
+  if (orientation == GTK_ORIENTATION_HORIZONTAL)
+    gtk_revealer_set_transition_type (priv->revealer, GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT);
+  else
+    gtk_revealer_set_transition_type (priv->revealer, GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN);
+
+  if (GTK_IS_ORIENTABLE (priv->custom_title))
+    gtk_orientable_set_orientation (GTK_ORIENTABLE (priv->custom_title), orientation);
+}
 
 static void
 pnl_dock_widget_add (GtkContainer *container,
@@ -52,12 +85,6 @@ pnl_dock_widget_add (GtkContainer *container,
 }
 
 static void
-pnl_dock_widget_finalize (GObject *object)
-{
-  G_OBJECT_CLASS (pnl_dock_widget_parent_class)->finalize (object);
-}
-
-static void
 pnl_dock_widget_get_property (GObject    *object,
                               guint       prop_id,
                               GValue     *value,
@@ -67,6 +94,10 @@ pnl_dock_widget_get_property (GObject    *object,
 
   switch (prop_id)
     {
+    case PROP_ORIENTATION:
+      g_value_set_enum (value, pnl_dock_widget_get_orientation (self));
+      break;
+
     case PROP_REVEAL_CHILD:
       g_value_set_boolean (value, pnl_dock_widget_get_reveal_child (self));
       break;
@@ -90,6 +121,10 @@ pnl_dock_widget_set_property (GObject      *object,
 
   switch (prop_id)
     {
+    case PROP_ORIENTATION:
+      pnl_dock_widget_set_orientation (self, g_value_get_enum (value));
+      break;
+
     case PROP_REVEAL_CHILD:
       pnl_dock_widget_set_reveal_child (self, g_value_get_boolean (value));
       break;
@@ -110,11 +145,18 @@ pnl_dock_widget_class_init (PnlDockWidgetClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
 
-  object_class->finalize = pnl_dock_widget_finalize;
   object_class->get_property = pnl_dock_widget_get_property;
   object_class->set_property = pnl_dock_widget_set_property;
 
   container_class->add = pnl_dock_widget_add;
+
+  properties [PROP_ORIENTATION] =
+    g_param_spec_enum ("orientation",
+                       "Orientation",
+                       "Orientation",
+                       GTK_TYPE_ORIENTATION,
+                       GTK_ORIENTATION_HORIZONTAL,
+                       (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   properties [PROP_REVEAL_CHILD] =
     g_param_spec_boolean ("reveal-child",
@@ -141,7 +183,7 @@ pnl_dock_widget_init (PnlDockWidget *self)
   PnlDockWidgetPrivate *priv = pnl_dock_widget_get_instance_private (self);
 
   priv->box = g_object_new (GTK_TYPE_BOX,
-                            "orientation", GTK_ORIENTATION_VERTICAL,
+                            "orientation", GTK_ORIENTATION_HORIZONTAL,
                             "hexpand", TRUE,
                             "homogeneous", FALSE,
                             "visible", TRUE,
@@ -155,7 +197,7 @@ pnl_dock_widget_init (PnlDockWidget *self)
   gtk_container_add (GTK_CONTAINER (priv->box), GTK_WIDGET (priv->title));
 
   priv->revealer = g_object_new (GTK_TYPE_REVEALER,
-                                 "transition-type", GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN,
+                                 "transition-type", GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT,
                                  "visible", TRUE,
                                  NULL);
   gtk_container_add (GTK_CONTAINER (priv->box), GTK_WIDGET (priv->revealer));

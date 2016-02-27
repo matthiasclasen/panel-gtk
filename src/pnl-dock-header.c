@@ -26,7 +26,9 @@ typedef struct
   GtkWidget *custom_title;
 } PnlDockHeaderPrivate;
 
-G_DEFINE_TYPE_WITH_PRIVATE (PnlDockHeader, pnl_dock_header, GTK_TYPE_BOX)
+G_DEFINE_TYPE_EXTENDED (PnlDockHeader, pnl_dock_header, GTK_TYPE_BOX, 0,
+                        G_ADD_PRIVATE (PnlDockHeader)
+                        G_IMPLEMENT_INTERFACE (GTK_TYPE_ORIENTABLE, NULL))
 
 enum {
   PROP_0,
@@ -35,6 +37,47 @@ enum {
 };
 
 static GParamSpec *properties [N_PROPS];
+
+static void
+swap_pack_type (GtkWidget *widget,
+                gpointer   user_data)
+{
+  GtkWidget *parent = gtk_widget_get_parent (widget);
+  GtkPackType *pack_type = user_data;
+
+  g_assert (GTK_IS_BOX (parent));
+  g_assert (pack_type != NULL);
+
+  gtk_container_child_set (GTK_CONTAINER (parent), widget,
+                           "pack-type", *pack_type,
+                           NULL);
+}
+
+static void
+pnl_dock_header_notify_orientation (PnlDockHeader *self,
+                                    GParamSpec    *pspec)
+{
+  PnlDockHeaderPrivate *priv = pnl_dock_header_get_instance_private (self);
+  GtkOrientation orientation;
+  GtkPackType pack_type;
+
+  g_assert (PNL_IS_DOCK_HEADER (self));
+
+  orientation = gtk_orientable_get_orientation (GTK_ORIENTABLE (self));
+
+  if (orientation == GTK_ORIENTATION_HORIZONTAL)
+    {
+      pack_type = GTK_PACK_START;
+      gtk_container_foreach (GTK_CONTAINER (self), swap_pack_type, &pack_type);
+      gtk_label_set_angle (priv->title, 0.0);
+    }
+  else
+    {
+      pack_type = GTK_PACK_END;
+      gtk_container_foreach (GTK_CONTAINER (self), swap_pack_type, &pack_type);
+      gtk_label_set_angle (priv->title, 90.0);
+    }
+}
 
 static void
 pnl_dock_header_finalize (GObject *object)
@@ -127,6 +170,11 @@ pnl_dock_header_init (PnlDockHeader *self)
                               "visible", TRUE,
                               NULL);
   gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (priv->close));
+
+  g_signal_connect (self,
+                    "notify::orientation",
+                    G_CALLBACK (pnl_dock_header_notify_orientation),
+                    NULL);
 }
 
 GtkWidget *

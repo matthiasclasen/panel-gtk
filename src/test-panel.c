@@ -26,6 +26,7 @@ add_child (GtkWidget *parent)
                                        "visible", TRUE,
                                        NULL);
       PnlDockWidget *widget = g_object_new (PNL_TYPE_DOCK_WIDGET,
+                                            "orientation", orientation,
                                             "child", label,
                                             "title", title,
                                             "visible", TRUE,
