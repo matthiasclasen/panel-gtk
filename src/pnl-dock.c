@@ -659,7 +659,8 @@ pnl_dock_size_allocate (GtkWidget     *widget,
   g_assert (PNL_IS_DOCK (self));
   g_assert (allocation != NULL);
 
-  gtk_widget_set_allocation (widget, allocation);
+  GTK_WIDGET_CLASS (pnl_dock_parent_class)->size_allocate (widget, allocation);
+
   pnl_dock_child_size_allocate (self, priv->children, G_N_ELEMENTS (priv->children), allocation);
 }
 

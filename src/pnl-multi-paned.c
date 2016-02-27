@@ -839,7 +839,8 @@ pnl_multi_paned_size_allocate (GtkWidget     *widget,
   g_assert (allocation != NULL);
 
   gtk_widget_get_allocation (widget, &old_allocation);
-  gtk_widget_set_allocation (widget, allocation);
+
+  GTK_WIDGET_CLASS (pnl_multi_paned_parent_class)->size_allocate (widget, allocation);
 
   if (priv->children->len == 0)
     return;
