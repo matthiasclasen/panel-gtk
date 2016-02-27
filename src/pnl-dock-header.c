@@ -90,6 +90,15 @@ pnl_dock_header_class_init (PnlDockHeaderClass *klass)
   object_class->get_property = pnl_dock_header_get_property;
   object_class->set_property = pnl_dock_header_set_property;
 
+  properties [PROP_TITLE] =
+    g_param_spec_string ("title",
+                         "Title",
+                         "Title",
+                         NULL,
+                         (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_properties (object_class, N_PROPS, properties);
+
   gtk_widget_class_set_css_name (widget_class, "dockheader");
 }
 

@@ -20,12 +20,14 @@ add_child (GtkWidget *parent)
 
   for (i = 0; i < 3; i++)
     {
+      g_autofree gchar *title = g_strdup_printf ("Panel Item %d", i);
       GtkWidget *label = g_object_new (GTK_TYPE_LABEL,
                                        "label", "Testing text",
                                        "visible", TRUE,
                                        NULL);
       PnlDockWidget *widget = g_object_new (PNL_TYPE_DOCK_WIDGET,
                                             "child", label,
+                                            "title", title,
                                             "visible", TRUE,
                                             NULL);
       gtk_container_add (GTK_CONTAINER (child), GTK_WIDGET (widget));

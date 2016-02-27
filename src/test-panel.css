@@ -31,6 +31,14 @@ dockedge > dockedgechild > panel dockheader button {
   margin: 0px;
 }
 
+dockedge > dockedgechild > panel dockheader label {
+  margin-right: 6px;
+}
+
+dockedge > dockedgechild > panel dockheader button {
+  margin-right: 6px;
+}
+
 dockedge > dockedgechild > panel dockheader button image {
   color: #bebebe;
 }

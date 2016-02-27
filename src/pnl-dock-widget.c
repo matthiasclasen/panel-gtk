@@ -71,6 +71,10 @@ pnl_dock_widget_get_property (GObject    *object,
       g_value_set_boolean (value, pnl_dock_widget_get_reveal_child (self));
       break;
 
+    case PROP_TITLE:
+      g_value_set_string (value, pnl_dock_widget_get_title (self));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -88,6 +92,10 @@ pnl_dock_widget_set_property (GObject      *object,
     {
     case PROP_REVEAL_CHILD:
       pnl_dock_widget_set_reveal_child (self, g_value_get_boolean (value));
+      break;
+
+    case PROP_TITLE:
+      pnl_dock_widget_set_title (self, g_value_get_string (value));
       break;
 
     default:
@@ -228,5 +236,30 @@ pnl_dock_widget_set_custom_title (PnlDockWidget *self,
                                          "position", 1,
                                          NULL);
       gtk_widget_hide (GTK_WIDGET (priv->title));
+    }
+}
+
+const gchar *
+pnl_dock_widget_get_title (PnlDockWidget *self)
+{
+  PnlDockWidgetPrivate *priv = pnl_dock_widget_get_instance_private (self);
+
+  g_return_val_if_fail (PNL_IS_DOCK_WIDGET (self), NULL);
+
+  return pnl_dock_header_get_title (priv->title);
+}
+
+void
+pnl_dock_widget_set_title (PnlDockWidget *self,
+                           const gchar   *title)
+{
+  PnlDockWidgetPrivate *priv = pnl_dock_widget_get_instance_private (self);
+
+  g_return_if_fail (PNL_IS_DOCK_WIDGET (self));
+
+  if (g_strcmp0 (title, pnl_dock_widget_get_title (self)) != 0)
+    {
+      pnl_dock_header_set_title (priv->title, title);
+      g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_TITLE]);
     }
 }
