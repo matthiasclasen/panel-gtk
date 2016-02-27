@@ -5,6 +5,10 @@ libpanel_gtk_@API_VERSION@_la_SOURCES = \
 	panel-gtk.h \
 	pnl-dock.c \
 	pnl-dock.h \
+	pnl-dock-header.c \
+	pnl-dock-header.h \
+	pnl-dock-widget.c \
+	pnl-dock-widget.h \
 	pnl-dock-edge.c \
 	pnl-dock-edge.h \
 	pnl-dock-edge-child.c \

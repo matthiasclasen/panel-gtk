@@ -1,4 +1,4 @@
-/* panel-gtk.h
+/* pnl-dock-widget.h
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,25 +16,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PANEL_GTK_H
-#define PANEL_GTK_H
+#ifndef PNL_DOCK_WIDGET_H
+#define PNL_DOCK_WIDGET_H
 
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
-#define PANEL_GTK_INSIDE
-# include "pnl-dock.h"
-# include "pnl-dock-edge.h"
-# include "pnl-dock-edge-child.h"
-# include "pnl-dock-header.h"
-# include "pnl-dock-widget.h"
-# include "pnl-multi-paned.h"
-# include "pnl-panel.h"
-# include "pnl-panel-child.h"
-# include "pnl-version.h"
-#undef PANEL_GTK_INSIDE
+#define PNL_TYPE_DOCK_WIDGET (pnl_dock_widget_get_type())
+
+G_DECLARE_DERIVABLE_TYPE (PnlDockWidget, pnl_dock_widget, PNL, DOCK_WIDGET, GtkBin)
+
+struct _PnlDockWidgetClass
+{
+  GtkBinClass parent;
+};
+
+GtkWidget *pnl_dock_widget_new (void);
+gboolean   pnl_dock_widget_get_reveal_child (PnlDockWidget *self);
+void       pnl_dock_widget_set_reveal_child (PnlDockWidget *self,
+                                             gboolean       reveal_child);
+GtkWidget *pnl_dock_widget_get_custom_title (PnlDockWidget *self);
+void       pnl_dock_widget_set_custom_title (PnlDockWidget *self,
+                                             GtkWidget     *custom_title);
 
 G_END_DECLS
 
-#endif /* PANEL_GTK_H */
+#endif /* PNL_DOCK_WIDGET_H */

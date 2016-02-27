@@ -1,4 +1,4 @@
-/* pnl-panel.c
+/* pnl-dock-header.h
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,23 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "pnl-panel.h"
+#ifndef PNL_DOCK_HEADER_H
+#define PNL_DOCK_HEADER_H
 
-typedef struct
+#include <gtk/gtk.h>
+
+G_BEGIN_DECLS
+
+#define PNL_TYPE_DOCK_HEADER (pnl_dock_header_get_type())
+
+G_DECLARE_DERIVABLE_TYPE (PnlDockHeader, pnl_dock_header, PNL, DOCK_HEADER, GtkBox)
+
+struct _PnlDockHeaderClass
 {
-} PnlPanelPrivate;
+  GtkBoxClass parent;
+};
 
-G_DEFINE_TYPE (PnlPanel, pnl_panel, PNL_TYPE_MULTI_PANED)
+GtkWidget   *pnl_dock_header_new       (void);
+const gchar *pnl_dock_header_get_title (PnlDockHeader *self);
+void         pnl_dock_header_set_title (PnlDockHeader *self,
+                                        const gchar   *title);
 
-static void
-pnl_panel_class_init (PnlPanelClass *klass)
-{
-  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+G_END_DECLS
 
-  gtk_widget_class_set_css_name (widget_class, "panel");
-}
-
-static void
-pnl_panel_init (PnlPanel *self)
-{
-}
+#endif /* PNL_DOCK_HEADER_H */

@@ -12,7 +12,7 @@ add_child (GtkWidget *parent)
   if (edge == GTK_POS_TOP || edge == GTK_POS_BOTTOM)
     orientation = GTK_ORIENTATION_HORIZONTAL;
 
-  child = g_object_new (PNL_TYPE_MULTI_PANED,
+  child = g_object_new (PNL_TYPE_PANEL,
                         "orientation", orientation,
                         "visible", TRUE,
                         NULL);
@@ -24,7 +24,11 @@ add_child (GtkWidget *parent)
                                        "label", "Testing text",
                                        "visible", TRUE,
                                        NULL);
-      gtk_container_add (GTK_CONTAINER (child), label);
+      PnlDockWidget *widget = g_object_new (PNL_TYPE_DOCK_WIDGET,
+                                            "child", label,
+                                            "visible", TRUE,
+                                            NULL);
+      gtk_container_add (GTK_CONTAINER (child), GTK_WIDGET (widget));
     }
 }
 
