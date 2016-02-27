@@ -70,12 +70,16 @@ pnl_dock_header_notify_orientation (PnlDockHeader *self,
       pack_type = GTK_PACK_START;
       gtk_container_foreach (GTK_CONTAINER (self), swap_pack_type, &pack_type);
       gtk_label_set_angle (priv->title, 0.0);
+      gtk_widget_set_halign (GTK_WIDGET (self), GTK_ALIGN_FILL);
+      gtk_widget_set_valign (GTK_WIDGET (self), GTK_ALIGN_START);
     }
   else
     {
       pack_type = GTK_PACK_END;
       gtk_container_foreach (GTK_CONTAINER (self), swap_pack_type, &pack_type);
       gtk_label_set_angle (priv->title, 90.0);
+      gtk_widget_set_halign (GTK_WIDGET (self), GTK_ALIGN_START);
+      gtk_widget_set_valign (GTK_WIDGET (self), GTK_ALIGN_FILL);
     }
 }
 
