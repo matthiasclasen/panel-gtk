@@ -192,11 +192,13 @@ pnl_dock_widget_init (PnlDockWidget *self)
                                                            GTK_WIDGET (priv->box));
 
   priv->title = g_object_new (PNL_TYPE_DOCK_HEADER,
+                              "expand", FALSE,
                               "visible", TRUE,
                               NULL);
   gtk_container_add (GTK_CONTAINER (priv->box), GTK_WIDGET (priv->title));
 
   priv->revealer = g_object_new (GTK_TYPE_REVEALER,
+                                 "expand", TRUE,
                                  "transition-type", GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT,
                                  "visible", TRUE,
                                  NULL);
