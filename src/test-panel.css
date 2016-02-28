@@ -31,12 +31,20 @@ dockedge > dockedgechild > panel dockheader button {
   margin: 0px;
 }
 
-dockedge > dockedgechild > panel dockheader label {
+dockedge > dockedgechild > panel dockheader.horizontal label {
   margin-right: 6px;
 }
 
-dockedge > dockedgechild > panel dockheader button {
+dockedge > dockedgechild > panel dockheader.vertical label {
+  margin-top: 6px;
+}
+
+dockedge > dockedgechild > panel dockheader.horizontal button {
   margin-right: 6px;
+}
+
+dockedge > dockedgechild > panel dockheader.vertical button {
+  margin-top: 6px;
 }
 
 dockedge > dockedgechild > panel dockheader button image {
