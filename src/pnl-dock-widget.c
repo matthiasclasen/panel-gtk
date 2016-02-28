@@ -35,6 +35,7 @@ enum {
   PROP_0,
   PROP_ORIENTATION,
   PROP_REVEAL_CHILD,
+  PROP_SHOW_CLOSE_BUTTON,
   PROP_TITLE,
   N_PROPS
 };
@@ -102,6 +103,10 @@ pnl_dock_widget_get_property (GObject    *object,
       g_value_set_boolean (value, pnl_dock_widget_get_reveal_child (self));
       break;
 
+    case PROP_SHOW_CLOSE_BUTTON:
+      g_value_set_boolean (value, pnl_dock_widget_get_show_close_button (self));
+      break;
+
     case PROP_TITLE:
       g_value_set_string (value, pnl_dock_widget_get_title (self));
       break;
@@ -127,6 +132,10 @@ pnl_dock_widget_set_property (GObject      *object,
 
     case PROP_REVEAL_CHILD:
       pnl_dock_widget_set_reveal_child (self, g_value_get_boolean (value));
+      break;
+
+    case PROP_SHOW_CLOSE_BUTTON:
+      pnl_dock_widget_set_show_close_button (self, g_value_get_boolean (value));
       break;
 
     case PROP_TITLE:
@@ -164,6 +173,13 @@ pnl_dock_widget_class_init (PnlDockWidgetClass *klass)
                           "Reveal Child",
                           TRUE,
                           (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
+
+  properties [PROP_SHOW_CLOSE_BUTTON] =
+    g_param_spec_boolean ("show-close-button",
+                         "Show Close Button",
+                         "If the close button should be shown on the widget header",
+                         FALSE,
+                         (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
 
   properties [PROP_TITLE] =
     g_param_spec_string ("title",
@@ -305,5 +321,32 @@ pnl_dock_widget_set_title (PnlDockWidget *self,
     {
       pnl_dock_header_set_title (priv->title, title);
       g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_TITLE]);
+    }
+}
+
+gboolean
+pnl_dock_widget_get_show_close_button (PnlDockWidget *self)
+{
+  PnlDockWidgetPrivate *priv = pnl_dock_widget_get_instance_private (self);
+
+  g_return_val_if_fail (PNL_IS_DOCK_WIDGET (self), FALSE);
+
+  return pnl_dock_header_get_show_close_button (priv->title);
+}
+
+void
+pnl_dock_widget_set_show_close_button (PnlDockWidget *self,
+                                       gboolean       show_close_button)
+{
+  PnlDockWidgetPrivate *priv = pnl_dock_widget_get_instance_private (self);
+
+  g_return_if_fail (PNL_IS_DOCK_WIDGET (self));
+
+  show_close_button = !!show_close_button;
+
+  if (show_close_button != pnl_dock_widget_get_show_close_button (self))
+    {
+      pnl_dock_header_set_show_close_button (priv->title, show_close_button);
+      g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_SHOW_CLOSE_BUTTON]);
     }
 }

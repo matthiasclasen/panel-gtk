@@ -32,16 +32,19 @@ struct _PnlDockWidgetClass
   GtkBinClass parent;
 };
 
-GtkWidget   *pnl_dock_widget_new (void);
-gboolean     pnl_dock_widget_get_reveal_child (PnlDockWidget *self);
-void         pnl_dock_widget_set_reveal_child (PnlDockWidget *self,
-                                               gboolean       reveal_child);
-const gchar *pnl_dock_widget_get_title        (PnlDockWidget *self);
-void         pnl_dock_widget_set_title        (PnlDockWidget *self,
-                                               const gchar   *title);
-GtkWidget   *pnl_dock_widget_get_custom_title (PnlDockWidget *self);
-void         pnl_dock_widget_set_custom_title (PnlDockWidget *self,
-                                               GtkWidget     *custom_title);
+GtkWidget   *pnl_dock_widget_new                   (void);
+gboolean     pnl_dock_widget_get_reveal_child      (PnlDockWidget *self);
+void         pnl_dock_widget_set_reveal_child      (PnlDockWidget *self,
+                                                    gboolean       reveal_child);
+const gchar *pnl_dock_widget_get_title             (PnlDockWidget *self);
+void         pnl_dock_widget_set_title             (PnlDockWidget *self,
+                                                    const gchar   *title);
+GtkWidget   *pnl_dock_widget_get_custom_title      (PnlDockWidget *self);
+void         pnl_dock_widget_set_custom_title      (PnlDockWidget *self,
+                                                    GtkWidget     *custom_title);
+gboolean     pnl_dock_widget_get_show_close_button (PnlDockWidget *self);
+void         pnl_dock_widget_set_show_close_button (PnlDockWidget *self,
+                                                    gboolean       show_close_button);
 
 G_END_DECLS
 

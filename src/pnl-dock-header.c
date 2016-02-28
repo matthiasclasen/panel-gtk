@@ -32,6 +32,7 @@ G_DEFINE_TYPE_EXTENDED (PnlDockHeader, pnl_dock_header, GTK_TYPE_BOX, 0,
 
 enum {
   PROP_0,
+  PROP_SHOW_CLOSE_BUTTON,
   PROP_TITLE,
   N_PROPS
 };
@@ -84,12 +85,6 @@ pnl_dock_header_notify_orientation (PnlDockHeader *self,
 }
 
 static void
-pnl_dock_header_finalize (GObject *object)
-{
-  G_OBJECT_CLASS (pnl_dock_header_parent_class)->finalize (object);
-}
-
-static void
 pnl_dock_header_get_property (GObject    *object,
                               guint       prop_id,
                               GValue     *value,
@@ -99,6 +94,10 @@ pnl_dock_header_get_property (GObject    *object,
 
   switch (prop_id)
     {
+    case PROP_SHOW_CLOSE_BUTTON:
+      g_value_set_boolean (value, pnl_dock_header_get_show_close_button (self));
+      break;
+
     case PROP_TITLE:
       g_value_set_string (value, pnl_dock_header_get_title (self));
       break;
@@ -118,6 +117,10 @@ pnl_dock_header_set_property (GObject      *object,
 
   switch (prop_id)
     {
+    case PROP_SHOW_CLOSE_BUTTON:
+      pnl_dock_header_set_show_close_button (self, g_value_get_boolean (value));
+      break;
+
     case PROP_TITLE:
       pnl_dock_header_set_title (self, g_value_get_string (value));
       break;
@@ -133,9 +136,15 @@ pnl_dock_header_class_init (PnlDockHeaderClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-  object_class->finalize = pnl_dock_header_finalize;
   object_class->get_property = pnl_dock_header_get_property;
   object_class->set_property = pnl_dock_header_set_property;
+
+  properties [PROP_SHOW_CLOSE_BUTTON] =
+    g_param_spec_boolean ("show-close-button",
+                          "Show Close Button",
+                          "Show Close Button",
+                          FALSE,
+                          (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
 
   properties [PROP_TITLE] =
     g_param_spec_string ("title",
@@ -171,7 +180,7 @@ pnl_dock_header_init (PnlDockHeader *self)
                                                      "icon-name", "window-close-symbolic",
                                                      "visible", TRUE,
                                                      NULL),
-                              "visible", TRUE,
+                              "visible", FALSE,
                               NULL);
   gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (priv->close));
 
@@ -210,5 +219,32 @@ pnl_dock_header_set_title (PnlDockHeader *self,
     {
       gtk_label_set_label (priv->title, title);
       g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_TITLE]);
+    }
+}
+
+gboolean
+pnl_dock_header_get_show_close_button (PnlDockHeader *self)
+{
+  PnlDockHeaderPrivate *priv = pnl_dock_header_get_instance_private (self);
+
+  g_return_val_if_fail (PNL_IS_DOCK_HEADER (self), FALSE);
+
+  return gtk_widget_get_visible (GTK_WIDGET (priv->close));
+}
+
+void
+pnl_dock_header_set_show_close_button (PnlDockHeader *self,
+                                       gboolean       show_close_button)
+{
+  PnlDockHeaderPrivate *priv = pnl_dock_header_get_instance_private (self);
+
+  g_return_if_fail (PNL_IS_DOCK_HEADER (self));
+
+  show_close_button = !!show_close_button;
+
+  if (show_close_button != pnl_dock_header_get_show_close_button (self))
+    {
+      gtk_widget_set_visible (GTK_WIDGET (priv->close), show_close_button);
+      g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_SHOW_CLOSE_BUTTON]);
     }
 }
