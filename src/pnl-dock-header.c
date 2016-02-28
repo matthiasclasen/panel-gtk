@@ -20,20 +20,23 @@
 
 typedef struct
 {
-  GtkImage  *arrow;
-  GtkLabel  *title;
-  GtkButton *close;
-  GtkWidget *custom_title;
-  guint      expanded : 1;
+  GtkBox         *box;
+  GtkImage       *arrow;
+  GtkLabel       *title;
+  GtkButton      *close;
+  GtkWidget      *custom_title;
+  guint           expanded : 1;
+  GtkOrientation  orientation : 1;
 } PnlDockHeaderPrivate;
 
-G_DEFINE_TYPE_EXTENDED (PnlDockHeader, pnl_dock_header, GTK_TYPE_BOX, 0,
+G_DEFINE_TYPE_EXTENDED (PnlDockHeader, pnl_dock_header, GTK_TYPE_EVENT_BOX, 0,
                         G_ADD_PRIVATE (PnlDockHeader)
                         G_IMPLEMENT_INTERFACE (GTK_TYPE_ORIENTABLE, NULL))
 
 enum {
   PROP_0,
   PROP_EXPANDED,
+  PROP_ORIENTATION,
   PROP_SHOW_CLOSE_BUTTON,
   PROP_TITLE,
   N_PROPS
@@ -55,13 +58,10 @@ static void
 pnl_dock_header_update_expanded (PnlDockHeader *self)
 {
   PnlDockHeaderPrivate *priv = pnl_dock_header_get_instance_private (self);
-  GtkOrientation orientation;
 
   g_assert (PNL_IS_DOCK_HEADER (self));
 
-  orientation = gtk_orientable_get_orientation (GTK_ORIENTABLE (self));
-
-  if (orientation == GTK_ORIENTATION_HORIZONTAL)
+  if (priv->orientation == GTK_ORIENTATION_HORIZONTAL)
     {
       gtk_image_set_from_icon_name (priv->arrow,
                                     priv->expanded ? "pan-down-symbolic" : "pan-end-symbolic",
@@ -109,21 +109,21 @@ swap_pack_type (GtkWidget *widget,
 }
 
 static void
-pnl_dock_header_notify_orientation (PnlDockHeader *self,
-                                    GParamSpec    *pspec)
+pnl_dock_header_set_orientation (PnlDockHeader  *self,
+                                 GtkOrientation  orientation)
 {
   PnlDockHeaderPrivate *priv = pnl_dock_header_get_instance_private (self);
-  GtkOrientation orientation;
   GtkPackType pack_type;
 
   g_assert (PNL_IS_DOCK_HEADER (self));
 
-  orientation = gtk_orientable_get_orientation (GTK_ORIENTABLE (self));
+  priv->orientation = orientation;
+
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (priv->box), orientation);
 
   if (orientation == GTK_ORIENTATION_HORIZONTAL)
     {
       pack_type = GTK_PACK_START;
-      gtk_container_foreach (GTK_CONTAINER (self), swap_pack_type, &pack_type);
       gtk_label_set_angle (priv->title, 0.0);
       gtk_widget_set_halign (GTK_WIDGET (self), GTK_ALIGN_FILL);
       gtk_widget_set_valign (GTK_WIDGET (self), GTK_ALIGN_START);
@@ -131,13 +131,16 @@ pnl_dock_header_notify_orientation (PnlDockHeader *self,
   else
     {
       pack_type = GTK_PACK_END;
-      gtk_container_foreach (GTK_CONTAINER (self), swap_pack_type, &pack_type);
       gtk_label_set_angle (priv->title, 90.0);
       gtk_widget_set_halign (GTK_WIDGET (self), GTK_ALIGN_START);
       gtk_widget_set_valign (GTK_WIDGET (self), GTK_ALIGN_FILL);
     }
 
+  gtk_container_foreach (GTK_CONTAINER (priv->box), swap_pack_type, &pack_type);
+
   pnl_dock_header_update_expanded (self);
+
+  g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_ORIENTATION]);
 }
 
 static void
@@ -147,11 +150,16 @@ pnl_dock_header_get_property (GObject    *object,
                               GParamSpec *pspec)
 {
   PnlDockHeader *self = PNL_DOCK_HEADER (object);
+  PnlDockHeaderPrivate *priv = pnl_dock_header_get_instance_private (self);
 
   switch (prop_id)
     {
     case PROP_EXPANDED:
       g_value_set_boolean (value, pnl_dock_header_get_expanded (self));
+      break;
+
+    case PROP_ORIENTATION:
+      g_value_set_enum (value, priv->orientation);
       break;
 
     case PROP_SHOW_CLOSE_BUTTON:
@@ -179,6 +187,10 @@ pnl_dock_header_set_property (GObject      *object,
     {
     case PROP_EXPANDED:
       pnl_dock_header_set_expanded (self, g_value_get_boolean (value));
+      break;
+
+    case PROP_ORIENTATION:
+      pnl_dock_header_set_orientation (self, g_value_get_enum (value));
       break;
 
     case PROP_SHOW_CLOSE_BUTTON:
@@ -210,6 +222,14 @@ pnl_dock_header_class_init (PnlDockHeaderClass *klass)
                           FALSE,
                           (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_READWRITE));
 
+  properties [PROP_ORIENTATION] =
+    g_param_spec_enum ("orientation",
+                       "Orientation",
+                       "Orientation",
+                       GTK_TYPE_ORIENTATION,
+                       GTK_ORIENTATION_HORIZONTAL,
+                       (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
+
   properties [PROP_SHOW_CLOSE_BUTTON] =
     g_param_spec_boolean ("show-close-button",
                           "Show Close Button",
@@ -234,18 +254,23 @@ pnl_dock_header_init (PnlDockHeader *self)
 {
   PnlDockHeaderPrivate *priv = pnl_dock_header_get_instance_private (self);
 
+  priv->box = g_object_new (GTK_TYPE_BOX,
+                            "visible", TRUE,
+                            NULL);
+  gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (priv->box));
+
   priv->arrow = g_object_new (GTK_TYPE_IMAGE,
                               "icon-name", "pan-end-symbolic",
                               "visible", TRUE,
                               NULL);
-  gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (priv->arrow));
+  gtk_container_add (GTK_CONTAINER (priv->box), GTK_WIDGET (priv->arrow));
 
   priv->title = g_object_new (GTK_TYPE_LABEL,
                               "hexpand", TRUE,
                               "visible", TRUE,
                               "xalign", 0.0f,
                               NULL);
-  gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (priv->title));
+  gtk_container_add (GTK_CONTAINER (priv->box), GTK_WIDGET (priv->title));
 
   priv->close = g_object_new (GTK_TYPE_BUTTON,
                               "child", g_object_new (GTK_TYPE_IMAGE,
@@ -254,12 +279,7 @@ pnl_dock_header_init (PnlDockHeader *self)
                                                      NULL),
                               "visible", FALSE,
                               NULL);
-  gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (priv->close));
-
-  g_signal_connect (self,
-                    "notify::orientation",
-                    G_CALLBACK (pnl_dock_header_notify_orientation),
-                    NULL);
+  gtk_container_add (GTK_CONTAINER (priv->box), GTK_WIDGET (priv->close));
 }
 
 GtkWidget *

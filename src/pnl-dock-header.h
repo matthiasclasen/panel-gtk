@@ -25,11 +25,11 @@ G_BEGIN_DECLS
 
 #define PNL_TYPE_DOCK_HEADER (pnl_dock_header_get_type())
 
-G_DECLARE_DERIVABLE_TYPE (PnlDockHeader, pnl_dock_header, PNL, DOCK_HEADER, GtkBox)
+G_DECLARE_DERIVABLE_TYPE (PnlDockHeader, pnl_dock_header, PNL, DOCK_HEADER, GtkEventBox)
 
 struct _PnlDockHeaderClass
 {
-  GtkBoxClass parent;
+  GtkEventBoxClass parent;
 };
 
 GtkWidget   *pnl_dock_header_new                   (void);

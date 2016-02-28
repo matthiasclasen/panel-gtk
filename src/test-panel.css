@@ -19,11 +19,11 @@ dockedge > dockedgechild > panel {
   border: 1px solid alpha(@borders, 0.4);
 }
 
-dockedge > dockedgechild > panel dockheader {
+dockedge > dockedgechild > panel dockheader box {
   background: #fafafa;
 }
 
-dockedge > dockedgechild > panel dockheader button {
+dockedge > dockedgechild > panel dockheader box button {
   background: none;
   box-shadow: none;
   border: none;
@@ -55,18 +55,18 @@ dockedge > dockedgechild > panel dockheader button:hover image {
   color: #2e3436;
 }
 
-dockedge.left dockheader {
+dockedge.left dockheader box {
  margin-right: 1px;
 }
 
-dockedge.right dockheader {
+dockedge.right dockheader box {
  margin-left: 1px;
 }
 
-dockedge.bottom dockheader {
+dockedge.bottom dockheader box {
  margin-top: 1px;
 }
 
-dockedge.top dockheader {
+dockedge.top dockheader box {
  margin-bottom: 1px;
 }
