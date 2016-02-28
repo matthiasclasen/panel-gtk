@@ -7,7 +7,7 @@
 
   <name xml:lang="en">panel-gtk</name>
   <shortdesc xml:lang="en">
-    A docking panel engine for gtk+.
+    A docking panel engine for gtk+
   </shortdesc>
   <description xml:lang="en">
     This is a prototype of a docking panel engine for gtk+.
