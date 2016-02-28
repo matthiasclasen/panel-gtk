@@ -39,6 +39,9 @@ void         pnl_dock_header_set_title             (PnlDockHeader *self,
 gboolean     pnl_dock_header_get_show_close_button (PnlDockHeader *self);
 void         pnl_dock_header_set_show_close_button (PnlDockHeader *self,
                                                     gboolean       show_close_button);
+gboolean     pnl_dock_header_get_expanded          (PnlDockHeader *self);
+void         pnl_dock_header_set_expanded          (PnlDockHeader *self,
+                                                    gboolean       expanded);
 
 G_END_DECLS
 

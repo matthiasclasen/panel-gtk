@@ -250,6 +250,7 @@ pnl_dock_widget_set_reveal_child (PnlDockWidget *self,
   if (reveal_child != gtk_revealer_get_reveal_child (priv->revealer))
     {
       gtk_revealer_set_reveal_child (priv->revealer, reveal_child);
+      pnl_dock_header_set_expanded (priv->title, reveal_child);
       g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_REVEAL_CHILD]);
     }
 }
