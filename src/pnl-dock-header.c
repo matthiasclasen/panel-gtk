@@ -17,6 +17,7 @@
  */
 
 #include "pnl-dock-header.h"
+#include "pnl-dock-widget.h"
 
 typedef struct
 {
@@ -43,6 +44,21 @@ enum {
 };
 
 static GParamSpec *properties [N_PROPS];
+
+static void
+pnl_dock_header_close_clicked (PnlDockHeader *self,
+                               GtkButton     *button)
+{
+  GtkWidget *parent;
+
+  g_assert (PNL_IS_DOCK_HEADER (self));
+  g_assert (GTK_IS_BUTTON (button));
+
+  parent = gtk_widget_get_ancestor (GTK_WIDGET (self), PNL_TYPE_DOCK_WIDGET);
+
+  if (parent != NULL)
+    pnl_dock_widget_close (PNL_DOCK_WIDGET (parent));
+}
 
 gboolean
 pnl_dock_header_get_expanded (PnlDockHeader *self)
@@ -336,6 +352,12 @@ pnl_dock_header_init (PnlDockHeader *self)
                               "visible", FALSE,
                               NULL);
   gtk_container_add (GTK_CONTAINER (priv->box), GTK_WIDGET (priv->close));
+
+  g_signal_connect_object (priv->close,
+                           "clicked",
+                           G_CALLBACK (pnl_dock_header_close_clicked),
+                           self,
+                           G_CONNECT_SWAPPED);
 }
 
 GtkWidget *

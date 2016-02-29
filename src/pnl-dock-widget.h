@@ -30,6 +30,8 @@ G_DECLARE_DERIVABLE_TYPE (PnlDockWidget, pnl_dock_widget, PNL, DOCK_WIDGET, GtkB
 struct _PnlDockWidgetClass
 {
   GtkBinClass parent;
+
+  gboolean (*close) (PnlDockWidget *self);
 };
 
 GtkWidget   *pnl_dock_widget_new                   (void);
@@ -45,6 +47,7 @@ void         pnl_dock_widget_set_custom_title      (PnlDockWidget *self,
 gboolean     pnl_dock_widget_get_show_close_button (PnlDockWidget *self);
 void         pnl_dock_widget_set_show_close_button (PnlDockWidget *self,
                                                     gboolean       show_close_button);
+void         pnl_dock_widget_close                 (PnlDockWidget *self);
 
 G_END_DECLS
 

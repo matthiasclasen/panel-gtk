@@ -41,7 +41,13 @@ enum {
   N_PROPS
 };
 
+enum {
+  CLOSE,
+  N_SIGNALS
+};
+
 static GParamSpec *properties [N_PROPS];
+static guint signals [N_SIGNALS];
 
 static void
 pnl_dock_widget_notify_child_revealed (PnlDockWidget *self,
@@ -100,6 +106,16 @@ pnl_dock_widget_add (GtkContainer *container,
   g_assert (GTK_IS_WIDGET (widget));
 
   gtk_container_add (GTK_CONTAINER (priv->revealer), widget);
+}
+
+static gboolean
+pnl_dock_widget_real_close (PnlDockWidget *self)
+{
+  g_assert (PNL_IS_DOCK_WIDGET (self));
+
+  gtk_widget_destroy (GTK_WIDGET (self));
+
+  return TRUE;
 }
 
 static void
@@ -176,6 +192,8 @@ pnl_dock_widget_class_init (PnlDockWidgetClass *klass)
 
   container_class->add = pnl_dock_widget_add;
 
+  klass->close = pnl_dock_widget_real_close;
+
   properties [PROP_ORIENTATION] =
     g_param_spec_enum ("orientation",
                        "Orientation",
@@ -206,6 +224,14 @@ pnl_dock_widget_class_init (PnlDockWidgetClass *klass)
                          (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
+
+  signals [CLOSE] =
+    g_signal_new ("close",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                  G_STRUCT_OFFSET (PnlDockWidgetClass, close),
+                  g_signal_accumulator_true_handled, NULL, NULL,
+                  G_TYPE_BOOLEAN, 0);
 
   gtk_widget_class_set_css_name (widget_class, "dockwidget");
 }
@@ -409,4 +435,14 @@ pnl_dock_widget_set_show_close_button (PnlDockWidget *self,
       pnl_dock_header_set_show_close_button (priv->title, show_close_button);
       g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_SHOW_CLOSE_BUTTON]);
     }
+}
+
+void
+pnl_dock_widget_close (PnlDockWidget *self)
+{
+  gboolean ret = FALSE;
+
+  g_return_if_fail (PNL_IS_DOCK_WIDGET (self));
+
+  g_signal_emit (self, signals [CLOSE], 0, &ret);
 }
