@@ -19,8 +19,25 @@ dockedge > dockedgechild > panel {
   border: 1px solid alpha(@borders, 0.4);
 }
 
+dockedge > dockedgechild > panel dockwidget revealer > * {
+  padding: 6px;
+}
+
 dockedge > dockedgechild > panel dockheader box {
-  background: #fafafa;
+  padding: 3px;
+  background-color: #fafafa;
+}
+
+dockedge > dockedgechild > panel dockheader.horizontal label {
+  margin-left: 2px;
+}
+
+dockedge > dockedgechild > panel dockheader.vertical label {
+  margin-bottom: 2px;
+}
+
+dockedge > dockedgechild > panel dockheader:hover box {
+  background-color: #fefefe;
 }
 
 dockedge > dockedgechild > panel dockheader box button {
@@ -32,26 +49,22 @@ dockedge > dockedgechild > panel dockheader box button {
 }
 
 dockedge > dockedgechild > panel dockheader.horizontal label {
-  margin-right: 6px;
+  margin-right: 3px;
 }
 
 dockedge > dockedgechild > panel dockheader.vertical label {
-  margin-top: 6px;
-}
-
-dockedge > dockedgechild > panel dockheader.horizontal button {
-  margin-right: 6px;
-}
-
-dockedge > dockedgechild > panel dockheader.vertical button {
-  margin-top: 6px;
+  margin-top: 3px;
 }
 
 dockedge > dockedgechild > panel dockheader button image {
   color: #bebebe;
 }
 
-dockedge > dockedgechild > panel dockheader button:hover image {
+dockedge > dockedgechild > panel dockheader:hover button image {
+  color: #aeaeae;
+}
+
+dockedge > dockedgechild > panel dockheader:hover button:hover image {
   color: #2e3436;
 }
 

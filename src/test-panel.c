@@ -27,6 +27,7 @@ add_child (GtkWidget *parent)
                                        NULL);
       PnlDockWidget *widget = g_object_new (PNL_TYPE_DOCK_WIDGET,
                                             "orientation", orientation,
+                                            "show-close-button", TRUE,
                                             "child", label,
                                             "title", title,
                                             "visible", TRUE,
@@ -160,6 +161,7 @@ main (gint   argc,
   gtk_container_add (GTK_CONTAINER (dock), scroller);
 
   textview = g_object_new (GTK_TYPE_TEXT_VIEW,
+                           "monospace", TRUE,
                            "visible", TRUE,
                            NULL);
   gtk_container_add (GTK_CONTAINER (scroller), GTK_WIDGET (textview));
