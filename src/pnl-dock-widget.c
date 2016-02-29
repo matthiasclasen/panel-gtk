@@ -18,6 +18,7 @@
 
 #include "pnl-dock-header.h"
 #include "pnl-dock-widget.h"
+#include "pnl-multi-paned.h"
 
 typedef struct
 {
@@ -41,6 +42,22 @@ enum {
 };
 
 static GParamSpec *properties [N_PROPS];
+
+static void
+pnl_dock_widget_notify_child_revealed (PnlDockWidget *self,
+                                       GParamSpec    *pspec,
+                                       GtkRevealer   *revealer)
+{
+  GtkWidget *child;
+
+  g_assert (PNL_IS_DOCK_WIDGET (self));
+  g_assert (pspec != NULL);
+  g_assert (GTK_IS_REVEALER (revealer));
+
+  if (!gtk_revealer_get_child_revealed (revealer) &&
+      NULL != (child = gtk_bin_get_child (GTK_BIN (revealer))))
+    gtk_widget_set_size_request (child, -1, -1);
+}
 
 static GtkOrientation
 pnl_dock_widget_get_orientation (PnlDockWidget *self)
@@ -222,6 +239,12 @@ pnl_dock_widget_init (PnlDockWidget *self)
                                  "visible", TRUE,
                                  NULL);
   gtk_container_add (GTK_CONTAINER (priv->box), GTK_WIDGET (priv->revealer));
+
+  g_signal_connect_object (priv->revealer,
+                           "notify::child-revealed",
+                           G_CALLBACK (pnl_dock_widget_notify_child_revealed),
+                           self,
+                           G_CONNECT_SWAPPED);
 }
 
 GtkWidget *
@@ -252,6 +275,40 @@ pnl_dock_widget_set_reveal_child (PnlDockWidget *self,
 
   if (reveal_child != gtk_revealer_get_reveal_child (priv->revealer))
     {
+      if (!reveal_child)
+        {
+          GtkWidget *child;
+
+          /*
+           * HACK:
+           *
+           * When the multi-paned has allocated more space to the child than it
+           * requires due to a resize-drag, we need to mess with the
+           * size-request during the animation cycle. Otherwise, the revealer
+           * wont actually animate out the child widget.
+           */
+
+          if (NULL != (child = gtk_bin_get_child (GTK_BIN (priv->revealer))))
+            {
+              GtkAllocation child_alloc;
+              GtkWidget *parent;
+
+              gtk_widget_get_allocation (child, &child_alloc);
+
+              if (pnl_dock_widget_get_orientation (self) == GTK_ORIENTATION_HORIZONTAL)
+                gtk_widget_set_size_request (child, child_alloc.width, -1);
+              else
+                gtk_widget_set_size_request (child, -1, child_alloc.height);
+
+              parent = gtk_widget_get_parent (GTK_WIDGET (self));
+
+              if (PNL_IS_MULTI_PANED (parent))
+                gtk_container_child_set (GTK_CONTAINER (parent), GTK_WIDGET (self),
+                                         "position", 0,
+                                         NULL);
+            }
+        }
+
       gtk_revealer_set_reveal_child (priv->revealer, reveal_child);
       g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_REVEAL_CHILD]);
     }
