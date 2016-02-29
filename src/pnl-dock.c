@@ -655,6 +655,7 @@ pnl_dock_size_allocate (GtkWidget     *widget,
 {
   PnlDock *self = (PnlDock *)widget;
   PnlDockPrivate *priv = pnl_dock_get_instance_private (self);
+  guint i;
 
   g_assert (PNL_IS_DOCK (self));
   g_assert (allocation != NULL);
@@ -662,6 +663,25 @@ pnl_dock_size_allocate (GtkWidget     *widget,
   GTK_WIDGET_CLASS (pnl_dock_parent_class)->size_allocate (widget, allocation);
 
   pnl_dock_child_size_allocate (self, priv->children, G_N_ELEMENTS (priv->children), allocation);
+
+  /*
+   * Hide all of the handle input windows that should be hidden
+   * because the child has an empty allocation.
+   */
+
+  for (i = 0; i < PNL_DOCK_CHILD_CENTER; i++)
+    {
+      PnlDockChild *child = &priv->children [i];
+
+      if (child->handle != NULL)
+        {
+          if (PNL_IS_DOCK_EDGE (child->widget) &&
+              gtk_revealer_get_reveal_child (GTK_REVEALER (child->widget)))
+            gdk_window_show (child->handle);
+          else
+            gdk_window_hide (child->handle);
+        }
+    }
 }
 
 static void
