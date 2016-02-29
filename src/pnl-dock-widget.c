@@ -213,6 +213,9 @@ pnl_dock_widget_init (PnlDockWidget *self)
                               NULL);
   gtk_container_add (GTK_CONTAINER (priv->box), GTK_WIDGET (priv->title));
 
+  g_object_bind_property (self, "reveal-child", priv->title, "expanded",
+                          G_BINDING_BIDIRECTIONAL);
+
   priv->revealer = g_object_new (GTK_TYPE_REVEALER,
                                  "expand", TRUE,
                                  "transition-type", GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT,
@@ -250,7 +253,6 @@ pnl_dock_widget_set_reveal_child (PnlDockWidget *self,
   if (reveal_child != gtk_revealer_get_reveal_child (priv->revealer))
     {
       gtk_revealer_set_reveal_child (priv->revealer, reveal_child);
-      pnl_dock_header_set_expanded (priv->title, reveal_child);
       g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_REVEAL_CHILD]);
     }
 }

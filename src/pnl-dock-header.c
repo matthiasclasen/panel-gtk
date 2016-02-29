@@ -93,6 +93,52 @@ pnl_dock_header_set_expanded (PnlDockHeader *self,
     }
 }
 
+static gboolean
+pnl_dock_header_button_release_event (GtkWidget      *widget,
+                                      GdkEventButton *button)
+{
+  PnlDockHeader *self = (PnlDockHeader *)widget;
+
+  g_assert (PNL_IS_DOCK_HEADER (self));
+  g_assert (button != NULL);
+
+  if (button->button == GDK_BUTTON_PRIMARY)
+    {
+      pnl_dock_header_set_expanded (self, !pnl_dock_header_get_expanded (self));
+      return GDK_EVENT_STOP;
+    }
+
+  return GDK_EVENT_PROPAGATE;
+}
+
+static gboolean
+pnl_dock_header_enter_notify_event (GtkWidget        *widget,
+                                    GdkEventCrossing *crossing)
+{
+  PnlDockHeader *self = (PnlDockHeader *)widget;
+
+  g_assert (PNL_IS_DOCK_HEADER (self));
+  g_assert (crossing != NULL);
+
+  gtk_widget_set_state_flags (GTK_WIDGET (self), GTK_STATE_FLAG_PRELIGHT, FALSE);
+
+  return GDK_EVENT_PROPAGATE;
+}
+
+static gboolean
+pnl_dock_header_leave_notify_event (GtkWidget        *widget,
+                                    GdkEventCrossing *crossing)
+{
+  PnlDockHeader *self = (PnlDockHeader *)widget;
+
+  g_assert (PNL_IS_DOCK_HEADER (self));
+  g_assert (crossing != NULL);
+
+  gtk_widget_unset_state_flags (GTK_WIDGET (self), GTK_STATE_FLAG_PRELIGHT);
+
+  return GDK_EVENT_PROPAGATE;
+}
+
 static void
 swap_pack_type (GtkWidget *widget,
                 gpointer   user_data)
@@ -215,6 +261,10 @@ pnl_dock_header_class_init (PnlDockHeaderClass *klass)
   object_class->get_property = pnl_dock_header_get_property;
   object_class->set_property = pnl_dock_header_set_property;
 
+  widget_class->button_release_event = pnl_dock_header_button_release_event;
+  widget_class->enter_notify_event = pnl_dock_header_enter_notify_event;
+  widget_class->leave_notify_event = pnl_dock_header_leave_notify_event;
+
   properties [PROP_EXPANDED] =
     g_param_spec_boolean ("expanded",
                           "Expanded",
@@ -253,6 +303,12 @@ static void
 pnl_dock_header_init (PnlDockHeader *self)
 {
   PnlDockHeaderPrivate *priv = pnl_dock_header_get_instance_private (self);
+
+  gtk_widget_add_events (GTK_WIDGET (self),
+                         (GDK_BUTTON_PRESS_MASK |
+                          GDK_BUTTON_RELEASE_MASK |
+                          GDK_ENTER_NOTIFY_MASK |
+                          GDK_LEAVE_NOTIFY_MASK));
 
   priv->box = g_object_new (GTK_TYPE_BOX,
                             "visible", TRUE,
