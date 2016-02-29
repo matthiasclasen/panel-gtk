@@ -37,7 +37,8 @@ struct _PnlMultiPanedClass
                              GtkWidget     *child);
 };
 
-GtkWidget *pnl_multi_paned_new (void);
+GtkWidget *pnl_multi_paned_new            (void);
+guint      pnl_multi_paned_get_n_children (PnlMultiPaned *self);
 
 G_END_DECLS
 

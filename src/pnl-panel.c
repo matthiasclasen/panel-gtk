@@ -17,6 +17,7 @@
  */
 
 #include "pnl-panel.h"
+#include "pnl-dock-edge.h"
 #include "pnl-dock-widget.h"
 
 typedef struct
@@ -53,10 +54,58 @@ pnl_panel_resize_drag_end (PnlMultiPaned *multi_paned,
 }
 
 static void
+pnl_panel_add (GtkContainer *container,
+               GtkWidget    *widget)
+{
+  PnlPanel *self = (PnlPanel *)container;
+
+  g_assert (PNL_IS_PANEL (self));
+  g_assert (GTK_IS_WIDGET (widget));
+
+  GTK_CONTAINER_CLASS (pnl_panel_parent_class)->add (container, widget);
+
+  if (pnl_multi_paned_get_n_children (PNL_MULTI_PANED (self)) > 0)
+    {
+      GtkWidget *dock_edge;
+
+      dock_edge = gtk_widget_get_ancestor (GTK_WIDGET (self), PNL_TYPE_DOCK_EDGE);
+
+      if (PNL_IS_DOCK_EDGE (dock_edge))
+        gtk_revealer_set_reveal_child (GTK_REVEALER (dock_edge), TRUE);
+    }
+}
+
+static void
+pnl_panel_remove (GtkContainer *container,
+                  GtkWidget    *widget)
+{
+  PnlPanel *self = (PnlPanel *)container;
+
+  g_assert (PNL_IS_PANEL (self));
+  g_assert (GTK_IS_WIDGET (widget));
+
+  GTK_CONTAINER_CLASS (pnl_panel_parent_class)->remove (container, widget);
+
+  if (pnl_multi_paned_get_n_children (PNL_MULTI_PANED (self)) == 0)
+    {
+      GtkWidget *dock_edge;
+
+      dock_edge = gtk_widget_get_ancestor (GTK_WIDGET (self), PNL_TYPE_DOCK_EDGE);
+
+      if (PNL_IS_DOCK_EDGE (dock_edge))
+        gtk_revealer_set_reveal_child (GTK_REVEALER (dock_edge), FALSE);
+    }
+}
+
+static void
 pnl_panel_class_init (PnlPanelClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+  GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
   PnlMultiPanedClass *multi_paned_class = PNL_MULTI_PANED_CLASS (klass);
+
+  container_class->add = pnl_panel_add;
+  container_class->remove = pnl_panel_remove;
 
   multi_paned_class->resize_drag_begin = pnl_panel_resize_drag_begin;
   multi_paned_class->resize_drag_end = pnl_panel_resize_drag_end;

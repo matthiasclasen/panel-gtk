@@ -638,7 +638,7 @@ pnl_dock_child_size_allocate (PnlDock       *self,
           break;
         }
 
-      if (child_alloc.width > 0 && child_alloc.height > 0)
+      if (child_alloc.width > 0 && child_alloc.height > 0 && child->handle)
         gdk_window_move_resize (child->handle,
                                 handle_alloc.x, handle_alloc.y,
                                 handle_alloc.width, handle_alloc.height);

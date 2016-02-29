@@ -1408,3 +1408,13 @@ pnl_multi_paned_new (void)
 {
   return g_object_new (PNL_TYPE_MULTI_PANED, NULL);
 }
+
+guint
+pnl_multi_paned_get_n_children (PnlMultiPaned *self)
+{
+  PnlMultiPanedPrivate *priv = pnl_multi_paned_get_instance_private (self);
+
+  g_return_val_if_fail (PNL_IS_MULTI_PANED (self), 0);
+
+  return priv->children ? priv->children->len : 0;
+}
