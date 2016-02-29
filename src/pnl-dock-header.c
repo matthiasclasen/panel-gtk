@@ -186,14 +186,26 @@ pnl_dock_header_set_orientation (PnlDockHeader  *self,
   if (orientation == GTK_ORIENTATION_HORIZONTAL)
     {
       pack_type = GTK_PACK_START;
-      gtk_label_set_angle (priv->title, 0.0);
+      g_object_set (priv->title,
+                    "angle", 0.0,
+                    "xalign", 0.0f,
+                    "yalign", 0.5f,
+                    "hexpand", TRUE,
+                    "vexpand", FALSE,
+                    NULL);
       gtk_widget_set_halign (GTK_WIDGET (self), GTK_ALIGN_FILL);
       gtk_widget_set_valign (GTK_WIDGET (self), GTK_ALIGN_START);
     }
   else
     {
       pack_type = GTK_PACK_END;
-      gtk_label_set_angle (priv->title, 90.0);
+      g_object_set (priv->title,
+                    "angle", 90.0,
+                    "xalign", 0.5f,
+                    "yalign", 1.0f,
+                    "hexpand", FALSE,
+                    "vexpand", TRUE,
+                    NULL);
       gtk_widget_set_halign (GTK_WIDGET (self), GTK_ALIGN_START);
       gtk_widget_set_valign (GTK_WIDGET (self), GTK_ALIGN_FILL);
     }
