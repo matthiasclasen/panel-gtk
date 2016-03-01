@@ -123,7 +123,9 @@ pnl_dock_widget_real_close (PnlDockWidget *self)
 }
 
 static cairo_surface_t *
-pnl_dock_widget_snapshot (PnlDockWidget *self)
+pnl_dock_widget_snapshot (PnlDockWidget *self,
+                          gint           device_x,
+                          gint           device_y)
 {
   cairo_surface_t *surface;
   cairo_t *cr;
@@ -156,6 +158,9 @@ pnl_dock_widget_snapshot (PnlDockWidget *self)
 
   surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, alloc.width, alloc.height);
 
+  if (surface == NULL)
+    return NULL;
+
   cr = cairo_create (surface);
 
   if (ratio != 1.0)
@@ -178,6 +183,8 @@ pnl_dock_widget_snapshot (PnlDockWidget *self)
    */
   cairo_destroy (cr);
 
+  cairo_surface_set_device_offset (surface, device_x, device_y);
+
   return surface;
 }
 
@@ -194,6 +201,8 @@ pnl_dock_widget_real_begin_drag (PnlDockWidget *self,
   GtkWidget *other;
   gint self_x;
   gint self_y;
+  gint root_x;
+  gint root_y;
   static const GtkTargetEntry entries[] = {
     { (gchar *)"PNL_DOCK_WIDGET", GTK_TARGET_SAME_APP, 0 },
   };
@@ -211,6 +220,16 @@ pnl_dock_widget_real_begin_drag (PnlDockWidget *self,
                                                   0,
                                                   0);
 
+  gdk_window_get_root_coords (event->any.window, x, y, &root_x, &root_y);
+
+  gdk_drag_motion (drag_context,
+                   NULL,
+                   GDK_DRAG_PROTO_LOCAL,
+                   root_x - x, root_y - y,
+                   GDK_ACTION_MOVE,
+                   GDK_ACTION_MOVE,
+                   GDK_CURRENT_TIME);
+
   gdk_window_get_user_data (event->any.window, (gpointer *)&other);
 
   g_assert (GTK_IS_WIDGET (other));
@@ -219,9 +238,7 @@ pnl_dock_widget_real_begin_drag (PnlDockWidget *self,
                                     GTK_WIDGET (self),
                                     x, y, &self_x, &self_y);
 
-  snapshot = pnl_dock_widget_snapshot (self);
-
-  cairo_surface_set_device_offset (snapshot, -self_x, -self_y);
+  snapshot = pnl_dock_widget_snapshot (self, -self_x, -self_y);
 
   if (snapshot != NULL)
     gtk_drag_set_icon_surface (drag_context, snapshot);
