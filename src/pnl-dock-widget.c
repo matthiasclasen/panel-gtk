@@ -185,8 +185,8 @@ static void
 pnl_dock_widget_real_begin_drag (PnlDockWidget *self,
                                  gint           button,
                                  GdkEvent      *event,
-                                 gint           x,
-                                 gint           y)
+                                 gint           x_root,
+                                 gint           y_root)
 {
   GtkTargetList *target_list = NULL;
   GdkDragContext *drag_context = NULL;
@@ -205,12 +205,13 @@ pnl_dock_widget_real_begin_drag (PnlDockWidget *self,
                                                   GDK_ACTION_MOVE,
                                                   button,
                                                   event,
-                                                  x, y);
+                                                  x_root,
+                                                  y_root);
 
   gdk_drag_motion (drag_context,
                    NULL,
                    GDK_DRAG_PROTO_LOCAL,
-                   x, y,
+                   x_root, y_root,
                    GDK_ACTION_MOVE,
                    GDK_ACTION_MOVE,
                    GDK_CURRENT_TIME);
@@ -609,11 +610,11 @@ void
 pnl_dock_widget_begin_drag (PnlDockWidget *self,
                             gint           button,
                             GdkEvent      *event,
-                            gint           x,
-                            gint           y)
+                            gint           x_root,
+                            gint           y_root)
 {
   g_return_if_fail (PNL_IS_DOCK_WIDGET (self));
   g_return_if_fail (event != NULL);
 
-  g_signal_emit (self, signals [BEGIN_DRAG], 0, button, event, x, y);
+  g_signal_emit (self, signals [BEGIN_DRAG], 0, button, event, x_root, y_root);
 }
