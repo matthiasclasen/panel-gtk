@@ -166,7 +166,7 @@ main (gint   argc,
                            NULL);
   gtk_container_add (GTK_CONTAINER (scroller), GTK_WIDGET (textview));
 
-  button = g_object_new (GTK_TYPE_TOGGLE_BUTTON,
+  button = g_object_new (GTK_TYPE_BUTTON,
                          "visible", TRUE,
                          "label", "Toggle All",
                          NULL);
