@@ -4,4 +4,4 @@ device=local
 runtime=jhbuild
 prefix=/opt/gnome
 default=true
-config-opts=--disable-Werror
+config-opts=--disable-Werror --enable-silent-rules
