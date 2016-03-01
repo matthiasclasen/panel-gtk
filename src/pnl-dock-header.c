@@ -27,6 +27,7 @@ typedef struct
   GtkButton      *close;
   GtkWidget      *custom_title;
   guint           expanded : 1;
+  guint           button_pressed : 1;
   GtkOrientation  orientation : 1;
 } PnlDockHeaderPrivate;
 
@@ -110,10 +111,56 @@ pnl_dock_header_set_expanded (PnlDockHeader *self,
 }
 
 static gboolean
+pnl_dock_header_try_begin_drag (PnlDockHeader  *self,
+                                GdkEventMotion *event)
+{
+  PnlDockHeaderPrivate *priv = pnl_dock_header_get_instance_private (self);
+  GtkWidget *dock_widget;
+
+  g_assert (PNL_IS_DOCK_HEADER (self));
+  g_assert (event != NULL);
+
+  dock_widget = gtk_widget_get_ancestor (GTK_WIDGET (self), PNL_TYPE_DOCK_WIDGET);
+
+  if (dock_widget != NULL)
+    {
+      pnl_dock_widget_begin_drag (PNL_DOCK_WIDGET (dock_widget),
+                                  GDK_BUTTON_PRIMARY,
+                                  (GdkEvent *)event,
+                                  event->x_root,
+                                  event->y_root);
+      priv->button_pressed = FALSE;
+      return TRUE;
+    }
+
+  return FALSE;
+}
+
+static gboolean
+pnl_dock_header_button_press_event (GtkWidget      *widget,
+                                    GdkEventButton *button)
+{
+  PnlDockHeader *self = (PnlDockHeader *)widget;
+  PnlDockHeaderPrivate *priv = pnl_dock_header_get_instance_private (self);
+
+  g_assert (PNL_IS_DOCK_HEADER (self));
+  g_assert (button != NULL);
+
+  if (button->button == GDK_BUTTON_PRIMARY)
+    {
+      priv->button_pressed = TRUE;
+      return GDK_EVENT_STOP;
+    }
+
+  return GDK_EVENT_PROPAGATE;
+}
+
+static gboolean
 pnl_dock_header_button_release_event (GtkWidget      *widget,
                                       GdkEventButton *button)
 {
   PnlDockHeader *self = (PnlDockHeader *)widget;
+  PnlDockHeaderPrivate *priv = pnl_dock_header_get_instance_private (self);
 
   g_assert (PNL_IS_DOCK_HEADER (self));
   g_assert (button != NULL);
@@ -121,6 +168,7 @@ pnl_dock_header_button_release_event (GtkWidget      *widget,
   if (button->button == GDK_BUTTON_PRIMARY)
     {
       pnl_dock_header_set_expanded (self, !pnl_dock_header_get_expanded (self));
+      priv->button_pressed = FALSE;
       return GDK_EVENT_STOP;
     }
 
@@ -151,6 +199,25 @@ pnl_dock_header_leave_notify_event (GtkWidget        *widget,
   g_assert (crossing != NULL);
 
   gtk_widget_unset_state_flags (GTK_WIDGET (self), GTK_STATE_FLAG_PRELIGHT);
+
+  return GDK_EVENT_PROPAGATE;
+}
+
+static gboolean
+pnl_dock_header_motion_notify_event (GtkWidget      *widget,
+                                     GdkEventMotion *motion)
+{
+  PnlDockHeader *self = (PnlDockHeader *)widget;
+  PnlDockHeaderPrivate *priv = pnl_dock_header_get_instance_private (self);
+
+  g_assert (PNL_IS_DOCK_HEADER (self));
+  g_assert (motion != NULL);
+
+  if (priv->button_pressed)
+    {
+      if (pnl_dock_header_try_begin_drag (self, motion))
+        return GDK_EVENT_STOP;
+    }
 
   return GDK_EVENT_PROPAGATE;
 }
@@ -289,9 +356,11 @@ pnl_dock_header_class_init (PnlDockHeaderClass *klass)
   object_class->get_property = pnl_dock_header_get_property;
   object_class->set_property = pnl_dock_header_set_property;
 
+  widget_class->button_press_event = pnl_dock_header_button_press_event;
   widget_class->button_release_event = pnl_dock_header_button_release_event;
   widget_class->enter_notify_event = pnl_dock_header_enter_notify_event;
   widget_class->leave_notify_event = pnl_dock_header_leave_notify_event;
+  widget_class->motion_notify_event = pnl_dock_header_motion_notify_event;
 
   properties [PROP_EXPANDED] =
     g_param_spec_boolean ("expanded",
@@ -335,6 +404,7 @@ pnl_dock_header_init (PnlDockHeader *self)
   gtk_widget_add_events (GTK_WIDGET (self),
                          (GDK_BUTTON_PRESS_MASK |
                           GDK_BUTTON_RELEASE_MASK |
+                          GDK_POINTER_MOTION_MASK |
                           GDK_ENTER_NOTIFY_MASK |
                           GDK_LEAVE_NOTIFY_MASK));
 

@@ -20,6 +20,9 @@
 #include "pnl-dock-widget.h"
 #include "pnl-multi-paned.h"
 
+#define SNAPSHOT_WIDTH 300
+#define SNAPSHOT_HEIGHT 300
+
 typedef struct
 {
   GtkBox        *box;
@@ -42,6 +45,7 @@ enum {
 };
 
 enum {
+  BEGIN_DRAG,
   CLOSE,
   N_SIGNALS
 };
@@ -116,6 +120,90 @@ pnl_dock_widget_real_close (PnlDockWidget *self)
   gtk_widget_destroy (GTK_WIDGET (self));
 
   return TRUE;
+}
+
+static cairo_surface_t *
+pnl_dock_widget_snapshot (PnlDockWidget *self)
+{
+  cairo_surface_t *surface;
+  cairo_t *cr;
+  GtkAllocation alloc;
+
+  g_assert (PNL_IS_DOCK_WIDGET (self));
+
+  if (!gtk_widget_get_realized (GTK_WIDGET (self)) ||
+      !gtk_widget_get_visible (GTK_WIDGET (self)))
+    return NULL;
+
+  gtk_widget_get_allocation (GTK_WIDGET (self), &alloc);
+
+  /* TODO: Scale size we want to render */
+
+  surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, SNAPSHOT_WIDTH, SNAPSHOT_HEIGHT);
+
+  cr = cairo_create (surface);
+
+  /*
+   * Draw the widget clipped to our source surface.
+   */
+  gtk_widget_draw (GTK_WIDGET (self), cr);
+
+  /*
+   * Change the alpha of the destination.
+   */
+  cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
+  cairo_set_source_rgba (cr, 0, 0, 0, 0);
+  cairo_paint_with_alpha (cr, 0.25);
+
+  /*
+   * Cleanup after everything.
+   */
+  cairo_destroy (cr);
+
+  return surface;
+}
+
+static void
+pnl_dock_widget_real_begin_drag (PnlDockWidget *self,
+                                 gint           button,
+                                 GdkEvent      *event,
+                                 gint           x,
+                                 gint           y)
+{
+  GtkTargetList *target_list = NULL;
+  GdkDragContext *drag_context = NULL;
+  cairo_surface_t *snapshot;
+  static const GtkTargetEntry entries[] = {
+    { (gchar *)"PNL_DOCK_WIDGET", GTK_TARGET_SAME_APP, 0 },
+  };
+
+  g_assert (PNL_IS_DOCK_WIDGET (self));
+  g_assert (event != NULL);
+
+  target_list = gtk_target_list_new (entries, G_N_ELEMENTS (entries));
+
+  drag_context = gtk_drag_begin_with_coordinates (GTK_WIDGET (self),
+                                                  target_list,
+                                                  GDK_ACTION_MOVE,
+                                                  button,
+                                                  event,
+                                                  x, y);
+
+  gdk_drag_motion (drag_context,
+                   NULL,
+                   GDK_DRAG_PROTO_LOCAL,
+                   x, y,
+                   GDK_ACTION_MOVE,
+                   GDK_ACTION_MOVE,
+                   GDK_CURRENT_TIME);
+
+  snapshot = pnl_dock_widget_snapshot (self);
+
+  if (snapshot != NULL)
+    gtk_drag_set_icon_surface (drag_context, snapshot);
+
+  g_clear_pointer (&target_list, gtk_target_list_unref);
+  g_clear_pointer (&snapshot, cairo_surface_destroy);
 }
 
 static void
@@ -236,6 +324,7 @@ pnl_dock_widget_class_init (PnlDockWidgetClass *klass)
   container_class->add = pnl_dock_widget_add;
 
   klass->close = pnl_dock_widget_real_close;
+  klass->begin_drag = pnl_dock_widget_real_begin_drag;
 
   properties [PROP_ORIENTATION] =
     g_param_spec_enum ("orientation",
@@ -267,6 +356,14 @@ pnl_dock_widget_class_init (PnlDockWidgetClass *klass)
                          (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
+
+  signals [BEGIN_DRAG] =
+    g_signal_new ("begin-drag",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (PnlDockWidgetClass, begin_drag),
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE, 4, G_TYPE_INT, GDK_TYPE_EVENT, G_TYPE_INT, G_TYPE_INT);
 
   signals [CLOSE] =
     g_signal_new ("close",
@@ -488,4 +585,17 @@ pnl_dock_widget_close (PnlDockWidget *self)
   g_return_if_fail (PNL_IS_DOCK_WIDGET (self));
 
   g_signal_emit (self, signals [CLOSE], 0, &ret);
+}
+
+void
+pnl_dock_widget_begin_drag (PnlDockWidget *self,
+                            gint           button,
+                            GdkEvent      *event,
+                            gint           x,
+                            gint           y)
+{
+  g_return_if_fail (PNL_IS_DOCK_WIDGET (self));
+  g_return_if_fail (event != NULL);
+
+  g_signal_emit (self, signals [BEGIN_DRAG], 0, button, event, x, y);
 }
