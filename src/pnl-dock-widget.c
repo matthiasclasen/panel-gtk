@@ -128,6 +128,7 @@ pnl_dock_widget_snapshot (PnlDockWidget *self)
   cairo_surface_t *surface;
   cairo_t *cr;
   GtkAllocation alloc;
+  gdouble ratio = 1.0;
 
   g_assert (PNL_IS_DOCK_WIDGET (self));
 
@@ -139,9 +140,26 @@ pnl_dock_widget_snapshot (PnlDockWidget *self)
 
   /* TODO: Scale size we want to render */
 
-  surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, SNAPSHOT_WIDTH, SNAPSHOT_HEIGHT);
+  if (alloc.width > SNAPSHOT_WIDTH)
+    {
+      ratio = SNAPSHOT_WIDTH / (gdouble)alloc.width;
+      alloc.width = SNAPSHOT_WIDTH;
+      alloc.height *= ratio;
+    }
+
+  if (alloc.height > SNAPSHOT_HEIGHT)
+    {
+      ratio = SNAPSHOT_HEIGHT / (gdouble)alloc.height;
+      alloc.width *= ratio;
+      alloc.height = SNAPSHOT_HEIGHT;
+    }
+
+  surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, alloc.width, alloc.height);
 
   cr = cairo_create (surface);
+
+  if (ratio != 1.0)
+    cairo_scale (cr, ratio, ratio);
 
   /*
    * Draw the widget clipped to our source surface.
