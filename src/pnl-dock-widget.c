@@ -119,6 +119,47 @@ pnl_dock_widget_real_close (PnlDockWidget *self)
 }
 
 static void
+border_sum (GtkBorder *one,
+            GtkBorder *two)
+{
+  one->top += two->top;
+  one->right += two->right;
+  one->bottom += two->bottom;
+  one->left += two->left;
+}
+
+static gboolean
+pnl_dock_widget_draw (GtkWidget *widget,
+                      cairo_t   *cr)
+{
+  GtkStyleContext *style_context;
+  GtkAllocation alloc;
+  GtkStateFlags state;
+  GtkBorder border;
+  GtkBorder padding;
+
+  g_assert (GTK_IS_WIDGET (widget));
+  g_assert (cr != NULL);
+
+  gtk_widget_get_allocation (widget, &alloc);
+
+  style_context = gtk_widget_get_style_context (widget);
+  state = gtk_style_context_get_state (style_context);
+  gtk_style_context_get_border (style_context, state, &border);
+  gtk_style_context_get_padding (style_context, state, &padding);
+
+  border_sum (&border, &padding);
+
+  gtk_render_background (gtk_widget_get_style_context (widget), cr,
+                         border.left,
+                         border.top,
+                         alloc.width - border.left - border.right,
+                         alloc.height - border.top - border.bottom);
+
+  return GTK_WIDGET_CLASS (pnl_dock_widget_parent_class)->draw (widget, cr);
+}
+
+static void
 pnl_dock_widget_get_property (GObject    *object,
                               guint       prop_id,
                               GValue     *value,
@@ -189,6 +230,8 @@ pnl_dock_widget_class_init (PnlDockWidgetClass *klass)
 
   object_class->get_property = pnl_dock_widget_get_property;
   object_class->set_property = pnl_dock_widget_set_property;
+
+  widget_class->draw = pnl_dock_widget_draw;
 
   container_class->add = pnl_dock_widget_add;
 

@@ -19,6 +19,26 @@ dockedge > dockedgechild > panel {
   border: 1px solid alpha(@borders, 0.4);
 }
 
+dockwidget {
+  background: @theme_bg_color;
+}
+
+dockedge.left > dockedgechild > panel dockwidget {
+  padding-right: 1px;
+}
+
+dockedge.right > dockedgechild > panel dockwidget {
+  padding-left: 1px;
+}
+
+dockedge.top > dockedgechild > panel dockwidget {
+  padding-bottom: 1px;
+}
+
+dockedge.bottom > dockedgechild > panel dockwidget {
+  padding-top: 1px;
+}
+
 dockedge > dockedgechild > panel dockwidget revealer > * {
   padding: 6px;
 }
