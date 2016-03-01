@@ -205,8 +205,8 @@ pnl_dock_widget_real_begin_drag (PnlDockWidget *self,
                                                   GDK_ACTION_MOVE,
                                                   button,
                                                   event,
-                                                  x_root,
-                                                  y_root);
+                                                  0,
+                                                  0);
 
   gdk_drag_motion (drag_context,
                    NULL,
