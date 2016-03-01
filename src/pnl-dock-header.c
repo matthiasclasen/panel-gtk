@@ -34,9 +34,6 @@ typedef struct
   gdouble         button_y;
 } PnlDockHeaderPrivate;
 
-#define X_THRESHOLD 5
-#define Y_THRESHOLD 5
-
 G_DEFINE_TYPE_EXTENDED (PnlDockHeader, pnl_dock_header, GTK_TYPE_EVENT_BOX, 0,
                         G_ADD_PRIVATE (PnlDockHeader)
                         G_IMPLEMENT_INTERFACE (GTK_TYPE_ORIENTABLE, NULL))
@@ -224,8 +221,9 @@ pnl_dock_header_motion_notify_event (GtkWidget      *widget,
   g_assert (motion != NULL);
 
   if (priv->button_pressed &&
-      ((ABS (priv->button_x - motion->x_root) > X_THRESHOLD) ||
-       (ABS (priv->button_y - motion->y_root) > Y_THRESHOLD)))
+      gtk_drag_check_threshold (widget,
+                                priv->button_x, priv->button_y,
+                                motion->x_root, motion->y_root))
     {
       if (pnl_dock_header_try_begin_drag (self, motion))
         return GDK_EVENT_STOP;
