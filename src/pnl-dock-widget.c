@@ -185,12 +185,15 @@ static void
 pnl_dock_widget_real_begin_drag (PnlDockWidget *self,
                                  gint           button,
                                  GdkEvent      *event,
-                                 gint           x_root,
-                                 gint           y_root)
+                                 gint           x,
+                                 gint           y)
 {
   GtkTargetList *target_list = NULL;
   GdkDragContext *drag_context = NULL;
   cairo_surface_t *snapshot;
+  GtkWidget *other;
+  gint self_x;
+  gint self_y;
   static const GtkTargetEntry entries[] = {
     { (gchar *)"PNL_DOCK_WIDGET", GTK_TARGET_SAME_APP, 0 },
   };
@@ -208,15 +211,17 @@ pnl_dock_widget_real_begin_drag (PnlDockWidget *self,
                                                   0,
                                                   0);
 
-  gdk_drag_motion (drag_context,
-                   NULL,
-                   GDK_DRAG_PROTO_LOCAL,
-                   x_root, y_root,
-                   GDK_ACTION_MOVE,
-                   GDK_ACTION_MOVE,
-                   GDK_CURRENT_TIME);
+  gdk_window_get_user_data (event->any.window, (gpointer *)&other);
+
+  g_assert (GTK_IS_WIDGET (other));
+
+  gtk_widget_translate_coordinates (other,
+                                    GTK_WIDGET (self),
+                                    x, y, &self_x, &self_y);
 
   snapshot = pnl_dock_widget_snapshot (self);
+
+  cairo_surface_set_device_offset (snapshot, -self_x, -self_y);
 
   if (snapshot != NULL)
     gtk_drag_set_icon_surface (drag_context, snapshot);
@@ -606,15 +611,30 @@ pnl_dock_widget_close (PnlDockWidget *self)
   g_signal_emit (self, signals [CLOSE], 0, &ret);
 }
 
+/**
+ * pnl_dock_widget_begin_drag:
+ * @self: A #PnlDockWidget
+ * @button: the button that was pressed, usually %GDK_BUTTON_PRIMARY
+ * @event: the event that triggered the drag
+ * @x: the x coordinate where the drag was started
+ * @y: the y coordinate where the drag was started
+ *
+ * This function will initiate a drag of the #PnlDockWidget using the
+ * event to prime the drag operation.
+ *
+ * If you initiate the drag with a #GdkEventMotion, you probably want
+ * to pass the x and y coordinates of the %GDK_BUTTON_PRESS so that
+ * the pointer stays attached to the position where it was initiated.
+ */
 void
 pnl_dock_widget_begin_drag (PnlDockWidget *self,
                             gint           button,
                             GdkEvent      *event,
-                            gint           x_root,
-                            gint           y_root)
+                            gint           x,
+                            gint           y)
 {
   g_return_if_fail (PNL_IS_DOCK_WIDGET (self));
   g_return_if_fail (event != NULL);
 
-  g_signal_emit (self, signals [BEGIN_DRAG], 0, button, event, x_root, y_root);
+  g_signal_emit (self, signals [BEGIN_DRAG], 0, button, event, x, y);
 }

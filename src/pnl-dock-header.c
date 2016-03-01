@@ -130,8 +130,8 @@ pnl_dock_header_try_begin_drag (PnlDockHeader  *self,
       pnl_dock_widget_begin_drag (PNL_DOCK_WIDGET (dock_widget),
                                   GDK_BUTTON_PRIMARY,
                                   (GdkEvent *)event,
-                                  event->x_root,
-                                  event->y_root);
+                                  priv->button_x,
+                                  priv->button_y);
       priv->button_pressed = FALSE;
       return TRUE;
     }
@@ -152,8 +152,8 @@ pnl_dock_header_button_press_event (GtkWidget      *widget,
   if (button->button == GDK_BUTTON_PRIMARY)
     {
       priv->button_pressed = TRUE;
-      priv->button_x = button->x_root;
-      priv->button_y = button->y_root;
+      priv->button_x = button->x;
+      priv->button_y = button->y;
       return GDK_EVENT_STOP;
     }
 

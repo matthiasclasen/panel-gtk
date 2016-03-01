@@ -56,8 +56,8 @@ void         pnl_dock_widget_close                 (PnlDockWidget  *self);
 void         pnl_dock_widget_begin_drag            (PnlDockWidget  *self,
                                                     gint            button,
                                                     GdkEvent       *event,
-                                                    gint            x_root,
-                                                    gint            y_root);
+                                                    gint            x,
+                                                    gint            y);
 
 G_END_DECLS
 
