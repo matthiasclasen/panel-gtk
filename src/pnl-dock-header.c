@@ -223,11 +223,9 @@ pnl_dock_header_motion_notify_event (GtkWidget      *widget,
   if (priv->button_pressed &&
       gtk_drag_check_threshold (widget,
                                 priv->button_x, priv->button_y,
-                                motion->x_root, motion->y_root))
-    {
-      if (pnl_dock_header_try_begin_drag (self, motion))
-        return GDK_EVENT_STOP;
-    }
+                                motion->x_root, motion->y_root) &&
+      pnl_dock_header_try_begin_drag (self, motion))
+    return GDK_EVENT_STOP;
 
   return GDK_EVENT_PROPAGATE;
 }
