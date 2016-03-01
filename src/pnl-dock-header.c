@@ -27,9 +27,15 @@ typedef struct
   GtkButton      *close;
   GtkWidget      *custom_title;
   guint           expanded : 1;
-  guint           button_pressed : 1;
   GtkOrientation  orientation : 1;
+
+  guint           button_pressed : 1;
+  gdouble         button_x;
+  gdouble         button_y;
 } PnlDockHeaderPrivate;
+
+#define X_THRESHOLD 5
+#define Y_THRESHOLD 5
 
 G_DEFINE_TYPE_EXTENDED (PnlDockHeader, pnl_dock_header, GTK_TYPE_EVENT_BOX, 0,
                         G_ADD_PRIVATE (PnlDockHeader)
@@ -149,6 +155,8 @@ pnl_dock_header_button_press_event (GtkWidget      *widget,
   if (button->button == GDK_BUTTON_PRIMARY)
     {
       priv->button_pressed = TRUE;
+      priv->button_x = button->x_root;
+      priv->button_y = button->y_root;
       return GDK_EVENT_STOP;
     }
 
@@ -168,7 +176,9 @@ pnl_dock_header_button_release_event (GtkWidget      *widget,
   if (button->button == GDK_BUTTON_PRIMARY)
     {
       pnl_dock_header_set_expanded (self, !pnl_dock_header_get_expanded (self));
+
       priv->button_pressed = FALSE;
+
       return GDK_EVENT_STOP;
     }
 
@@ -213,7 +223,9 @@ pnl_dock_header_motion_notify_event (GtkWidget      *widget,
   g_assert (PNL_IS_DOCK_HEADER (self));
   g_assert (motion != NULL);
 
-  if (priv->button_pressed)
+  if (priv->button_pressed &&
+      ((ABS (priv->button_x - motion->x_root) > X_THRESHOLD) ||
+       (ABS (priv->button_y - motion->y_root) > Y_THRESHOLD)))
     {
       if (pnl_dock_header_try_begin_drag (self, motion))
         return GDK_EVENT_STOP;
