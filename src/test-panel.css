@@ -45,7 +45,9 @@ dockedge > dockedgechild > panel dockwidget revealer > * {
 
 dockedge > dockedgechild > panel dockheader box {
   padding: 3px;
-  background-color: #fafafa;
+  background: shade(@theme_base_color,1.2);
+  transition-duration: 250ms;
+  transition-timing-function: ease;
 }
 
 dockedge > dockedgechild > panel dockheader.horizontal label {
@@ -57,7 +59,7 @@ dockedge > dockedgechild > panel dockheader.vertical label {
 }
 
 dockedge > dockedgechild > panel dockheader:hover box {
-  background-color: #fefefe;
+  background: mix(@theme_base_color,@theme_bg_color,0.75);
 }
 
 dockedge > dockedgechild > panel dockheader box button {
