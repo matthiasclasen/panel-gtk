@@ -20,6 +20,7 @@
 
 #include "pnl-dock.h"
 #include "pnl-dock-edge.h"
+#include "pnl-dock-private.h"
 
 #define HANDLE_WIDTH  10
 #define HANDLE_HEIGHT 10
@@ -82,6 +83,12 @@ typedef struct
    */
   GtkRequisition min_req;
   GtkRequisition nat_req;
+
+  /*
+   * If we animated in this panel during DnD, we want to restore
+   * it unless we dragged onto this panel.
+   */
+  guint hide_after_dnd : 1;
 } PnlDockChild;
 
 typedef struct
@@ -106,6 +113,14 @@ typedef struct
    * being dragged. This is left, right, top, or bottom only.
    */
   PnlDockChild *drag_child;
+
+  /*
+   * We need to track the position during a DnD request. We can use this
+   * to highlight the area where the drop will occur.
+   */
+  guint in_dnd : 1;
+  gint dnd_drag_x;
+  gint dnd_drag_y;
 } PnlDockPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (PnlDock, pnl_dock, GTK_TYPE_CONTAINER)
@@ -1075,6 +1090,76 @@ pnl_dock_create_pan_gesture (PnlDock *self)
 }
 
 static void
+pnl_dock_drag_enter (PnlDock        *self,
+                     GdkDragContext *drag_context,
+                     gint            x,
+                     gint            y,
+                     guint           time_)
+{
+  g_assert (PNL_IS_DOCK (self));
+  g_assert (GDK_IS_DRAG_CONTEXT (drag_context));
+
+}
+
+static gboolean
+pnl_dock_drag_motion (GtkWidget      *widget,
+                      GdkDragContext *drag_context,
+                      gint            x,
+                      gint            y,
+                      guint           time_)
+{
+  PnlDock *self = (PnlDock *)widget;
+  PnlDockPrivate *priv = pnl_dock_get_instance_private (self);
+
+  g_assert (PNL_IS_DOCK (self));
+  g_assert (GDK_IS_DRAG_CONTEXT (drag_context));
+
+  /*
+   * The purpose of this function is to determine of the location for which
+   * the drag is currently located, is a valid drop site. We first calculate
+   * the locations for the various zones, and then simply determine which
+   * zone we are in (or none).
+   */
+
+  if (priv->dnd_drag_x == -1 && priv->dnd_drag_y == -1)
+    pnl_dock_drag_enter (self, drag_context, x, y, time_);
+
+  priv->dnd_drag_x = x;
+  priv->dnd_drag_y = y;
+
+  return TRUE;
+}
+
+static void
+pnl_dock_drag_leave (GtkWidget      *widget,
+                     GdkDragContext *context,
+                     guint           time_)
+{
+  PnlDock *self = (PnlDock *)widget;
+  PnlDockPrivate *priv = pnl_dock_get_instance_private (self);
+
+  g_assert (PNL_IS_DOCK (self));
+  g_assert (GDK_IS_DRAG_CONTEXT (context));
+
+  priv->dnd_drag_x = -1;
+  priv->dnd_drag_y = -1;
+}
+
+static gboolean
+pnl_dock_draw (GtkWidget *widget,
+               cairo_t   *cr)
+{
+  gboolean ret;
+
+  g_assert (PNL_IS_DOCK (widget));
+  g_assert (cr != NULL);
+
+  ret = GTK_WIDGET_CLASS (pnl_dock_parent_class)->draw (widget, cr);
+
+  return ret;
+}
+
+static void
 pnl_dock_destroy (GtkWidget *widget)
 {
   PnlDock *self = PNL_DOCK (widget);
@@ -1145,6 +1230,9 @@ pnl_dock_class_init (PnlDockClass *klass)
   widget_class->unrealize = pnl_dock_unrealize;
   widget_class->map = pnl_dock_map;
   widget_class->unmap = pnl_dock_unmap;
+  widget_class->drag_motion = pnl_dock_drag_motion;
+  widget_class->drag_leave = pnl_dock_drag_leave;
+  widget_class->draw = pnl_dock_draw;
 
   container_class->add = pnl_dock_add;
   container_class->forall = pnl_dock_forall;
@@ -1209,6 +1297,9 @@ static void
 pnl_dock_init (PnlDock *self)
 {
   PnlDockPrivate *priv = pnl_dock_get_instance_private (self);
+  static GtkTargetEntry drag_entries[] = {
+    { (gchar *)"PNL_DOCK_WIDGET", GTK_TARGET_SAME_APP, 0 },
+  };
   static const GActionEntry entries[] = {
     { "left-visible", NULL, NULL, "false", pnl_dock_visible_action },
     { "right-visible", NULL, NULL, "false", pnl_dock_visible_action },
@@ -1231,6 +1322,15 @@ pnl_dock_init (PnlDock *self)
   pnl_dock_init_child (self, &priv->children [4], PNL_DOCK_CHILD_CENTER);
 
   pnl_dock_create_pan_gesture (self);
+
+  gtk_drag_dest_set (GTK_WIDGET (self),
+                     GTK_DEST_DEFAULT_ALL,
+                     drag_entries,
+                     G_N_ELEMENTS (drag_entries),
+                     GDK_ACTION_MOVE);
+
+  priv->dnd_drag_x = -1;
+  priv->dnd_drag_y = -1;
 }
 
 GtkWidget *
@@ -1320,4 +1420,41 @@ pnl_dock_get_right_edge (PnlDock *self)
   g_assert (PNL_IS_DOCK (self));
 
   return pnl_dock_get_child_typed (self, PNL_DOCK_CHILD_RIGHT)->widget;
+}
+
+void
+_pnl_dock_set_in_dnd (PnlDock  *self,
+                      gboolean  in_dnd)
+{
+  PnlDockPrivate *priv = pnl_dock_get_instance_private (self);
+
+  g_assert (PNL_IS_DOCK (self));
+
+  in_dnd = !!in_dnd;
+
+  if (priv->in_dnd != in_dnd)
+    {
+      guint i;
+
+      priv->in_dnd = in_dnd;
+
+      for (i = 0; i < PNL_DOCK_CHILD_CENTER; i++)
+        {
+          PnlDockChild *child = &priv->children [i];
+
+          if (child->widget == NULL)
+            continue;
+
+          if (in_dnd && !gtk_revealer_get_reveal_child (GTK_REVEALER (child->widget)))
+            {
+              child->hide_after_dnd = TRUE;
+              gtk_revealer_set_reveal_child (GTK_REVEALER (child->widget), TRUE);
+            }
+          else if (!in_dnd && child->hide_after_dnd)
+            {
+              child->hide_after_dnd = FALSE;
+              gtk_revealer_set_reveal_child (GTK_REVEALER (child->widget), FALSE);
+            }
+        }
+    }
 }

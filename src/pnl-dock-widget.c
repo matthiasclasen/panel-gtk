@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "pnl-dock.h"
 #include "pnl-dock-header.h"
+#include "pnl-dock-private.h"
 #include "pnl-dock-widget.h"
 #include "pnl-multi-paned.h"
 
@@ -198,6 +200,7 @@ pnl_dock_widget_real_begin_drag (PnlDockWidget *self,
   GtkTargetList *target_list = NULL;
   GdkDragContext *drag_context = NULL;
   cairo_surface_t *snapshot;
+  GtkWidget *dock;
   GtkWidget *other;
   gint self_x;
   gint self_y;
@@ -243,6 +246,11 @@ pnl_dock_widget_real_begin_drag (PnlDockWidget *self,
   if (snapshot != NULL)
     gtk_drag_set_icon_surface (drag_context, snapshot);
 
+  dock = gtk_widget_get_ancestor (GTK_WIDGET (self), PNL_TYPE_DOCK);
+
+  if (PNL_IS_DOCK (dock))
+    _pnl_dock_set_in_dnd (PNL_DOCK (dock), TRUE);
+
   g_clear_pointer (&target_list, gtk_target_list_unref);
   g_clear_pointer (&snapshot, cairo_surface_destroy);
 }
@@ -286,6 +294,41 @@ pnl_dock_widget_draw (GtkWidget *widget,
                          alloc.height - border.top - border.bottom);
 
   return GTK_WIDGET_CLASS (pnl_dock_widget_parent_class)->draw (widget, cr);
+}
+
+static void
+pnl_dock_widget_drag_end (GtkWidget      *widget,
+                          GdkDragContext *drag_context)
+{
+  PnlDockWidget *self = (PnlDockWidget *)widget;
+  GtkWidget *dock;
+
+  g_assert (PNL_IS_DOCK_WIDGET (self));
+  g_assert (GDK_IS_DRAG_CONTEXT (drag_context));
+
+  dock = gtk_widget_get_ancestor (GTK_WIDGET (self), PNL_TYPE_DOCK);
+
+  if (dock != NULL)
+    _pnl_dock_set_in_dnd (PNL_DOCK (dock), FALSE);
+}
+
+static gboolean
+pnl_dock_widget_drag_failed (GtkWidget      *widget,
+                             GdkDragContext *drag_context,
+                             GtkDragResult   result)
+{
+  PnlDockWidget *self = (PnlDockWidget *)widget;
+  GtkWidget *dock;
+
+  g_assert (PNL_IS_DOCK_WIDGET (self));
+  g_assert (GDK_IS_DRAG_CONTEXT (drag_context));
+
+  dock = gtk_widget_get_ancestor (GTK_WIDGET (self), PNL_TYPE_DOCK);
+
+  if (dock != NULL)
+    _pnl_dock_set_in_dnd (PNL_DOCK (dock), FALSE);
+
+  return GDK_EVENT_PROPAGATE;
 }
 
 static void
@@ -360,6 +403,8 @@ pnl_dock_widget_class_init (PnlDockWidgetClass *klass)
   object_class->get_property = pnl_dock_widget_get_property;
   object_class->set_property = pnl_dock_widget_set_property;
 
+  widget_class->drag_end = pnl_dock_widget_drag_end;
+  widget_class->drag_failed = pnl_dock_widget_drag_failed;
   widget_class->draw = pnl_dock_widget_draw;
 
   container_class->add = pnl_dock_widget_add;
