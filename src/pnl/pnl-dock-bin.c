@@ -1447,7 +1447,7 @@ pnl_dock_bin_init (PnlDockBin *self)
   g_action_map_add_action_entries (G_ACTION_MAP (priv->actions),
                                    entries, G_N_ELEMENTS (entries),
                                    self);
-  gtk_widget_insert_action_group (GTK_WIDGET (self), "dock", G_ACTION_GROUP (priv->actions));
+  gtk_widget_insert_action_group (GTK_WIDGET (self), "dockbin", G_ACTION_GROUP (priv->actions));
 
   pnl_dock_bin_init_child (self, &priv->children [0], PNL_DOCK_BIN_CHILD_LEFT);
   pnl_dock_bin_init_child (self, &priv->children [1], PNL_DOCK_BIN_CHILD_RIGHT);

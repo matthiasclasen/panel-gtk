@@ -4,11 +4,53 @@
     <property name="title">Test Panel</property>
     <property name="default-width">800</property>
     <property name="default-height">600</property>
+    <child type="titlebar">
+      <object class="GtkHeaderBar">
+        <property name="show-close-button">true</property>
+        <property name="visible">true</property>
+        <child>
+          <object class="GtkBox">
+            <property name="visible">true</property>
+            <style>
+              <class name="linked"/>
+            </style>
+            <child>
+              <object class="GtkToggleButton">
+                <property name="action-name">dockbin.left-visible</property>
+                <property name="label">Left</property>
+                <property name="visible">true</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkToggleButton">
+                <property name="action-name">dockbin.right-visible</property>
+                <property name="label">Right</property>
+                <property name="visible">true</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkToggleButton">
+                <property name="action-name">dockbin.top-visible</property>
+                <property name="label">Top</property>
+                <property name="visible">true</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkToggleButton">
+                <property name="action-name">dockbin.bottom-visible</property>
+                <property name="label">Bottom</property>
+                <property name="visible">true</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
     <child>
       <object class="PnlDockOverlay">
         <property name="visible">true</property>
         <child>
-          <object class="PnlDockBin">
+          <object class="PnlDockBin" id="dockbin">
             <property name="visible">true</property>
             <child type="left">
               <object class="PnlDockPaned">

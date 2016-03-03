@@ -6,6 +6,8 @@ main (gint   argc,
 {
   GtkBuilder *builder = NULL;
   GtkWindow *window = NULL;
+  GActionGroup *group;
+  GtkWidget *dockbin;
   GError *error = NULL;
 
   gtk_init (&argc, &argv);
@@ -22,6 +24,10 @@ main (gint   argc,
 
   window = GTK_WINDOW (gtk_builder_get_object (builder, "window"));
   g_signal_connect (window, "delete-event", gtk_main_quit, NULL);
+
+  dockbin = GTK_WIDGET (gtk_builder_get_object (builder, "dockbin"));
+  group = gtk_widget_get_action_group (dockbin, "dockbin");
+  gtk_widget_insert_action_group (GTK_WIDGET (window), "dockbin", group);
 
   gtk_window_present (window);
   gtk_main ();
