@@ -21,13 +21,14 @@
 typedef struct
 {
   PnlDockManager *manager;
+  GtkStack       *stack;
 } PnlDockStackPrivate;
 
 static void pnl_dock_stack_init_dock_group_iface (PnlDockGroupInterface *iface);
 
-G_DEFINE_TYPE_EXTENDED (PnlDockStack, pnl_dock_stack, GTK_TYPE_CONTAINER, 0,
+G_DEFINE_TYPE_EXTENDED (PnlDockStack, pnl_dock_stack, GTK_TYPE_BOX, 0,
                         G_ADD_PRIVATE (PnlDockStack)
-                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_MANAGER,
+                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_GROUP,
                                                pnl_dock_stack_init_dock_group_iface))
 
 enum {
@@ -35,6 +36,18 @@ enum {
   PROP_MANAGER,
   N_PROPS
 };
+
+static void
+pnl_dock_stack_add (GtkContainer *container,
+                    GtkWidget    *widget)
+{
+  PnlDockStack *self = (PnlDockStack *)container;
+  PnlDockStackPrivate *priv = pnl_dock_stack_get_instance_private (self);
+
+  g_assert (PNL_IS_DOCK_STACK (self));
+
+  gtk_container_add (GTK_CONTAINER (priv->stack), widget);
+}
 
 static void
 pnl_dock_stack_finalize (GObject *object)
@@ -90,10 +103,13 @@ pnl_dock_stack_class_init (PnlDockStackClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+  GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
 
   object_class->finalize = pnl_dock_stack_finalize;
   object_class->get_property = pnl_dock_stack_get_property;
   object_class->set_property = pnl_dock_stack_set_property;
+
+  container_class->add = pnl_dock_stack_add;
 
   g_object_class_override_property (object_class, PROP_MANAGER, "manager");
 
@@ -103,6 +119,14 @@ pnl_dock_stack_class_init (PnlDockStackClass *klass)
 static void
 pnl_dock_stack_init (PnlDockStack *self)
 {
+  PnlDockStackPrivate *priv = pnl_dock_stack_get_instance_private (self);
+
+  priv->stack = g_object_new (GTK_TYPE_STACK,
+                              "visible", TRUE,
+                              NULL);
+
+  GTK_CONTAINER_CLASS (pnl_dock_stack_parent_class)->add (GTK_CONTAINER (self),
+                                                          GTK_WIDGET (priv->stack));
 }
 
 GtkWidget *

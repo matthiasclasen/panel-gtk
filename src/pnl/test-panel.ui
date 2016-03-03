@@ -16,8 +16,77 @@
               </object>
             </child>
             <child type="right">
-              <object class="PnlDockPaned">
+              <object class="PnlDockStack">
                 <property name="visible">true</property>
+                <child>
+                  <object class="PnlDockWidget">
+                    <property name="title">Color</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="PnlDockWidget">
+                    <property name="title">Swatches</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child type="right">
+              <object class="PnlDockStack">
+                <property name="visible">true</property>
+                <child>
+                  <object class="PnlDockWidget">
+                    <property name="title">Adjustments</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="PnlDockWidget">
+                    <property name="title">Styles</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child type="right">
+              <object class="PnlDockStack">
+                <property name="visible">true</property>
+                <child>
+                  <object class="PnlDockWidget">
+                    <property name="title">Layers</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="PnlDockWidget">
+                    <property name="title">Channels</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="PnlDockWidget">
+                    <property name="title">Paths</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child type="bottom">
+              <object class="PnlDockStack">
+                <property name="visible">true</property>
+                <child>
+                  <object class="PnlDockWidget">
+                    <property name="title">Mini Bridge</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="PnlDockWidget">
+                    <property name="title">Timeline</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>

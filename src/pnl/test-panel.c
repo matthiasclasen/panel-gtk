@@ -13,6 +13,8 @@ main (gint   argc,
   g_type_ensure (PNL_TYPE_DOCK_BIN);
   g_type_ensure (PNL_TYPE_DOCK_OVERLAY);
   g_type_ensure (PNL_TYPE_DOCK_PANED);
+  g_type_ensure (PNL_TYPE_DOCK_STACK);
+  g_type_ensure (PNL_TYPE_DOCK_WIDGET);
 
   builder = gtk_builder_new ();
   gtk_builder_add_from_file (builder, "test-panel.ui", &error);

@@ -28,12 +28,12 @@ struct _PnlDockBinClass
   GtkContainerClass parent;
 };
 
-GtkWidget *pnl_dock_bin_new             (void);
-GtkWidget *pnl_dock_bin_get_child       (PnlDockBin *self);
-GtkWidget *pnl_dock_bin_get_top_edge    (PnlDockBin   *self);
-GtkWidget *pnl_dock_bin_get_left_edge   (PnlDockBin   *self);
-GtkWidget *pnl_dock_bin_get_bottom_edge (PnlDockBin   *self);
-GtkWidget *pnl_dock_bin_get_right_edge  (PnlDockBin   *self);
+GtkWidget *pnl_dock_bin_new               (void);
+GtkWidget *pnl_dock_bin_get_center_widget (PnlDockBin *self);
+GtkWidget *pnl_dock_bin_get_top_edge      (PnlDockBin   *self);
+GtkWidget *pnl_dock_bin_get_left_edge     (PnlDockBin   *self);
+GtkWidget *pnl_dock_bin_get_bottom_edge   (PnlDockBin   *self);
+GtkWidget *pnl_dock_bin_get_right_edge    (PnlDockBin   *self);
 
 G_END_DECLS
 

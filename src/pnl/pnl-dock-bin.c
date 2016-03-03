@@ -18,9 +18,8 @@
 
 #include <stdlib.h>
 
+#include "pnl-dock-edge.h"
 #include "pnl-dock-bin.h"
-#include "pnl-dock-bin-edge.h"
-#include "pnl-dock-bin-private.h"
 
 #define HANDLE_WIDTH  10
 #define HANDLE_HEIGHT 10
@@ -125,10 +124,13 @@ typedef struct
   gint dnd_drag_y;
 } PnlDockBinPrivate;
 
-static void pnl_dock_bin_init_dock_iface (PnlDockInterface *iface);
+static void pnl_dock_bin_init_buildable_iface (GtkBuildableIface *iface);
+static void pnl_dock_bin_init_dock_iface      (PnlDockInterface *iface);
 
 G_DEFINE_TYPE_EXTENDED (PnlDockBin, pnl_dock_bin, GTK_TYPE_CONTAINER, 0,
                         G_ADD_PRIVATE (PnlDockBin)
+                        G_IMPLEMENT_INTERFACE (GTK_TYPE_BUILDABLE,
+                                               pnl_dock_bin_init_buildable_iface)
                         G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK,
                                                pnl_dock_bin_init_dock_iface))
 
@@ -742,7 +744,7 @@ pnl_dock_bin_size_allocate (GtkWidget     *widget,
 
       if (child->handle != NULL)
         {
-          if (PNL_IS_DOCK_BIN_EDGE (child->widget) &&
+          if (PNL_IS_DOCK_EDGE (child->widget) &&
               gtk_revealer_get_reveal_child (GTK_REVEALER (child->widget)))
             gdk_window_show (child->handle);
           else
@@ -1033,7 +1035,7 @@ pnl_dock_bin_pan_gesture_drag_end (PnlDockBin    *self,
     goto cleanup;
 
   g_assert (priv->drag_child != NULL);
-  g_assert (PNL_IS_DOCK_BIN_EDGE (priv->drag_child->widget));
+  g_assert (PNL_IS_DOCK_EDGE (priv->drag_child->widget));
 
   gtk_widget_get_allocation (priv->drag_child->widget, &child_alloc);
 
@@ -1043,7 +1045,7 @@ pnl_dock_bin_pan_gesture_drag_end (PnlDockBin    *self,
   else
     position = child_alloc.height;
 
-  pnl_dock_bin_edge_set_position (PNL_DOCK_BIN_EDGE (priv->drag_child->widget), position);
+  pnl_dock_edge_set_position (PNL_DOCK_EDGE (priv->drag_child->widget), position);
 
 cleanup:
   if (priv->drag_child != NULL)
@@ -1104,7 +1106,7 @@ pnl_dock_bin_pan_gesture_pan (PnlDockBin      *self,
 
   position = priv->drag_child->drag_offset + priv->drag_child->drag_begin_position;
   if (position >= 0)
-    pnl_dock_bin_edge_set_position (PNL_DOCK_BIN_EDGE (priv->drag_child->widget), position);
+    pnl_dock_edge_set_position (PNL_DOCK_EDGE (priv->drag_child->widget), position);
 }
 
 static void
@@ -1410,7 +1412,7 @@ pnl_dock_bin_init_child (PnlDockBin          *self,
   if (type == PNL_DOCK_BIN_CHILD_CENTER)
     return;
 
-  child->widget = g_object_new (PNL_TYPE_DOCK_BIN_EDGE,
+  child->widget = g_object_new (PNL_TYPE_DOCK_EDGE,
                                 "edge", (GtkPositionType)type,
                                 "reveal-child", FALSE,
                                 "visible", TRUE,
@@ -1472,7 +1474,7 @@ pnl_dock_bin_new (void)
 }
 
 /**
- * pnl_dock_bin_get_child:
+ * pnl_dock_bin_get_center_widget:
  * @self: A #PnlDockBin
  *
  * Gets the center widget for the dock.
@@ -1480,7 +1482,7 @@ pnl_dock_bin_new (void)
  * Returns: (transfer none) (nullable): A #GtkWidget or %NULL.
  */
 GtkWidget *
-pnl_dock_bin_get_child (PnlDockBin *self)
+pnl_dock_bin_get_center_widget (PnlDockBin *self)
 {
   PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
   PnlDockBinChild *child;
@@ -1554,43 +1556,6 @@ pnl_dock_bin_get_right_edge (PnlDockBin *self)
   return pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_RIGHT)->widget;
 }
 
-void
-_pnl_dock_bin_set_in_dnd (PnlDockBin *self,
-                          gboolean    in_dnd)
-{
-  PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
-
-  g_assert (PNL_IS_DOCK_BIN (self));
-
-  in_dnd = !!in_dnd;
-
-  if (priv->in_dnd != in_dnd)
-    {
-      guint i;
-
-      priv->in_dnd = in_dnd;
-
-      for (i = 0; i < PNL_DOCK_BIN_CHILD_CENTER; i++)
-        {
-          PnlDockBinChild *child = &priv->children [i];
-
-          if (child->widget == NULL)
-            continue;
-
-          if (in_dnd && !gtk_revealer_get_reveal_child (GTK_REVEALER (child->widget)))
-            {
-              child->hide_after_dnd = TRUE;
-              gtk_revealer_set_reveal_child (GTK_REVEALER (child->widget), TRUE);
-            }
-          else if (!in_dnd && child->hide_after_dnd)
-            {
-              child->hide_after_dnd = FALSE;
-              gtk_revealer_set_reveal_child (GTK_REVEALER (child->widget), FALSE);
-            }
-        }
-    }
-}
-
 static PnlDockManager *
 pnl_dock_bin_get_manager (PnlDock *dock)
 {
@@ -1632,4 +1597,54 @@ pnl_dock_bin_init_dock_iface (PnlDockInterface *iface)
 {
   iface->get_manager = pnl_dock_bin_get_manager;
   iface->set_manager = pnl_dock_bin_set_manager;
+}
+
+static void
+pnl_dock_bin_add_child (GtkBuildable *buildable,
+                        GtkBuilder   *builder,
+                        GObject      *child,
+                        const gchar  *type)
+{
+  PnlDockBin *self = (PnlDockBin *)buildable;
+  PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
+  PnlDockBinChild *bin_child;
+
+  g_assert (PNL_IS_DOCK_BIN (self));
+  g_assert (GTK_IS_BUILDER (builder));
+  g_assert (G_IS_OBJECT (child));
+
+  if (!GTK_IS_WIDGET (child))
+    {
+      g_warning ("Attempt to add a child of type \"%s\" to a \"%s\"",
+                 G_OBJECT_TYPE_NAME (child), G_OBJECT_TYPE_NAME (self));
+      return;
+    }
+
+  if (g_strcmp0 ("center", type) == 0)
+    {
+      gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (child));
+      return;
+    }
+
+  if (g_strcmp0 ("top", type) == 0)
+    bin_child = &priv->children [PNL_DOCK_BIN_CHILD_TOP];
+  else if (g_strcmp0 ("bottom", type) == 0)
+    bin_child = &priv->children [PNL_DOCK_BIN_CHILD_BOTTOM];
+  else if (g_strcmp0 ("right", type) == 0)
+    bin_child = &priv->children [PNL_DOCK_BIN_CHILD_RIGHT];
+  else
+    bin_child = &priv->children [PNL_DOCK_BIN_CHILD_LEFT];
+
+  if (PNL_IS_DOCK_EDGE (bin_child->widget))
+    {
+      GtkWidget *grandchild = gtk_bin_get_child (GTK_BIN (bin_child->widget));
+
+      gtk_container_add (GTK_CONTAINER (grandchild), GTK_WIDGET (child));
+    }
+}
+
+static void
+pnl_dock_bin_init_buildable_iface (GtkBuildableIface *iface)
+{
+  iface->add_child = pnl_dock_bin_add_child;
 }

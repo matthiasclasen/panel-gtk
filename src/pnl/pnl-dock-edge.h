@@ -1,4 +1,4 @@
-/* pnl-dock-widget.h
+/* pnl-dock-edge.h
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,24 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PNL_DOCK_WIDGET_H
-#define PNL_DOCK_WIDGET_H
+#ifndef PNL_DOCK_EDGE_H
+#define PNL_DOCK_EDGE_H
 
-#include "pnl-dock-types.h"
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
+#define PNL_TYPE_DOCK_EDGE (pnl_dock_edge_get_type())
 
-struct _PnlDockWidgetClass
-{
-  GtkContainerClass parent;
-};
+G_DECLARE_FINAL_TYPE (PnlDockEdge, pnl_dock_edge, PNL, DOCK_EDGE, GtkRevealer)
 
-GtkWidget   *pnl_dock_widget_new       (void);
-const gchar *pnl_dock_widget_get_title (PnlDockWidget *self);
-void         pnl_dock_widget_set_title (PnlDockWidget *self,
-                                        const gchar   *title);
+GtkPositionType pnl_dock_edge_get_edge     (PnlDockEdge     *self);
+void            pnl_dock_edge_set_edge     (PnlDockEdge     *self,
+                                            GtkPositionType  edge);
+gint            pnl_dock_edge_get_position (PnlDockEdge     *self);
+void            pnl_dock_edge_set_position (PnlDockEdge     *self,
+                                            gint             position);
 
 G_END_DECLS
 
-#endif /* PNL_DOCK_WIDGET_H */
+#endif /* PNL_DOCK_EDGE_H */

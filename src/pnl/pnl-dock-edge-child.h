@@ -1,6 +1,6 @@
-/* pnl-dock-widget.h
+/* pnl-dock-edge-child.h
  *
- * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
+ * Copyright (C) 2016 Christian Hergert <christian@hergert.me>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,24 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PNL_DOCK_WIDGET_H
-#define PNL_DOCK_WIDGET_H
+#ifndef PNL_DOCK_EDGE_CHILD_H
+#define PNL_DOCK_EDGE_CHILD_H
 
-#include "pnl-dock-types.h"
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
+#define PNL_TYPE_DOCK_EDGE_CHILD (pnl_dock_edge_child_get_type())
 
-struct _PnlDockWidgetClass
-{
-  GtkContainerClass parent;
-};
+G_DECLARE_FINAL_TYPE (PnlDockEdgeChild, pnl_dock_edge_child, PNL, DOCK_EDGE_CHILD, GtkBin)
 
-GtkWidget   *pnl_dock_widget_new       (void);
-const gchar *pnl_dock_widget_get_title (PnlDockWidget *self);
-void         pnl_dock_widget_set_title (PnlDockWidget *self,
-                                        const gchar   *title);
+gint pnl_dock_edge_child_get_position (PnlDockEdgeChild *self);
+void pnl_dock_edge_child_set_position (PnlDockEdgeChild *self,
+                                       gint              position);
 
 G_END_DECLS
 
-#endif /* PNL_DOCK_WIDGET_H */
+#endif /* PNL_DOCK_EDGE_CHILD_H */

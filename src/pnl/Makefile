@@ -6,6 +6,8 @@ OBJECTS = \
 	pnl-dock-bin.o \
 	pnl-dock-group.o \
 	pnl-dock.o \
+	pnl-dock-edge.o \
+	pnl-dock-edge-child.o \
 	pnl-dock-manager.o \
 	pnl-dock-overlay.o \
 	pnl-dock-paned.o \
