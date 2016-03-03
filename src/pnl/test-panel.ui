@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<interface>
+  <object class="GtkWindow" id="window">
+    <property name="title">Test Panel</property>
+    <property name="default-width">800</property>
+    <property name="default-height">600</property>
+    <child>
+      <object class="PnlDockOverlay">
+        <property name="visible">true</property>
+        <child>
+          <object class="PnlDockBin">
+            <property name="visible">true</property>
+            <child type="left">
+              <object class="PnlDockPaned">
+                <property name="visible">true</property>
+              </object>
+            </child>
+            <child type="right">
+              <object class="PnlDockPaned">
+                <property name="visible">true</property>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
