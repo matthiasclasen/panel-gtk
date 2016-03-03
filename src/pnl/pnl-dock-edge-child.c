@@ -18,7 +18,7 @@
 
 #include "pnl-dock-edge.h"
 #include "pnl-dock-edge-child.h"
-#include "pnl-multi-paned.h"
+#include "pnl-dock-paned.h"
 
 /*
  * This class has a simple purpose. It is to help ease the process of
@@ -56,11 +56,11 @@ pnl_dock_edge_child_add (GtkContainer *container,
 
   prev_child = gtk_bin_get_child (GTK_BIN (self));
 
-  if (!prev_child || !PNL_IS_MULTI_PANED (prev_child))
+  if (!prev_child || !PNL_IS_DOCK_PANED (prev_child))
     {
       GtkWidget *paned;
 
-      paned = g_object_new (PNL_TYPE_MULTI_PANED,
+      paned = g_object_new (PNL_TYPE_DOCK_PANED,
                             "orientation", GTK_ORIENTATION_VERTICAL, // FIXME
                              "visible", TRUE,
                              NULL);
