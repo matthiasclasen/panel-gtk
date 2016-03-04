@@ -1,4 +1,4 @@
-/* pnl-dock-widget.h
+/* pnl-tab-strip.h
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,23 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PNL_DOCK_WIDGET_H
-#define PNL_DOCK_WIDGET_H
+#ifndef PNL_TAB_STRIP_H
+#define PNL_TAB_STRIP_H
 
-#include "pnl-dock-types.h"
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
-struct _PnlDockWidgetClass
+#define PNL_TYPE_TAB_STRIP (pnl_tab_strip_get_type())
+
+G_DECLARE_DERIVABLE_TYPE (PnlTabStrip, pnl_tab_strip, PNL, TAB_STRIP, GtkBox)
+
+struct _PnlTabStripClass
 {
   GtkBoxClass parent;
 };
 
-GtkWidget   *pnl_dock_widget_new       (void);
-const gchar *pnl_dock_widget_get_title (PnlDockWidget *self);
-void         pnl_dock_widget_set_title (PnlDockWidget *self,
-                                        const gchar   *title);
+GtkWidget *pnl_tab_strip_new       (void);
+GtkStack  *pnl_tab_strip_get_stack (PnlTabStrip *self);
+void       pnl_tab_strip_set_stack (PnlTabStrip *self,
+                                    GtkStack    *stack);
 
 G_END_DECLS
 
-#endif /* PNL_DOCK_WIDGET_H */
+#endif /* PNL_TAB_STRIP_H */

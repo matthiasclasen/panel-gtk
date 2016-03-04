@@ -8,6 +8,7 @@ main (gint   argc,
   GtkWindow *window = NULL;
   GActionGroup *group;
   GtkWidget *dockbin;
+  GtkCssProvider *provider;
   GError *error = NULL;
 
   gtk_init (&argc, &argv);
@@ -17,6 +18,13 @@ main (gint   argc,
   g_type_ensure (PNL_TYPE_DOCK_PANED);
   g_type_ensure (PNL_TYPE_DOCK_STACK);
   g_type_ensure (PNL_TYPE_DOCK_WIDGET);
+
+  provider = gtk_css_provider_new ();
+  gtk_css_provider_load_from_path (provider, "test-panel.css", &error);
+  g_assert_no_error (error);
+  gtk_style_context_add_provider_for_screen (gdk_screen_get_default (),
+                                             GTK_STYLE_PROVIDER (provider),
+                                             GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
   builder = gtk_builder_new ();
   gtk_builder_add_from_file (builder, "test-panel.ui", &error);

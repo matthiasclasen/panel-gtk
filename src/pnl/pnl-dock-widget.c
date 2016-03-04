@@ -23,7 +23,7 @@ typedef struct
   gchar *title;
 } PnlDockWidgetPrivate;
 
-G_DEFINE_TYPE_WITH_PRIVATE (PnlDockWidget, pnl_dock_widget, GTK_TYPE_CONTAINER)
+G_DEFINE_TYPE_WITH_PRIVATE (PnlDockWidget, pnl_dock_widget, GTK_TYPE_BOX)
 
 enum {
   PROP_0,

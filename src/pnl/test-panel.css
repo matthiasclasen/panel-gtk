@@ -1,0 +1,43 @@
+dockedgechild {
+  background: #525252;
+  color: #e4e4e4;
+}
+
+dockbin {
+ background: #282828;
+}
+
+tabstrip {
+  background: #3a3a3a;
+  box-shadow: 0  1px 0 #282828 inset,
+              0 -1px 0 #4d4d4d inset;
+}
+
+tab {
+  background: transparent;
+  border: 1px solid transparent;
+  margin-top: 1px;
+  transition-duration: 150ms;
+}
+
+tab:first-child {
+  margin-left: 1px;
+}
+
+tab:last-child {
+  margin-right: 1px;
+}
+
+tab:checked {
+  background-image: linear-gradient(#555555, #525252);
+  border-left: 1px solid #292826;
+  border-right: 1px solid #292826;
+  border-top: 1px solid #676767;
+  border-bottom: 1px solid #525252;
+}
+
+tab label {
+  padding: 4px 7px 4px 7px;
+  font-weight: bold;
+  font-size: 8px;
+}

@@ -17,11 +17,14 @@
  */
 
 #include "pnl-dock-stack.h"
+#include "pnl-dock-widget.h"
+#include "pnl-tab-strip.h"
 
 typedef struct
 {
   PnlDockManager *manager;
   GtkStack       *stack;
+  PnlTabStrip    *tab_strip;
 } PnlDockStackPrivate;
 
 static void pnl_dock_stack_init_dock_group_iface (PnlDockGroupInterface *iface);
@@ -43,10 +46,16 @@ pnl_dock_stack_add (GtkContainer *container,
 {
   PnlDockStack *self = (PnlDockStack *)container;
   PnlDockStackPrivate *priv = pnl_dock_stack_get_instance_private (self);
+  const gchar *title = NULL;
 
   g_assert (PNL_IS_DOCK_STACK (self));
 
-  gtk_container_add (GTK_CONTAINER (priv->stack), widget);
+  if (PNL_IS_DOCK_WIDGET (widget))
+    title = pnl_dock_widget_get_title (PNL_DOCK_WIDGET (widget));
+
+  gtk_container_add_with_properties (GTK_CONTAINER (priv->stack), widget,
+                                     "title", title,
+                                     NULL);
 }
 
 static void
@@ -121,10 +130,20 @@ pnl_dock_stack_init (PnlDockStack *self)
 {
   PnlDockStackPrivate *priv = pnl_dock_stack_get_instance_private (self);
 
+  gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_VERTICAL);
+
   priv->stack = g_object_new (GTK_TYPE_STACK,
+                              "homogeneous", FALSE,
                               "visible", TRUE,
                               NULL);
 
+  priv->tab_strip = g_object_new (PNL_TYPE_TAB_STRIP,
+                                  "stack", priv->stack,
+                                  "visible", TRUE,
+                                  NULL);
+
+  GTK_CONTAINER_CLASS (pnl_dock_stack_parent_class)->add (GTK_CONTAINER (self),
+                                                          GTK_WIDGET (priv->tab_strip));
   GTK_CONTAINER_CLASS (pnl_dock_stack_parent_class)->add (GTK_CONTAINER (self),
                                                           GTK_WIDGET (priv->stack));
 }

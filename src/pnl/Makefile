@@ -15,6 +15,8 @@ OBJECTS = \
 	pnl-dock-widget.o \
 	pnl-dock-window.o \
 	pnl-multi-paned.o \
+	pnl-tab.o \
+	pnl-tab-strip.o \
 	$(NULL)
 
 %.o: %.c %.h

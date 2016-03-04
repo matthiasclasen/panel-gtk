@@ -42,7 +42,7 @@ G_DECLARE_DERIVABLE_TYPE (PnlDockManager, pnl_dock_manager, PNL, DOCK_MANAGER, G
 G_DECLARE_DERIVABLE_TYPE (PnlDockOverlay, pnl_dock_overlay, PNL, DOCK_OVERLAY, GtkOverlay)
 G_DECLARE_DERIVABLE_TYPE (PnlDockPaned,   pnl_dock_paned,   PNL, DOCK_PANED,   PnlMultiPaned)
 G_DECLARE_DERIVABLE_TYPE (PnlDockStack,   pnl_dock_stack,   PNL, DOCK_STACK,   GtkBox)
-G_DECLARE_DERIVABLE_TYPE (PnlDockWidget,  pnl_dock_widget,  PNL, DOCK_WIDGET,  GtkContainer)
+G_DECLARE_DERIVABLE_TYPE (PnlDockWidget,  pnl_dock_widget,  PNL, DOCK_WIDGET,  GtkBox)
 G_DECLARE_DERIVABLE_TYPE (PnlDockWindow,  pnl_dock_window,  PNL, DOCK_WINDOW,  GtkWindow)
 
 G_END_DECLS

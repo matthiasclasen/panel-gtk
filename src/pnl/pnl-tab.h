@@ -1,4 +1,4 @@
-/* pnl-dock-widget.h
+/* pnl-tab.h
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,23 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PNL_DOCK_WIDGET_H
-#define PNL_DOCK_WIDGET_H
+#ifndef PNL_TAB_H
+#define PNL_TAB_H
 
-#include "pnl-dock-types.h"
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
-struct _PnlDockWidgetClass
-{
-  GtkBoxClass parent;
-};
+#define PNL_TYPE_TAB (pnl_tab_get_type())
 
-GtkWidget   *pnl_dock_widget_new       (void);
-const gchar *pnl_dock_widget_get_title (PnlDockWidget *self);
-void         pnl_dock_widget_set_title (PnlDockWidget *self,
-                                        const gchar   *title);
+G_DECLARE_FINAL_TYPE (PnlTab, pnl_tab, PNL, TAB, GtkToggleButton)
+
+const gchar *pnl_tab_get_title (PnlTab      *self);
+void         pnl_tab_set_title (PnlTab      *self,
+                                const gchar *title);
 
 G_END_DECLS
 
-#endif /* PNL_DOCK_WIDGET_H */
+#endif /* PNL_TAB_H */

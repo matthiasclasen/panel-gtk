@@ -1201,49 +1201,47 @@ pnl_dock_bin_drag_leave (GtkWidget      *widget,
   priv->dnd_drag_y = -1;
 }
 
+static void
+border_sum (GtkBorder *one,
+            GtkBorder *two)
+{
+  one->top += two->top;
+  one->right += two->right;
+  one->bottom += two->bottom;
+  one->left += two->left;
+}
+
 static gboolean
 pnl_dock_bin_draw (GtkWidget *widget,
                    cairo_t   *cr)
 {
   PnlDockBin *self = (PnlDockBin *)widget;
   PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
-  gboolean ret;
+  GtkStyleContext *style_context;
+  GtkStateFlags state;
+  GtkAllocation alloc;
+  GtkBorder border;
+  GtkBorder padding;
 
   g_assert (PNL_IS_DOCK_BIN (widget));
   g_assert (cr != NULL);
 
-  ret = GTK_WIDGET_CLASS (pnl_dock_bin_parent_class)->draw (widget, cr);
+  gtk_widget_get_allocation (widget, &alloc);
 
-  if (priv->in_dnd && priv->dnd_drag_x != -1 && priv->dnd_drag_y != -1)
-    {
-      PnlDockBinChild *child;
+  style_context = gtk_widget_get_style_context (widget);
+  state = gtk_style_context_get_state (style_context);
+  gtk_style_context_get_border (style_context, state, &border);
+  gtk_style_context_get_padding (style_context, state, &padding);
 
-      child = pnl_dock_bin_get_child_at_coordinates (self,
-                                                 priv->dnd_drag_x,
-                                                 priv->dnd_drag_y);
+  border_sum (&border, &padding);
 
-      if (child != NULL)
-        {
-          GtkAllocation alloc;
-          GtkAllocation our_alloc;
+  gtk_render_background (gtk_widget_get_style_context (widget), cr,
+                         border.left,
+                         border.top,
+                         alloc.width - border.left - border.right,
+                         alloc.height - border.top - border.bottom);
 
-          g_assert (GTK_IS_WIDGET (child->widget));
-
-          gtk_widget_get_allocation (GTK_WIDGET (self), &our_alloc);
-          gtk_widget_get_allocation (child->widget, &alloc);
-
-          alloc.x -= our_alloc.x;
-          alloc.y -= our_alloc.y;
-
-          cairo_save (cr);
-          gdk_cairo_rectangle (cr, &alloc);
-          cairo_set_source_rgba (cr, 0, 0, 0, 0.2);
-          cairo_fill (cr);
-          cairo_restore (cr);
-        }
-    }
-
-  return ret;
+  return GTK_WIDGET_CLASS (pnl_dock_bin_parent_class)->draw (widget, cr);
 }
 
 static void
@@ -1627,13 +1625,13 @@ pnl_dock_bin_add_child (GtkBuildable *buildable,
     }
 
   if (g_strcmp0 ("top", type) == 0)
-    bin_child = &priv->children [PNL_DOCK_BIN_CHILD_TOP];
+    bin_child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_TOP);
   else if (g_strcmp0 ("bottom", type) == 0)
-    bin_child = &priv->children [PNL_DOCK_BIN_CHILD_BOTTOM];
+    bin_child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_BOTTOM);
   else if (g_strcmp0 ("right", type) == 0)
-    bin_child = &priv->children [PNL_DOCK_BIN_CHILD_RIGHT];
+    bin_child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_RIGHT);
   else
-    bin_child = &priv->children [PNL_DOCK_BIN_CHILD_LEFT];
+    bin_child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_LEFT);
 
   if (PNL_IS_DOCK_EDGE (bin_child->widget))
     {
