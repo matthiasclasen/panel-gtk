@@ -1,5 +1,5 @@
 dockedgechild {
-  background: #525252;
+  background: #4d4d4d;
   color: #e4e4e4;
 }
 
@@ -40,4 +40,8 @@ tab label {
   padding: 4px 7px 4px 7px;
   font-weight: bold;
   font-size: 8px;
+}
+
+dockedgechild list {
+  background: #4d4d4d;
 }

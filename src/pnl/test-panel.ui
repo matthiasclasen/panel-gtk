@@ -93,6 +93,13 @@
                   <object class="PnlDockWidget">
                     <property name="title">Adjustments</property>
                     <property name="visible">true</property>
+                    <child>
+                      <object class="GtkListBox">
+                        <property name="hexpand">true</property>
+                        <property name="height-request">100</property>
+                        <property name="visible">true</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
@@ -110,6 +117,13 @@
                   <object class="PnlDockWidget">
                     <property name="title">Layers</property>
                     <property name="visible">true</property>
+                    <child>
+                      <object class="GtkListBox">
+                        <property name="hexpand">true</property>
+                        <property name="height-request">100</property>
+                        <property name="visible">true</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
@@ -133,11 +147,53 @@
                   <object class="PnlDockWidget">
                     <property name="title">Mini Bridge</property>
                     <property name="visible">true</property>
+                    <child>
+                      <object class="GtkListBox">
+                        <property name="hexpand">true</property>
+                        <property name="height-request">100</property>
+                        <property name="visible">true</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>
                   <object class="PnlDockWidget">
                     <property name="title">Timeline</property>
+                    <property name="visible">true</property>
+                    <child>
+                      <object class="GtkListBox">
+                        <property name="hexpand">true</property>
+                        <property name="height-request">100</property>
+                        <property name="visible">true</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child type="left">
+              <object class="PnlDockStack">
+                <property name="visible">true</property>
+                <child>
+                  <object class="PnlDockWidget">
+                    <property name="title">Files</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="PnlDockWidget">
+                    <property name="title">Targets</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child type="left">
+              <object class="PnlDockStack">
+                <property name="visible">true</property>
+                <child>
+                  <object class="PnlDockWidget">
+                    <property name="title">Documentation</property>
                     <property name="visible">true</property>
                   </object>
                 </child>
