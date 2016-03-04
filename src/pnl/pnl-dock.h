@@ -26,15 +26,7 @@ G_BEGIN_DECLS
 struct _PnlDockInterface
 {
   GTypeInterface parent;
-
-  PnlDockManager *(*get_manager) (PnlDock        *self);
-  void            (*set_manager) (PnlDock        *self,
-                                  PnlDockManager *manager);
 };
-
-PnlDockManager *pnl_dock_get_manager (PnlDock        *self);
-void            pnl_dock_set_manager (PnlDock        *self,
-                                      PnlDockManager *manager);
 
 G_END_DECLS
 

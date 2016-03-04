@@ -27,7 +27,8 @@ G_BEGIN_DECLS
 
 #define PNL_TYPE_DOCK         (pnl_dock_get_type ())
 #define PNL_TYPE_DOCK_BIN     (pnl_dock_bin_get_type())
-#define PNL_TYPE_DOCK_GROUP   (pnl_dock_group_get_type ())
+#define PNL_TYPE_DOCK_GROUP   (pnl_dock_group_get_type())
+#define PNL_TYPE_DOCK_ITEM    (pnl_dock_item_get_type())
 #define PNL_TYPE_DOCK_MANAGER (pnl_dock_manager_get_type())
 #define PNL_TYPE_DOCK_OVERLAY (pnl_dock_overlay_get_type())
 #define PNL_TYPE_DOCK_PANED   (pnl_dock_paned_get_type())
@@ -38,6 +39,7 @@ G_BEGIN_DECLS
 G_DECLARE_INTERFACE      (PnlDock,        pnl_dock,         PNL, DOCK,         GtkContainer)
 G_DECLARE_DERIVABLE_TYPE (PnlDockBin,     pnl_dock_bin,     PNL, DOCK_BIN,     GtkContainer)
 G_DECLARE_INTERFACE      (PnlDockGroup,   pnl_dock_group,   PNL, DOCK_GROUP,   GtkContainer)
+G_DECLARE_INTERFACE      (PnlDockItem,    pnl_dock_item,    PNL, DOCK_ITEM,    GtkWidget)
 G_DECLARE_DERIVABLE_TYPE (PnlDockManager, pnl_dock_manager, PNL, DOCK_MANAGER, GObject)
 G_DECLARE_DERIVABLE_TYPE (PnlDockOverlay, pnl_dock_overlay, PNL, DOCK_OVERLAY, GtkOverlay)
 G_DECLARE_DERIVABLE_TYPE (PnlDockPaned,   pnl_dock_paned,   PNL, DOCK_PANED,   PnlMultiPaned)

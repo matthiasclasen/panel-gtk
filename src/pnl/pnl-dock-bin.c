@@ -18,8 +18,9 @@
 
 #include <stdlib.h>
 
-#include "pnl-dock-edge.h"
 #include "pnl-dock-bin.h"
+#include "pnl-dock-edge.h"
+#include "pnl-dock-item.h"
 
 #define HANDLE_WIDTH  10
 #define HANDLE_HEIGHT 10
@@ -92,8 +93,6 @@ typedef struct
 
 typedef struct
 {
-  PnlDockManager *manager;
-
   /*
    * All of our dock children, including edges and center child.
    */
@@ -131,6 +130,7 @@ G_DEFINE_TYPE_EXTENDED (PnlDockBin, pnl_dock_bin, GTK_TYPE_CONTAINER, 0,
                         G_ADD_PRIVATE (PnlDockBin)
                         G_IMPLEMENT_INTERFACE (GTK_TYPE_BUILDABLE,
                                                pnl_dock_bin_init_buildable_iface)
+                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM, NULL)
                         G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK,
                                                pnl_dock_bin_init_dock_iface))
 
@@ -289,6 +289,14 @@ pnl_dock_bin_add (GtkContainer *container,
                  G_OBJECT_TYPE_NAME (widget),
                  G_OBJECT_TYPE_NAME (self),
                  G_OBJECT_TYPE_NAME (child->widget));
+      return;
+    }
+
+  if (PNL_IS_DOCK_ITEM (widget) &&
+      !pnl_dock_item_adopt (PNL_DOCK_ITEM (self), PNL_DOCK_ITEM (widget)))
+    {
+      g_warning ("Child of type %s has a different PnlDockManager than %s",
+                 G_OBJECT_TYPE_NAME (widget), G_OBJECT_TYPE_NAME (self));
       return;
     }
 
@@ -1252,7 +1260,6 @@ pnl_dock_bin_destroy (GtkWidget *widget)
 
   g_clear_object (&priv->actions);
   g_clear_object (&priv->pan_gesture);
-  g_clear_object (&priv->manager);
 
   GTK_WIDGET_CLASS (pnl_dock_bin_parent_class)->destroy (widget);
 }
@@ -1313,7 +1320,7 @@ pnl_dock_bin_get_property (GObject    *object,
   switch (prop_id)
     {
     case PROP_MANAGER:
-      g_value_set_object (value, pnl_dock_get_manager (PNL_DOCK (self)));
+      g_value_set_object (value, pnl_dock_item_get_manager (PNL_DOCK_ITEM (self)));
       break;
 
     default:
@@ -1332,7 +1339,7 @@ pnl_dock_bin_set_property (GObject      *object,
   switch (prop_id)
     {
     case PROP_MANAGER:
-      pnl_dock_set_manager (PNL_DOCK (self), g_value_get_object (value));
+      pnl_dock_item_set_manager (PNL_DOCK_ITEM (self), g_value_get_object (value));
       break;
 
     default:
@@ -1554,47 +1561,9 @@ pnl_dock_bin_get_right_edge (PnlDockBin *self)
   return pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_RIGHT)->widget;
 }
 
-static PnlDockManager *
-pnl_dock_bin_get_manager (PnlDock *dock)
-{
-  PnlDockBin *self = (PnlDockBin *)dock;
-  PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
-
-  g_assert (PNL_IS_DOCK_BIN (self));
-
-  return priv->manager;
-}
-
-static void
-pnl_dock_bin_set_manager (PnlDock        *dock,
-                          PnlDockManager *manager)
-{
-  PnlDockBin *self = (PnlDockBin *)dock;
-  PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
-
-  g_assert (PNL_IS_DOCK_BIN (self));
-  g_assert (!manager || PNL_IS_DOCK_MANAGER (manager));
-
-  if (priv->manager != manager)
-    {
-      if (priv->manager != NULL)
-        {
-          /* TODO: Ask old manager to adopt children */
-          g_clear_object (&priv->manager);
-        }
-
-      if (manager != NULL)
-        priv->manager = g_object_ref (manager);
-
-      g_object_notify (G_OBJECT (self), "manager");
-    }
-}
-
 static void
 pnl_dock_bin_init_dock_iface (PnlDockInterface *iface)
 {
-  iface->get_manager = pnl_dock_bin_get_manager;
-  iface->set_manager = pnl_dock_bin_set_manager;
 }
 
 static void
@@ -1614,6 +1583,14 @@ pnl_dock_bin_add_child (GtkBuildable *buildable,
   if (!GTK_IS_WIDGET (child))
     {
       g_warning ("Attempt to add a child of type \"%s\" to a \"%s\"",
+                 G_OBJECT_TYPE_NAME (child), G_OBJECT_TYPE_NAME (self));
+      return;
+    }
+
+  if (PNL_IS_DOCK_ITEM (child) &&
+      !pnl_dock_item_adopt (PNL_DOCK_ITEM (self), PNL_DOCK_ITEM (child)))
+    {
+      g_warning ("Child of type %s has a different PnlDockManager than %s",
                  G_OBJECT_TYPE_NAME (child), G_OBJECT_TYPE_NAME (self));
       return;
     }

@@ -16,17 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "pnl-dock-item.h"
 #include "pnl-dock-window.h"
 
 typedef struct
 {
-  PnlDockManager *manager;
+  void *foo;
 } PnlDockWindowPrivate;
 
 static void pnl_dock_window_init_dock_iface (PnlDockInterface *iface);
 
 G_DEFINE_TYPE_EXTENDED (PnlDockWindow, pnl_dock_window, GTK_TYPE_WINDOW, 0,
                         G_ADD_PRIVATE (PnlDockWindow)
+                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM, NULL)
                         G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK, pnl_dock_window_init_dock_iface))
 
 enum {
@@ -38,11 +40,6 @@ enum {
 static void
 pnl_dock_window_finalize (GObject *object)
 {
-  PnlDockWindow *self = (PnlDockWindow *)object;
-  PnlDockWindowPrivate *priv = pnl_dock_window_get_instance_private (self);
-
-  g_clear_object (&priv->manager);
-
   G_OBJECT_CLASS (pnl_dock_window_parent_class)->finalize (object);
 }
 
@@ -57,7 +54,7 @@ pnl_dock_window_get_property (GObject    *object,
   switch (prop_id)
     {
     case PROP_MANAGER:
-      g_value_set_object (value, pnl_dock_get_manager (PNL_DOCK (self)));
+      g_value_set_object (value, pnl_dock_item_get_manager (PNL_DOCK_ITEM (self)));
       break;
 
     default:
@@ -76,7 +73,7 @@ pnl_dock_window_set_property (GObject      *object,
   switch (prop_id)
     {
     case PROP_MANAGER:
-      pnl_dock_set_manager (PNL_DOCK (self), g_value_get_object (value));
+      pnl_dock_item_set_manager (PNL_DOCK_ITEM (self), g_value_get_object (value));
       break;
 
     default:
@@ -110,45 +107,7 @@ pnl_dock_window_new (void)
   return g_object_new (PNL_TYPE_DOCK_WINDOW, NULL);
 }
 
-static PnlDockManager *
-pnl_dock_window_get_manager (PnlDock *dock)
-{
-  PnlDockWindow *self = (PnlDockWindow *)dock;
-  PnlDockWindowPrivate *priv = pnl_dock_window_get_instance_private (self);
-
-  g_assert (PNL_IS_DOCK_WINDOW (self));
-
-  return priv->manager;
-}
-
-static void
-pnl_dock_window_set_manager (PnlDock        *dock,
-                             PnlDockManager *manager)
-{
-  PnlDockWindow *self = (PnlDockWindow *)dock;
-  PnlDockWindowPrivate *priv = pnl_dock_window_get_instance_private (self);
-
-  g_assert (PNL_IS_DOCK (self));
-  g_assert (!manager || PNL_IS_DOCK_MANAGER (manager));
-
-  if (priv->manager != manager)
-    {
-      if (priv->manager)
-        {
-          /* todo: ask manager to adopt children */
-          g_clear_object (&priv->manager);
-        }
-
-      if (manager)
-        priv->manager = g_object_ref (manager);
-
-      g_object_notify (G_OBJECT (self), "manager");
-    }
-}
-
 static void
 pnl_dock_window_init_dock_iface (PnlDockInterface *iface)
 {
-  iface->get_manager = pnl_dock_window_get_manager;
-  iface->set_manager = pnl_dock_window_set_manager;
 }

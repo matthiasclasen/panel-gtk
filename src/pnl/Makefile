@@ -5,6 +5,7 @@ PKGS = gtk+-3.0
 OBJECTS = \
 	pnl-dock-bin.o \
 	pnl-dock-group.o \
+	pnl-dock-item.o \
 	pnl-dock.o \
 	pnl-dock-edge.o \
 	pnl-dock-edge-child.o \

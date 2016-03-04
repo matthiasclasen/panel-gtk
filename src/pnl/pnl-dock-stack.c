@@ -22,7 +22,6 @@
 
 typedef struct
 {
-  PnlDockManager *manager;
   GtkStack       *stack;
   PnlTabStrip    *tab_strip;
 } PnlDockStackPrivate;
@@ -36,7 +35,6 @@ G_DEFINE_TYPE_EXTENDED (PnlDockStack, pnl_dock_stack, GTK_TYPE_BOX, 0,
 
 enum {
   PROP_0,
-  PROP_MANAGER,
   N_PROPS
 };
 
@@ -64,8 +62,6 @@ pnl_dock_stack_finalize (GObject *object)
   PnlDockStack *self = (PnlDockStack *)object;
   PnlDockStackPrivate *priv = pnl_dock_stack_get_instance_private (self);
 
-  g_clear_object (&priv->manager);
-
   G_OBJECT_CLASS (pnl_dock_stack_parent_class)->finalize (object);
 }
 
@@ -79,10 +75,6 @@ pnl_dock_stack_get_property (GObject    *object,
 
   switch (prop_id)
     {
-    case PROP_MANAGER:
-      g_value_set_object (value, pnl_dock_group_get_manager (PNL_DOCK_GROUP (self)));
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -98,10 +90,6 @@ pnl_dock_stack_set_property (GObject      *object,
 
   switch (prop_id)
     {
-    case PROP_MANAGER:
-      pnl_dock_group_set_manager (PNL_DOCK_GROUP (self), g_value_get_object (value));
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -119,8 +107,6 @@ pnl_dock_stack_class_init (PnlDockStackClass *klass)
   object_class->set_property = pnl_dock_stack_set_property;
 
   container_class->add = pnl_dock_stack_add;
-
-  g_object_class_override_property (object_class, PROP_MANAGER, "manager");
 
   gtk_widget_class_set_css_name (widget_class, "dockstack");
 }
@@ -154,45 +140,7 @@ pnl_dock_stack_new (void)
   return g_object_new (PNL_TYPE_DOCK_STACK, NULL);
 }
 
-static PnlDockManager *
-pnl_dock_stack_get_manager (PnlDockGroup *group)
-{
-  PnlDockStack *self = (PnlDockStack *)group;
-  PnlDockStackPrivate *priv = pnl_dock_stack_get_instance_private (self);
-
-  g_return_val_if_fail (PNL_IS_DOCK_STACK (self), NULL);
-
-  return priv->manager;
-}
-
-static void
-pnl_dock_stack_set_manager (PnlDockGroup   *group,
-                            PnlDockManager *manager)
-{
-  PnlDockStack *self = (PnlDockStack *)group;
-  PnlDockStackPrivate *priv = pnl_dock_stack_get_instance_private (self);
-
-  g_return_if_fail (PNL_IS_DOCK_STACK (self));
-  g_return_if_fail (!manager || PNL_IS_DOCK_MANAGER (manager));
-
-  if (manager != priv->manager)
-    {
-      if (priv->manager)
-        {
-          /* todo: ask manager to adopt children */
-          g_clear_object (&priv->manager);
-        }
-
-      if (manager)
-        priv->manager = g_object_ref (manager);
-
-      g_object_notify (G_OBJECT (self), "manager");
-    }
-}
-
 static void
 pnl_dock_stack_init_dock_group_iface (PnlDockGroupInterface *iface)
 {
-  iface->get_manager = pnl_dock_stack_get_manager;
-  iface->set_manager = pnl_dock_stack_set_manager;
 }

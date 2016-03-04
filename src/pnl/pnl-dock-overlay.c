@@ -16,17 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "pnl-dock-item.h"
 #include "pnl-dock-overlay.h"
 
 typedef struct
 {
-  PnlDockManager *manager;
+  void *foo;
 } PnlDockOverlayPrivate;
 
 static void pnl_dock_overlay_init_dock_iface (PnlDockInterface *iface);
 
 G_DEFINE_TYPE_EXTENDED (PnlDockOverlay, pnl_dock_overlay, GTK_TYPE_OVERLAY, 0,
                         G_ADD_PRIVATE (PnlDockOverlay)
+                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM, NULL)
                         G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK, pnl_dock_overlay_init_dock_iface))
 
 enum {
@@ -36,13 +38,28 @@ enum {
 };
 
 static void
+pnl_dock_overlay_add (GtkContainer *container,
+                      GtkWidget    *widget)
+{
+  PnlDockOverlay *self = (PnlDockOverlay *)container;
+
+  g_assert (PNL_IS_DOCK_OVERLAY (self));
+  g_assert (GTK_IS_WIDGET (widget));
+
+  if (PNL_IS_DOCK_ITEM (widget) &&
+      !pnl_dock_item_adopt (PNL_DOCK_ITEM (self), PNL_DOCK_ITEM (widget)))
+    {
+      g_warning ("Child of type %s has a different PnlDockManager than %s",
+                 G_OBJECT_TYPE_NAME (widget), G_OBJECT_TYPE_NAME (self));
+      return;
+    }
+
+  GTK_CONTAINER_CLASS (pnl_dock_overlay_parent_class)->add (container, widget);
+}
+
+static void
 pnl_dock_overlay_finalize (GObject *object)
 {
-  PnlDockOverlay *self = (PnlDockOverlay *)object;
-  PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
-
-  g_clear_object (&priv->manager);
-
   G_OBJECT_CLASS (pnl_dock_overlay_parent_class)->finalize (object);
 }
 
@@ -57,7 +74,7 @@ pnl_dock_overlay_get_property (GObject    *object,
   switch (prop_id)
     {
     case PROP_MANAGER:
-      g_value_set_object (value, pnl_dock_get_manager (PNL_DOCK (self)));
+      g_value_set_object (value, pnl_dock_item_get_manager (PNL_DOCK_ITEM (self)));
       break;
 
     default:
@@ -76,7 +93,7 @@ pnl_dock_overlay_set_property (GObject      *object,
   switch (prop_id)
     {
     case PROP_MANAGER:
-      pnl_dock_set_manager (PNL_DOCK (self), g_value_get_object (value));
+      pnl_dock_item_set_manager (PNL_DOCK_ITEM (self), g_value_get_object (value));
       break;
 
     default:
@@ -89,10 +106,13 @@ pnl_dock_overlay_class_init (PnlDockOverlayClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+  GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
 
   object_class->finalize = pnl_dock_overlay_finalize;
   object_class->get_property = pnl_dock_overlay_get_property;
   object_class->set_property = pnl_dock_overlay_set_property;
+
+  container_class->add = pnl_dock_overlay_add;
 
   g_object_class_override_property (object_class, PROP_MANAGER, "manager");
 
@@ -104,47 +124,9 @@ pnl_dock_overlay_init (PnlDockOverlay *self)
 {
 }
 
-static PnlDockManager *
-pnl_dock_overlay_get_manager (PnlDock *dock)
-{
-  PnlDockOverlay *self = (PnlDockOverlay *)dock;
-  PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
-
-  g_assert (PNL_IS_DOCK_OVERLAY (self));
-
-  return priv->manager;
-}
-
-static void
-pnl_dock_overlay_set_manager (PnlDock        *dock,
-                              PnlDockManager *manager)
-{
-  PnlDockOverlay *self = (PnlDockOverlay *)dock;
-  PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
-
-  g_assert (PNL_IS_DOCK_OVERLAY (self));
-  g_assert (!manager || PNL_IS_DOCK_MANAGER (manager));
-
-  if (manager != priv->manager)
-    {
-      if (priv->manager)
-        {
-          /* TODO: have old manager adopt all children. */
-          g_clear_object (&priv->manager);
-        }
-
-      if (manager)
-        priv->manager = g_object_ref (manager);
-
-      g_object_notify (G_OBJECT (self), "manager");
-    }
-}
-
 static void
 pnl_dock_overlay_init_dock_iface (PnlDockInterface *iface)
 {
-  iface->get_manager = pnl_dock_overlay_get_manager;
-  iface->set_manager = pnl_dock_overlay_set_manager;
 }
 
 GtkWidget *

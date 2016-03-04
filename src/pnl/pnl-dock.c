@@ -26,34 +26,7 @@ pnl_dock_default_init (PnlDockInterface *iface)
   g_object_interface_install_property (iface,
                                        g_param_spec_object ("manager",
                                                             "Manager",
-                                                            "The dock manager",
+                                                            "Manager",
                                                             PNL_TYPE_DOCK_MANAGER,
-                                                            (G_PARAM_READWRITE |
-                                                             G_PARAM_STATIC_STRINGS)));
-}
-
-/**
- * pnl_dock_get_manager:
- * @self: A #PnlDock
- *
- * Gets the #PnlDockManager managing this dock instance.
- *
- * Returns: (transfer none): A #PnlDockManager.
- */
-PnlDockManager *
-pnl_dock_get_manager (PnlDock *self)
-{
-  g_return_val_if_fail (PNL_IS_DOCK (self), NULL);
-
-  return PNL_DOCK_GET_IFACE (self)->get_manager (self);
-}
-
-void
-pnl_dock_set_manager (PnlDock        *self,
-                      PnlDockManager *manager)
-{
-  g_return_if_fail (PNL_IS_DOCK (self));
-  g_return_if_fail (!manager || PNL_IS_DOCK_MANAGER (manager));
-
-  PNL_DOCK_GET_IFACE (self)->set_manager (self, manager);
+                                                            (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)));
 }

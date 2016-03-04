@@ -16,33 +16,52 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "pnl-dock-item.h"
 #include "pnl-dock-paned.h"
 
 typedef struct
 {
-  PnlDockManager *manager;
+  void *foo;
 } PnlDockPanedPrivate;
 
 static void pnl_dock_paned_init_dock_group_iface (PnlDockGroupInterface *iface);
 
 G_DEFINE_TYPE_EXTENDED (PnlDockPaned, pnl_dock_paned, PNL_TYPE_MULTI_PANED, 0,
                         G_ADD_PRIVATE (PnlDockPaned)
+                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM, NULL)
                         G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_GROUP,
                                                pnl_dock_paned_init_dock_group_iface))
 
 enum {
   PROP_0,
-  PROP_MANAGER,
   N_PROPS
 };
+
+static void
+pnl_dock_paned_add (GtkContainer *container,
+                    GtkWidget    *widget)
+{
+  PnlDockPaned *self = (PnlDockPaned *)container;
+  PnlDockPanedPrivate *priv = pnl_dock_paned_get_instance_private (self);
+
+  g_assert (PNL_IS_DOCK_PANED (self));
+
+  if (PNL_IS_DOCK_ITEM (widget) &&
+      !pnl_dock_item_adopt (PNL_DOCK_ITEM (self), PNL_DOCK_ITEM (widget)))
+    {
+      g_warning ("%s failed to adopt child %x",
+                 G_OBJECT_TYPE_NAME (self), G_OBJECT_TYPE_NAME (widget));
+      return;
+    }
+
+  GTK_CONTAINER_CLASS (pnl_dock_paned_parent_class)->add (container, widget);
+}
 
 static void
 pnl_dock_paned_finalize (GObject *object)
 {
   PnlDockPaned *self = (PnlDockPaned *)object;
   PnlDockPanedPrivate *priv = pnl_dock_paned_get_instance_private (self);
-
-  g_clear_object (&priv->manager);
 
   G_OBJECT_CLASS (pnl_dock_paned_parent_class)->finalize (object);
 }
@@ -57,10 +76,6 @@ pnl_dock_paned_get_property (GObject    *object,
 
   switch (prop_id)
     {
-    case PROP_MANAGER:
-      g_value_set_object (value, pnl_dock_group_get_manager (PNL_DOCK_GROUP (self)));
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -76,10 +91,6 @@ pnl_dock_paned_set_property (GObject      *object,
 
   switch (prop_id)
     {
-    case PROP_MANAGER:
-      pnl_dock_group_set_manager (PNL_DOCK_GROUP (self), g_value_get_object (value));
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -95,8 +106,6 @@ pnl_dock_paned_class_init (PnlDockPanedClass *klass)
   object_class->get_property = pnl_dock_paned_get_property;
   object_class->set_property = pnl_dock_paned_set_property;
 
-  g_object_class_override_property (object_class, PROP_MANAGER, "manager");
-
   gtk_widget_class_set_css_name (widget_class, "dockpaned");
 }
 
@@ -111,44 +120,7 @@ pnl_dock_paned_new (void)
   return g_object_new (PNL_TYPE_DOCK_PANED, NULL);
 }
 
-static PnlDockManager *
-pnl_dock_paned_get_manager (PnlDockGroup *group)
-{
-  PnlDockPaned *self = (PnlDockPaned *)group;
-  PnlDockPanedPrivate *priv = pnl_dock_paned_get_instance_private (self);
-
-  g_assert (PNL_IS_DOCK_GROUP (self));
-
-  return priv->manager;
-}
-
-static void
-pnl_dock_paned_set_manager (PnlDockGroup   *group,
-                            PnlDockManager *manager)
-{
-  PnlDockPaned *self = (PnlDockPaned *)group;
-  PnlDockPanedPrivate *priv = pnl_dock_paned_get_instance_private (self);
-
-  g_assert (PNL_IS_DOCK_GROUP (self));
-
-  if (priv->manager != manager)
-    {
-      if (priv->manager)
-        {
-          /* TODO: ask manager to adopt children */
-          g_clear_object (&priv->manager);
-        }
-
-      if (manager)
-        priv->manager = g_object_ref (manager);
-
-      g_object_notify (G_OBJECT (self), "manager");
-    }
-}
-
 static void
 pnl_dock_paned_init_dock_group_iface (PnlDockGroupInterface *iface)
 {
-  iface->get_manager = pnl_dock_paned_get_manager;
-  iface->set_manager = pnl_dock_paned_set_manager;
 }
