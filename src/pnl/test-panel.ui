@@ -202,6 +202,17 @@
             </child>
           </object>
         </child>
+        <child type="left">
+          <object class="PnlDockStack">
+            <property name="visible">true</property>
+            <child>
+              <object class="PnlDockWidget">
+                <property name="title">Documentation</property>
+                <property name="visible">true</property>
+              </object>
+            </child>
+          </object>
+        </child>
       </object>
     </child>
   </object>
