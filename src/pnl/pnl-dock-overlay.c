@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "pnl-dock-edge.h"
+#include "pnl-dock-edge-private.h"
 #include "pnl-dock-item.h"
 #include "pnl-dock-overlay.h"
 

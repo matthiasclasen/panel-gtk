@@ -19,7 +19,7 @@
 #include <stdlib.h>
 
 #include "pnl-dock-bin.h"
-#include "pnl-dock-edge.h"
+#include "pnl-dock-edge-private.h"
 #include "pnl-dock-item.h"
 
 #define HANDLE_WIDTH  10

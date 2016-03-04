@@ -20,6 +20,9 @@ OBJECTS = \
 	pnl-tab-strip.o \
 	$(NULL)
 
+%.o: %.c %-private.h
+	$(CC) -o $@ -fPIC -c -ggdb -O0 -fno-omit-frame-pointer $*.c $(shell pkg-config --cflags $(PKGS))
+
 %.o: %.c %.h
 	$(CC) -o $@ -fPIC -c -ggdb -O0 -fno-omit-frame-pointer $*.c $(shell pkg-config --cflags $(PKGS))
 

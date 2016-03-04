@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "pnl-dock-edge.h"
-#include "pnl-dock-edge-child.h"
+#include "pnl-dock-edge-private.h"
+#include "pnl-dock-edge-child-private.h"
 
 struct _PnlDockEdge
 {
