@@ -30,7 +30,14 @@ enum {
   N_PROPS
 };
 
+enum {
+  REGISTER_DOCK,
+  UNREGISTER_DOCK,
+  N_SIGNALS
+};
+
 static GParamSpec *properties [N_PROPS];
+static guint signals [N_SIGNALS];
 
 static void
 pnl_dock_manager_finalize (GObject *object)
@@ -79,6 +86,22 @@ pnl_dock_manager_class_init (PnlDockManagerClass *klass)
   object_class->finalize = pnl_dock_manager_finalize;
   object_class->get_property = pnl_dock_manager_get_property;
   object_class->set_property = pnl_dock_manager_set_property;
+
+  signals [REGISTER_DOCK] =
+    g_signal_new ("register-dock",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (PnlDockManagerClass, register_dock),
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE, 1, PNL_TYPE_DOCK);
+
+  signals [UNREGISTER_DOCK] =
+    g_signal_new ("unregister-dock",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  G_STRUCT_OFFSET (PnlDockManagerClass, unregister_dock),
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE, 1, PNL_TYPE_DOCK);
 }
 
 static void
@@ -92,3 +115,22 @@ pnl_dock_manager_new (void)
   return g_object_new (PNL_TYPE_DOCK_MANAGER, NULL);
 }
 
+void
+pnl_dock_manager_register_dock (PnlDockManager *self,
+                                PnlDock        *dock)
+{
+  g_return_if_fail (PNL_IS_DOCK_MANAGER (self));
+  g_return_if_fail (PNL_IS_DOCK (dock));
+
+  g_signal_emit (self, signals [REGISTER_DOCK], 0, dock);
+}
+
+void
+pnl_dock_manager_unregister_dock (PnlDockManager *self,
+                                  PnlDock        *dock)
+{
+  g_return_if_fail (PNL_IS_DOCK_MANAGER (self));
+  g_return_if_fail (PNL_IS_DOCK (dock));
+
+  g_signal_emit (self, signals [UNREGISTER_DOCK], 0, dock);
+}

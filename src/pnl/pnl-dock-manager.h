@@ -27,17 +27,17 @@ struct _PnlDockManagerClass
 {
   GObjectClass parent;
 
-  void (*adopt_group)  (PnlDockManager *self,
-                        PnlDockGroup   *group);
-  void (*adopt_widget) (PnlDockManager *self,
-                        PnlDockGroup   *group);
+  void (*register_dock)   (PnlDockManager *self,
+                           PnlDock        *dock);
+  void (*unregister_dock) (PnlDockManager *self,
+                           PnlDock        *dock);
 };
 
-PnlDockManager *pnl_dock_manager_new          (void);
-void            pnl_dock_manager_adopt_group  (PnlDockManager *self,
-                                               PnlDockGroup   *group);
-void            pnl_dock_manager_adopt_widget (PnlDockManager *self,
-                                               PnlDockWidget  *widget);
+PnlDockManager *pnl_dock_manager_new             (void);
+void            pnl_dock_manager_register_dock   (PnlDockManager *self,
+                                                  PnlDock        *dock);
+void            pnl_dock_manager_unregister_dock (PnlDockManager *self,
+                                                  PnlDock        *dock);
 
 G_END_DECLS
 

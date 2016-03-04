@@ -17,6 +17,7 @@
  */
 
 #include "pnl-dock-item.h"
+#include "pnl-dock-manager.h"
 
 G_DEFINE_INTERFACE (PnlDockItem, pnl_dock_item, GTK_TYPE_WIDGET)
 
@@ -46,6 +47,15 @@ pnl_dock_item_real_set_manager (PnlDockItem    *self,
                             g_object_unref);
   else
     g_object_set_data (G_OBJECT (self), "PNL_DOCK_MANAGER", NULL);
+
+  if (PNL_IS_DOCK (self))
+    {
+      if (old_manager != NULL)
+        pnl_dock_manager_unregister_dock (old_manager, PNL_DOCK (self));
+
+      if (manager != NULL)
+        pnl_dock_manager_register_dock (manager, PNL_DOCK (self));
+    }
 
   g_object_notify (G_OBJECT (self), "manager");
 
