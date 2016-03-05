@@ -21,14 +21,16 @@
 
 typedef struct
 {
-  GAction  *action;
-  GtkStack *stack;
+  GAction         *action;
+  GtkStack        *stack;
+  GtkPositionType  edge : 2;
 } PnlTabStripPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (PnlTabStrip, pnl_tab_strip, GTK_TYPE_BOX)
 
 enum {
   PROP_0,
+  PROP_EDGE,
   PROP_STACK,
   N_PROPS
 };
@@ -77,6 +79,22 @@ set_tab_state (GSimpleAction *action,
 }
 
 static void
+pnl_tab_strip_add (GtkContainer *container,
+                   GtkWidget    *widget)
+{
+  PnlTabStrip *self = (PnlTabStrip *)container;
+  PnlTabStripPrivate *priv = pnl_tab_strip_get_instance_private (self);
+
+  g_assert (PNL_IS_TAB_STRIP (self));
+  g_assert (GTK_IS_WIDGET (widget));
+
+  if (PNL_IS_TAB (widget))
+    pnl_tab_set_edge (PNL_TAB (widget), priv->edge);
+
+  GTK_CONTAINER_CLASS (pnl_tab_strip_parent_class)->add (container, widget);
+}
+
+static void
 pnl_tab_strip_destroy (GtkWidget *widget)
 {
   PnlTabStrip *self = (PnlTabStrip *)widget;
@@ -102,6 +120,10 @@ pnl_tab_strip_get_property (GObject    *object,
 
   switch (prop_id)
     {
+    case PROP_EDGE:
+      g_value_set_enum (value, pnl_tab_strip_get_edge (self));
+      break;
+
     case PROP_STACK:
       g_value_set_object (value, pnl_tab_strip_get_stack (self));
       break;
@@ -121,6 +143,10 @@ pnl_tab_strip_set_property (GObject      *object,
 
   switch (prop_id)
     {
+    case PROP_EDGE:
+      pnl_tab_strip_set_edge (self, g_value_get_enum (value));
+      break;
+
     case PROP_STACK:
       pnl_tab_strip_set_stack (self, g_value_get_object (value));
       break;
@@ -135,11 +161,22 @@ pnl_tab_strip_class_init (PnlTabStripClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+  GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
 
   object_class->get_property = pnl_tab_strip_get_property;
   object_class->set_property = pnl_tab_strip_set_property;
 
   widget_class->destroy = pnl_tab_strip_destroy;
+
+  container_class->add = pnl_tab_strip_add;
+
+  properties [PROP_EDGE] =
+    g_param_spec_enum ("edge",
+                       "Edge",
+                       "The edge for the tab-strip",
+                       GTK_TYPE_POSITION_TYPE,
+                       GTK_POS_TOP,
+                       (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
 
   properties [PROP_STACK] =
     g_param_spec_object ("stack",
@@ -158,6 +195,7 @@ pnl_tab_strip_init (PnlTabStrip *self)
 {
   PnlTabStripPrivate *priv = pnl_tab_strip_get_instance_private (self);
   GSimpleActionGroup *group;
+  GtkStyleContext *style_context;
   static const GActionEntry entries[] = {
     { "tab", NULL, "i", "0", set_tab_state },
   };
@@ -169,6 +207,10 @@ pnl_tab_strip_init (PnlTabStrip *self)
   priv->action = g_object_ref (g_action_map_lookup_action (G_ACTION_MAP (group), "tab"));
   gtk_widget_insert_action_group (GTK_WIDGET (self), "tab-strip", G_ACTION_GROUP (group));
   g_object_unref (group);
+
+  priv->edge = GTK_POS_LEFT;
+  style_context = gtk_widget_get_style_context (GTK_WIDGET (self));
+  gtk_style_context_add_class (style_context, "left");
 }
 
 static void
@@ -255,6 +297,7 @@ pnl_tab_strip_stack_add (PnlTabStrip *self,
                          GtkWidget   *widget,
                          GtkStack    *stack)
 {
+  PnlTabStripPrivate *priv = pnl_tab_strip_get_instance_private (self);
   GVariant *target;
   PnlTab *tab;
   gint position = 0;
@@ -272,6 +315,7 @@ pnl_tab_strip_stack_add (PnlTabStrip *self,
   tab = g_object_new (PNL_TYPE_TAB,
                       "action-name", "tab-strip.tab",
                       "action-target", target,
+                      "edge", priv->edge,
                       NULL);
 
   g_object_set_data (G_OBJECT (tab), "PNL_TAB_STRIP_WIDGET", widget);
@@ -302,10 +346,16 @@ pnl_tab_strip_stack_remove (PnlTabStrip *self,
                             GtkWidget   *widget,
                             GtkStack    *stack)
 {
+  PnlTab *tab;
+
   g_assert (PNL_IS_TAB_STRIP (self));
   g_assert (GTK_IS_WIDGET (widget));
   g_assert (GTK_IS_STACK (stack));
 
+  tab = g_object_get_data (G_OBJECT (widget), "PNL_TAB");
+
+  if (PNL_IS_TAB (tab))
+    gtk_container_remove (GTK_CONTAINER (self), GTK_WIDGET (tab));
 }
 
 GtkWidget *
@@ -376,5 +426,83 @@ pnl_tab_strip_set_stack (PnlTabStrip *self,
                                    self,
                                    G_CONNECT_SWAPPED);
         }
+    }
+}
+
+static void
+pnl_tab_strip_update_edge (GtkWidget *widget,
+                           gpointer   user_data)
+{
+  GtkPositionType edge = GPOINTER_TO_INT (user_data);
+
+  g_assert (GTK_IS_WIDGET (widget));
+
+  if (PNL_IS_TAB (widget))
+    pnl_tab_set_edge (PNL_TAB (widget), edge);
+}
+
+GtkPositionType
+pnl_tab_strip_get_edge (PnlTabStrip *self)
+{
+  PnlTabStripPrivate *priv = pnl_tab_strip_get_instance_private (self);
+
+  g_return_val_if_fail (PNL_IS_TAB_STRIP (self), 0);
+
+  return priv->edge;
+}
+
+void
+pnl_tab_strip_set_edge (PnlTabStrip     *self,
+                        GtkPositionType  edge)
+{
+  PnlTabStripPrivate *priv = pnl_tab_strip_get_instance_private (self);
+
+  g_return_if_fail (PNL_IS_TAB_STRIP (self));
+  g_return_if_fail (edge >= 0);
+  g_return_if_fail (edge <= 3);
+
+  if (priv->edge != edge)
+    {
+      GtkStyleContext *style_context;
+      const gchar *class_name = NULL;
+
+      priv->edge = edge;
+
+      gtk_container_foreach (GTK_CONTAINER (self),
+                             pnl_tab_strip_update_edge,
+                             GINT_TO_POINTER (edge));
+
+      style_context = gtk_widget_get_style_context (GTK_WIDGET (self));
+
+      gtk_style_context_remove_class (style_context, "left");
+      gtk_style_context_remove_class (style_context, "top");
+      gtk_style_context_remove_class (style_context, "right");
+      gtk_style_context_remove_class (style_context, "bottom");
+
+      switch (edge)
+        {
+        case GTK_POS_LEFT:
+          class_name = "left";
+          break;
+
+        case GTK_POS_RIGHT:
+          class_name = "right";
+          break;
+
+        case GTK_POS_TOP:
+          class_name = "top";
+          break;
+
+        case GTK_POS_BOTTOM:
+          class_name = "bottom";
+          break;
+
+        default:
+          g_assert_not_reached ();
+        }
+
+      gtk_style_context_add_class (style_context, class_name);
+
+      g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_EDGE]);
     }
 }

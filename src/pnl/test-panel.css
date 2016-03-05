@@ -45,3 +45,23 @@ tab label {
 dockedgechild list {
   background: #4d4d4d;
 }
+
+dockoverlay > tabstrip {
+  background: transparent;
+}
+
+dockoverlay > tabstrip > tab:checked {
+  background: transparent;
+}
+
+dockoverlay > tabstrip > tab > label {
+  padding: 4px;
+  font-weight: bold;
+  font-size: 8px;
+  color: white;
+}
+
+dockoverlay > tabstrip.left > tab {
+  background: blue;
+  border-right: 1px solid white;
+}

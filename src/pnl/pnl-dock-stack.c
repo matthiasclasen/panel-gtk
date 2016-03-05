@@ -124,6 +124,7 @@ pnl_dock_stack_init (PnlDockStack *self)
                               NULL);
 
   priv->tab_strip = g_object_new (PNL_TYPE_TAB_STRIP,
+                                  "edge", GTK_POS_TOP,
                                   "stack", priv->stack,
                                   "visible", TRUE,
                                   NULL);

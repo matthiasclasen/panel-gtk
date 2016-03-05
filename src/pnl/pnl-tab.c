@@ -22,6 +22,8 @@ struct _PnlTab
 {
   GtkToggleButton parent;
 
+  GtkPositionType edge : 2;
+
   GtkLabel *title;
 };
 
@@ -29,11 +31,40 @@ G_DEFINE_TYPE (PnlTab, pnl_tab, GTK_TYPE_TOGGLE_BUTTON)
 
 enum {
   PROP_0,
+  PROP_EDGE,
   PROP_TITLE,
   N_PROPS
 };
 
 static GParamSpec *properties [N_PROPS];
+
+static void
+pnl_tab_update_edge (PnlTab *self)
+{
+  g_assert (PNL_IS_TAB (self));
+
+  switch (self->edge)
+    {
+    case GTK_POS_TOP:
+      gtk_label_set_angle (self->title, 0.0);
+      break;
+
+    case GTK_POS_BOTTOM:
+      gtk_label_set_angle (self->title, 0.0);
+      break;
+
+    case GTK_POS_LEFT:
+      gtk_label_set_angle (self->title, 90.0);
+      break;
+
+    case GTK_POS_RIGHT:
+      gtk_label_set_angle (self->title, -90.0);
+      break;
+
+    default:
+      g_assert_not_reached ();
+    }
+}
 
 static void
 pnl_tab_get_property (GObject    *object,
@@ -45,6 +76,10 @@ pnl_tab_get_property (GObject    *object,
 
   switch (prop_id)
     {
+    case PROP_EDGE:
+      g_value_set_enum (value, pnl_tab_get_edge (self));
+      break;
+
     case PROP_TITLE:
       g_value_set_string (value, pnl_tab_get_title (self));
       break;
@@ -64,6 +99,10 @@ pnl_tab_set_property (GObject      *object,
 
   switch (prop_id)
     {
+    case PROP_EDGE:
+      pnl_tab_set_edge (self, g_value_get_enum (value));
+      break;
+
     case PROP_TITLE:
       pnl_tab_set_title (self, g_value_get_string (value));
       break;
@@ -84,6 +123,14 @@ pnl_tab_class_init (PnlTabClass *klass)
 
   gtk_widget_class_set_css_name (widget_class, "tab");
 
+  properties [PROP_EDGE] =
+    g_param_spec_enum ("edge",
+                       "Edge",
+                       "Edge",
+                       GTK_TYPE_POSITION_TYPE,
+                       GTK_POS_TOP,
+                       (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
+
   properties [PROP_TITLE] =
     g_param_spec_string ("title",
                          "Title",
@@ -97,12 +144,13 @@ pnl_tab_class_init (PnlTabClass *klass)
 static void
 pnl_tab_init (PnlTab *self)
 {
-  g_object_set (self, "draw-indicator", FALSE, NULL);
+  self->edge = GTK_POS_TOP;
 
   self->title = g_object_new (GTK_TYPE_LABEL,
                               "ellipsize", PANGO_ELLIPSIZE_END,
                               "visible", TRUE,
                               NULL);
+
   gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (self->title));
 }
 
@@ -121,4 +169,28 @@ pnl_tab_set_title (PnlTab      *self,
   g_return_if_fail (PNL_IS_TAB (self));
 
   gtk_label_set_label (self->title, title);
+}
+
+GtkPositionType
+pnl_tab_get_edge (PnlTab *self)
+{
+  g_return_val_if_fail (PNL_IS_TAB (self), 0);
+
+  return self->edge;
+}
+
+void
+pnl_tab_set_edge (PnlTab          *self,
+                  GtkPositionType  edge)
+{
+  g_return_if_fail (PNL_IS_TAB (self));
+  g_return_if_fail (edge >= 0);
+  g_return_if_fail (edge <= 3);
+
+  if (self->edge != edge)
+    {
+      self->edge = edge;
+      pnl_tab_update_edge (self);
+      g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_EDGE]);
+    }
 }

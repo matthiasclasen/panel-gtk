@@ -19,15 +19,22 @@
 #include "pnl-dock-edge-private.h"
 #include "pnl-dock-item.h"
 #include "pnl-dock-overlay.h"
+#include "pnl-tab.h"
+#include "pnl-tab-strip.h"
 
 typedef struct
 {
   PnlDockEdge *bottom;
-  PnlDockEdge *left;
-  PnlDockEdge *right;
-  PnlDockEdge *top;
+  PnlTabStrip *bottom_strip;
 
-  guint alt_pressed : 1;
+  PnlDockEdge *left;
+  PnlTabStrip *left_strip;
+
+  PnlDockEdge *right;
+  PnlTabStrip *right_strip;
+
+  PnlDockEdge *top;
+  PnlTabStrip *top_strip;
 } PnlDockOverlayPrivate;
 
 static void pnl_dock_overlay_init_dock_iface      (PnlDockInterface *iface);
@@ -46,60 +53,132 @@ enum {
   N_PROPS
 };
 
-static gboolean
-pnl_dock_overlay_get_child_position (GtkOverlay    *overlay,
-                                     GtkWidget     *widget,
-                                     GtkAllocation *allocation)
+static void
+pnl_dock_overlay_get_edge_position (PnlDockOverlay *self,
+                                    PnlDockEdge    *edge,
+                                    GtkAllocation  *allocation)
 {
-  PnlDockOverlay *self = (PnlDockOverlay *)overlay;
   PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
-  PnlDockEdge *edge;
+  GtkPositionType type;
   gint nat_width;
   gint nat_height;
 
-  g_assert (GTK_IS_OVERLAY (overlay));
-  g_assert (GTK_IS_WIDGET (widget));
+  g_assert (PNL_IS_DOCK_OVERLAY (self));
+  g_assert (PNL_IS_DOCK_EDGE (edge));
   g_assert (allocation != NULL);
-
-  if (!PNL_IS_DOCK_EDGE (widget))
-    return FALSE;
 
   gtk_widget_get_allocation (GTK_WIDGET (self), allocation);
 
   allocation->x = 0;
   allocation->y = 0;
 
-  edge = PNL_DOCK_EDGE (widget);
+  type = pnl_dock_edge_get_edge (edge);
 
-  if (edge == priv->left || edge == priv->right)
-    gtk_widget_get_preferred_width_for_height (widget,
+  if (type == GTK_POS_LEFT || type == GTK_POS_RIGHT)
+    gtk_widget_get_preferred_width_for_height (GTK_WIDGET (edge),
                                                MAX (allocation->height, 1),
                                                NULL,
                                                &nat_width);
   else
-    gtk_widget_get_preferred_height_for_width (widget,
+    gtk_widget_get_preferred_height_for_width (GTK_WIDGET (edge),
                                                MAX (allocation->width, 1),
                                                NULL,
                                                &nat_height);
 
-  if (edge == priv->left)
+  switch (type)
     {
+    case GTK_POS_LEFT:
       allocation->width = nat_width;
-    }
-  else if (edge == priv->right)
-    {
+      break;
+
+    case GTK_POS_RIGHT:
       allocation->x = allocation->x + allocation->width - nat_width;
       allocation->width - nat_width;
-    }
-  else if (edge == priv->bottom)
-    {
+      break;
+
+    case GTK_POS_BOTTOM:
       allocation->y = allocation->y + allocation->height - nat_height;
       allocation->height = nat_height;
-    }
-  else if (edge == priv->top)
-    {
+      break;
+
+    case GTK_POS_TOP:
       allocation->height = nat_height;
+      break;
+
+    default:
+      g_assert_not_reached ();
     }
+}
+
+static void
+pnl_dock_overlay_get_tab_strip_position (PnlDockOverlay *self,
+                                         PnlTabStrip    *tab_strip,
+                                         GtkAllocation  *allocation)
+{
+  PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
+  GtkPositionType edge;
+  GtkRequisition min_req;
+  GtkRequisition nat_req;
+
+  g_assert (PNL_IS_DOCK_OVERLAY (self));
+  g_assert (PNL_IS_TAB_STRIP (tab_strip));
+  g_assert (allocation != NULL);
+
+  edge = pnl_tab_strip_get_edge (tab_strip);
+
+  gtk_widget_get_preferred_size (GTK_WIDGET (tab_strip), &min_req, &nat_req);
+
+  switch (edge)
+    {
+    case GTK_POS_TOP:
+      pnl_dock_overlay_get_edge_position (self, priv->top, allocation);
+      allocation->y = allocation->y + allocation->height;
+      allocation->height = nat_req.height;
+      break;
+
+    case GTK_POS_RIGHT:
+      pnl_dock_overlay_get_edge_position (self, priv->right, allocation);
+      allocation->x = allocation->x - nat_req.width;
+      allocation->width = nat_req.width;
+      break;
+
+    case GTK_POS_BOTTOM:
+      pnl_dock_overlay_get_edge_position (self, priv->bottom, allocation);
+      allocation->y = allocation->y - nat_req.height;
+      allocation->height = nat_req.height;
+      break;
+
+    case GTK_POS_LEFT:
+      pnl_dock_overlay_get_edge_position (self, priv->left, allocation);
+      allocation->x = allocation->x + allocation->width;
+      allocation->width = nat_req.width;
+      break;
+
+    default:
+      g_assert_not_reached ();
+    }
+
+  allocation->width = MAX (allocation->width, 0);
+  allocation->height = MAX (allocation->height, 0);
+}
+
+static gboolean
+pnl_dock_overlay_get_child_position (GtkOverlay    *overlay,
+                                     GtkWidget     *widget,
+                                     GtkAllocation *allocation)
+{
+  PnlDockOverlay *self = (PnlDockOverlay *)overlay;
+
+  g_assert (GTK_IS_OVERLAY (overlay));
+  g_assert (GTK_IS_WIDGET (widget));
+  g_assert (allocation != NULL);
+
+  if (PNL_IS_DOCK_EDGE (widget))
+    pnl_dock_overlay_get_edge_position (self, PNL_DOCK_EDGE (widget), allocation);
+  else if (PNL_IS_TAB_STRIP (widget))
+    pnl_dock_overlay_get_tab_strip_position (self, PNL_TAB_STRIP (widget), allocation);
+  else
+    return FALSE;
 
   return TRUE;
 }
@@ -177,12 +256,6 @@ pnl_dock_overlay_hierarchy_changed (GtkWidget *widget,
 }
 
 static void
-pnl_dock_overlay_finalize (GObject *object)
-{
-  G_OBJECT_CLASS (pnl_dock_overlay_parent_class)->finalize (object);
-}
-
-static void
 pnl_dock_overlay_get_property (GObject    *object,
                                guint       prop_id,
                                GValue     *value,
@@ -228,7 +301,6 @@ pnl_dock_overlay_class_init (PnlDockOverlayClass *klass)
   GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
   GtkOverlayClass *overlay_class = GTK_OVERLAY_CLASS (klass);
 
-  object_class->finalize = pnl_dock_overlay_finalize;
   object_class->get_property = pnl_dock_overlay_get_property;
   object_class->set_property = pnl_dock_overlay_set_property;
 
@@ -246,8 +318,11 @@ pnl_dock_overlay_class_init (PnlDockOverlayClass *klass)
 static void
 pnl_dock_overlay_init_child (PnlDockOverlay   *self,
                              PnlDockEdge     **edge,
+                             PnlTabStrip     **tab_strip,
                              GtkPositionType   type)
 {
+  PnlTab *tab;
+
   g_assert (PNL_IS_DOCK_OVERLAY (self));
   g_assert (edge != NULL);
 
@@ -258,6 +333,20 @@ pnl_dock_overlay_init_child (PnlDockOverlay   *self,
                         NULL);
 
   gtk_overlay_add_overlay (GTK_OVERLAY (self), GTK_WIDGET (*edge));
+
+  *tab_strip = g_object_new (PNL_TYPE_TAB_STRIP,
+                             "edge", type,
+                             "visible", TRUE,
+                             NULL);
+
+  gtk_overlay_add_overlay (GTK_OVERLAY (self), GTK_WIDGET (*tab_strip));
+
+  tab = g_object_new (PNL_TYPE_TAB,
+                      "title", "Some Title",
+                      "visible", TRUE,
+                      NULL);
+  gtk_container_add (GTK_CONTAINER (*tab_strip), GTK_WIDGET (tab));
+
 }
 
 static void
@@ -265,10 +354,10 @@ pnl_dock_overlay_init (PnlDockOverlay *self)
 {
   PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
 
-  pnl_dock_overlay_init_child (self, &priv->bottom, GTK_POS_BOTTOM);
-  pnl_dock_overlay_init_child (self, &priv->left, GTK_POS_LEFT);
-  pnl_dock_overlay_init_child (self, &priv->right, GTK_POS_RIGHT);
-  pnl_dock_overlay_init_child (self, &priv->top, GTK_POS_TOP);
+  pnl_dock_overlay_init_child (self, &priv->bottom, &priv->bottom_strip, GTK_POS_BOTTOM);
+  pnl_dock_overlay_init_child (self, &priv->left, &priv->left_strip, GTK_POS_LEFT);
+  pnl_dock_overlay_init_child (self, &priv->right, &priv->right_strip, GTK_POS_RIGHT);
+  pnl_dock_overlay_init_child (self, &priv->top, &priv->top_strip, GTK_POS_TOP);
 }
 
 static void

@@ -35,6 +35,11 @@ G_BEGIN_DECLS
 #include "pnl-dock-widget.h"
 #include "pnl-dock-window.h"
 
+/* Some useful reusable things */
+#include "pnl-tab.h"
+#include "pnl-tab-strip.h"
+#include "pnl-multi-paned.h"
+
 G_END_DECLS
 
 #endif /* PNL_H */
