@@ -26,6 +26,8 @@ G_BEGIN_DECLS
 struct _PnlDockOverlayClass
 {
   GtkOverlayClass parent;
+
+  void (*hide_edges) (PnlDockOverlay *self);
 };
 
 GtkWidget *pnl_dock_overlay_new (void);

@@ -59,7 +59,13 @@ enum {
   N_CHILD_PROPS
 };
 
+enum {
+  HIDE_EDGES,
+  N_SIGNALS
+};
+
 static GParamSpec *child_properties [N_CHILD_PROPS];
+static guint signals [N_SIGNALS];
 
 static void
 pnl_dock_overlay_get_edge_position (PnlDockOverlay     *self,
@@ -245,6 +251,30 @@ pnl_dock_overlay_toplevel_set_focus (PnlDockOverlay *self,
                                  "reveal", FALSE,
                                  NULL);
     }
+}
+
+static void
+pnl_dock_overlay_hide_edges (PnlDockOverlay *self)
+{
+  PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
+  GtkWidget *child;
+  guint i;
+
+  g_assert (PNL_IS_DOCK_OVERLAY (self));
+
+  for (i = 0; i < G_N_ELEMENTS (priv->edges); i++)
+    {
+      PnlDockOverlayEdge *edge = priv->edges [i];
+
+      gtk_container_child_set (GTK_CONTAINER (self), GTK_WIDGET (edge),
+                               "reveal", FALSE,
+                               NULL);
+    }
+
+  child = gtk_bin_get_child (GTK_BIN (self));
+
+  if (child != NULL)
+    gtk_widget_grab_focus (child);
 }
 
 static void
@@ -447,6 +477,7 @@ pnl_dock_overlay_class_init (PnlDockOverlayClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
   GtkOverlayClass *overlay_class = GTK_OVERLAY_CLASS (klass);
+  GtkBindingSet *binding_set;
 
   object_class->get_property = pnl_dock_overlay_get_property;
   object_class->set_property = pnl_dock_overlay_set_property;
@@ -460,6 +491,8 @@ pnl_dock_overlay_class_init (PnlDockOverlayClass *klass)
 
   overlay_class->get_child_position = pnl_dock_overlay_get_child_position;
 
+  klass->hide_edges = pnl_dock_overlay_hide_edges;
+
   g_object_class_override_property (object_class, PROP_MANAGER, "manager");
 
   child_properties [CHILD_PROP_REVEAL] =
@@ -472,6 +505,22 @@ pnl_dock_overlay_class_init (PnlDockOverlayClass *klass)
   gtk_container_class_install_child_properties (container_class, N_CHILD_PROPS, child_properties);
 
   gtk_widget_class_set_css_name (widget_class, "dockoverlay");
+
+  signals [HIDE_EDGES] =
+    g_signal_new ("hide-edges",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                  G_STRUCT_OFFSET (PnlDockOverlayClass, hide_edges),
+                  NULL, NULL, NULL,
+                  G_TYPE_NONE, 0);
+
+  binding_set = gtk_binding_set_by_class (klass);
+
+  gtk_binding_entry_add_signal (binding_set,
+                                GDK_KEY_Escape,
+                                0,
+                                "hide-edges",
+                                0);
 }
 
 static void
