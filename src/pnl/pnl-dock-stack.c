@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "pnl-dock-item.h"
 #include "pnl-dock-stack.h"
 #include "pnl-dock-widget.h"
 #include "pnl-tab-strip.h"
@@ -31,6 +32,7 @@ static void pnl_dock_stack_init_dock_group_iface (PnlDockGroupInterface *iface);
 
 G_DEFINE_TYPE_EXTENDED (PnlDockStack, pnl_dock_stack, GTK_TYPE_BOX, 0,
                         G_ADD_PRIVATE (PnlDockStack)
+                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM, NULL)
                         G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_GROUP,
                                                pnl_dock_stack_init_dock_group_iface))
 
@@ -58,6 +60,9 @@ pnl_dock_stack_add (GtkContainer *container,
   gtk_container_add_with_properties (GTK_CONTAINER (priv->stack), widget,
                                      "title", title,
                                      NULL);
+
+  if (PNL_IS_DOCK_ITEM (widget))
+    pnl_dock_item_adopt (PNL_DOCK_ITEM (self), PNL_DOCK_ITEM (widget));
 }
 
 static void
