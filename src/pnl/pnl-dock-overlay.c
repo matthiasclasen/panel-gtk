@@ -70,6 +70,7 @@ pnl_dock_overlay_get_edge_position (PnlDockOverlay     *self,
   GtkPositionType type;
   gdouble value;
   gdouble handle_value;
+  gdouble flipped_value;
   gint nat_width;
   gint nat_height;
 
@@ -101,38 +102,40 @@ pnl_dock_overlay_get_edge_position (PnlDockOverlay     *self,
     }
 
   value = gtk_adjustment_get_value (priv->edge_adj [type]);
+  flipped_value = 1.0 - value;
+
   handle_value = gtk_adjustment_get_value (priv->edge_handle_adj [type]);
 
   switch (type)
     {
     case GTK_POS_LEFT:
       allocation->width = nat_width;
-
       allocation->x -= nat_width * value;
-      allocation->x += handle_value;
+      if (flipped_value * nat_width <= handle_value)
+        allocation->x += (handle_value - (flipped_value * nat_width));
       break;
 
     case GTK_POS_RIGHT:
       allocation->x = allocation->x + allocation->width - nat_width;
       allocation->width = nat_width;
-
       allocation->x += nat_width * value;
-      allocation->x -= handle_value;
+      if (flipped_value * nat_width <= handle_value)
+        allocation->x -= (handle_value - (flipped_value * nat_width));
       break;
 
     case GTK_POS_BOTTOM:
       allocation->y = allocation->y + allocation->height - nat_height;
       allocation->height = nat_height;
-
       allocation->y += nat_height * value;
-      allocation->y -= handle_value;
+      if (flipped_value * nat_height <= handle_value)
+        allocation->y -= (handle_value - (flipped_value * nat_height));
       break;
 
     case GTK_POS_TOP:
       allocation->height = nat_height;
-
       allocation->y -= nat_height * value;
-      allocation->y += handle_value;
+      if (flipped_value * nat_height <= handle_value)
+        allocation->y += (handle_value - (flipped_value * nat_height));
       break;
 
     default:
@@ -217,6 +220,34 @@ pnl_dock_overlay_toplevel_mnemonics (PnlDockOverlay *self,
 }
 
 static void
+pnl_dock_overlay_toplevel_set_focus (PnlDockOverlay *self,
+                                     GtkWidget      *widget,
+                                     GtkWindow      *toplevel)
+{
+  PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
+  guint i;
+
+  g_assert (PNL_IS_DOCK_OVERLAY (self));
+  g_assert (!widget || GTK_IS_WIDGET (widget));
+  g_assert (GTK_IS_WINDOW (toplevel));
+
+  /*
+   * TODO: If the overlay obscurs the new focus widget,
+   *       hide immediately. Otherwise, use a short timeout.
+   */
+
+  for (i = 0; i < G_N_ELEMENTS (priv->edges); i++)
+    {
+      PnlDockOverlayEdge *edge = priv->edges [i];
+
+      if (!widget || !gtk_widget_is_ancestor (widget, GTK_WIDGET (edge)))
+        gtk_container_child_set (GTK_CONTAINER (self), GTK_WIDGET (edge),
+                                 "reveal", FALSE,
+                                 NULL);
+    }
+}
+
+static void
 pnl_dock_overlay_destroy (GtkWidget *widget)
 {
   PnlDockOverlay *self = (PnlDockOverlay *)widget;
@@ -247,15 +278,24 @@ pnl_dock_overlay_hierarchy_changed (GtkWidget *widget,
       g_signal_handlers_disconnect_by_func (old_toplevel,
                                             G_CALLBACK (pnl_dock_overlay_toplevel_mnemonics),
                                             self);
+      g_signal_handlers_disconnect_by_func (old_toplevel,
+                                            G_CALLBACK (pnl_dock_overlay_toplevel_set_focus),
+                                            self);
     }
 
   toplevel = gtk_widget_get_toplevel (GTK_WIDGET (self));
 
-  if (toplevel != NULL)
+  if (GTK_IS_WINDOW (toplevel))
     {
       g_signal_connect_object (toplevel,
                                "notify::mnemonics-visible",
                                G_CALLBACK (pnl_dock_overlay_toplevel_mnemonics),
+                               self,
+                               G_CONNECT_SWAPPED);
+
+      g_signal_connect_object (toplevel,
+                               "set-focus",
+                               G_CALLBACK (pnl_dock_overlay_toplevel_set_focus),
                                self,
                                G_CONNECT_SWAPPED);
     }

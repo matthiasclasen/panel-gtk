@@ -63,3 +63,7 @@ dockoverlay > tabstrip > tab label {
 dockoverlay > tabstrip > tab {
   background: #3a3a3a;
 }
+
+textview {
+  padding: 12px;
+}
