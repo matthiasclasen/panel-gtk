@@ -130,6 +130,8 @@ pnl_dock_stack_init (PnlDockStack *self)
 
   gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_VERTICAL);
 
+  priv->edge = GTK_POS_TOP;
+
   priv->stack = g_object_new (GTK_TYPE_STACK,
                               "homogeneous", FALSE,
                               "visible", TRUE,

@@ -48,6 +48,55 @@ enum {
 static GParamSpec *properties [N_PROPS];
 static GParamSpec *style_properties [N_STYLE_PROPS];
 
+static void
+pnl_dock_overlay_edge_update_edge (PnlDockOverlayEdge *self)
+{
+  GtkWidget *child;
+  GtkPositionType edge;
+  GtkOrientation orientation;
+
+  g_assert (PNL_IS_DOCK_OVERLAY_EDGE (self));
+
+  switch (self->edge)
+    {
+    case GTK_POS_TOP:
+      edge = GTK_POS_BOTTOM;
+      orientation = GTK_ORIENTATION_HORIZONTAL;
+      break;
+
+    case GTK_POS_BOTTOM:
+      edge = GTK_POS_TOP;
+      orientation = GTK_ORIENTATION_HORIZONTAL;
+      break;
+
+    case GTK_POS_LEFT:
+      edge = GTK_POS_RIGHT;
+      orientation = GTK_ORIENTATION_VERTICAL;
+      break;
+
+    case GTK_POS_RIGHT:
+      edge = GTK_POS_LEFT;
+      orientation = GTK_ORIENTATION_VERTICAL;
+      break;
+
+    default:
+      g_assert_not_reached ();
+      return;
+    }
+
+  child = gtk_bin_get_child (GTK_BIN (self));
+
+  if (PNL_IS_DOCK_PANED (child))
+    {
+      gtk_orientable_set_orientation (GTK_ORIENTABLE (child), orientation);
+      pnl_dock_paned_set_child_edge (PNL_DOCK_PANED (child), edge);
+    }
+  else if (PNL_IS_DOCK_STACK (child))
+    {
+      pnl_dock_stack_set_edge (PNL_DOCK_STACK (child), edge);
+    }
+}
+
 static gboolean
 pnl_dock_overlay_edge_draw (GtkWidget *widget,
                             cairo_t   *cr)
@@ -58,6 +107,20 @@ pnl_dock_overlay_edge_draw (GtkWidget *widget,
   pnl_gtk_render_background_simple (widget, cr);
 
   return GTK_WIDGET_CLASS (pnl_dock_overlay_edge_parent_class)->draw (widget, cr);
+}
+
+static void
+pnl_dock_overlay_edge_add (GtkContainer *container,
+                           GtkWidget    *child)
+{
+  PnlDockOverlayEdge *self = (PnlDockOverlayEdge *)container;
+
+  g_assert (PNL_IS_DOCK_OVERLAY_EDGE (self));
+  g_assert (GTK_IS_WIDGET (child));
+
+  GTK_CONTAINER_CLASS (pnl_dock_overlay_edge_parent_class)->add (container, child);
+
+  pnl_dock_overlay_edge_update_edge (self);
 }
 
 static void
@@ -110,10 +173,13 @@ static void
 pnl_dock_overlay_edge_class_init (PnlDockOverlayEdgeClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   object_class->get_property = pnl_dock_overlay_edge_get_property;
   object_class->set_property = pnl_dock_overlay_edge_set_property;
+
+  container_class->add = pnl_dock_overlay_edge_add;
 
   widget_class->draw = pnl_dock_overlay_edge_draw;
 
@@ -194,55 +260,6 @@ pnl_dock_overlay_edge_get_edge (PnlDockOverlayEdge *self)
   g_return_val_if_fail (PNL_IS_DOCK_OVERLAY_EDGE (self), 0);
 
   return self->edge;
-}
-
-static void
-pnl_dock_overlay_edge_update_edge (PnlDockOverlayEdge *self)
-{
-  GtkWidget *child;
-  GtkPositionType edge;
-  GtkOrientation orientation;
-
-  g_assert (PNL_IS_DOCK_OVERLAY_EDGE (self));
-
-  switch (self->edge)
-    {
-    case GTK_POS_TOP:
-      edge = GTK_POS_BOTTOM;
-      orientation = GTK_ORIENTATION_HORIZONTAL;
-      break;
-
-    case GTK_POS_BOTTOM:
-      edge = GTK_POS_TOP;
-      orientation = GTK_ORIENTATION_HORIZONTAL;
-      break;
-
-    case GTK_POS_LEFT:
-      edge = GTK_POS_RIGHT;
-      orientation = GTK_ORIENTATION_VERTICAL;
-      break;
-
-    case GTK_POS_RIGHT:
-      edge = GTK_POS_LEFT;
-      orientation = GTK_ORIENTATION_VERTICAL;
-      break;
-
-    default:
-      g_assert_not_reached ();
-      return;
-    }
-
-  child = gtk_bin_get_child (GTK_BIN (self));
-
-  if (PNL_IS_DOCK_PANED (child))
-    {
-      gtk_orientable_set_orientation (GTK_ORIENTABLE (child), orientation);
-      pnl_dock_paned_set_child_edge (PNL_DOCK_PANED (child), edge);
-    }
-  else if (PNL_IS_DOCK_STACK (child))
-    {
-      pnl_dock_stack_set_edge (PNL_DOCK_STACK (child), edge);
-    }
 }
 
 void

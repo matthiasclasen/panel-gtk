@@ -52,11 +52,11 @@ pnl_tab_update_edge (PnlTab *self)
       break;
 
     case GTK_POS_LEFT:
-      gtk_label_set_angle (self->title, 90.0);
+      gtk_label_set_angle (self->title, -90.0);
       break;
 
     case GTK_POS_RIGHT:
-      gtk_label_set_angle (self->title, -90.0);
+      gtk_label_set_angle (self->title, 90.0);
       break;
 
     default:
