@@ -17,6 +17,9 @@
  */
 
 #include "pnl-dock-overlay-edge-private.h"
+#include "pnl-dock-paned.h"
+#include "pnl-dock-paned-private.h"
+#include "pnl-dock-stack.h"
 #include "pnl-util-private.h"
 
 struct _PnlDockOverlayEdge
@@ -193,6 +196,55 @@ pnl_dock_overlay_edge_get_edge (PnlDockOverlayEdge *self)
   return self->edge;
 }
 
+static void
+pnl_dock_overlay_edge_update_edge (PnlDockOverlayEdge *self)
+{
+  GtkWidget *child;
+  GtkPositionType edge;
+  GtkOrientation orientation;
+
+  g_assert (PNL_IS_DOCK_OVERLAY_EDGE (self));
+
+  switch (self->edge)
+    {
+    case GTK_POS_TOP:
+      edge = GTK_POS_BOTTOM;
+      orientation = GTK_ORIENTATION_HORIZONTAL;
+      break;
+
+    case GTK_POS_BOTTOM:
+      edge = GTK_POS_TOP;
+      orientation = GTK_ORIENTATION_HORIZONTAL;
+      break;
+
+    case GTK_POS_LEFT:
+      edge = GTK_POS_RIGHT;
+      orientation = GTK_ORIENTATION_VERTICAL;
+      break;
+
+    case GTK_POS_RIGHT:
+      edge = GTK_POS_LEFT;
+      orientation = GTK_ORIENTATION_VERTICAL;
+      break;
+
+    default:
+      g_assert_not_reached ();
+      return;
+    }
+
+  child = gtk_bin_get_child (GTK_BIN (self));
+
+  if (PNL_IS_DOCK_PANED (child))
+    {
+      gtk_orientable_set_orientation (GTK_ORIENTABLE (child), orientation);
+      pnl_dock_paned_set_child_edge (PNL_DOCK_PANED (child), edge);
+    }
+  else if (PNL_IS_DOCK_STACK (child))
+    {
+      pnl_dock_stack_set_edge (PNL_DOCK_STACK (child), edge);
+    }
+}
+
 void
 pnl_dock_overlay_edge_set_edge (PnlDockOverlayEdge *self,
                                 GtkPositionType     edge)
@@ -204,6 +256,7 @@ pnl_dock_overlay_edge_set_edge (PnlDockOverlayEdge *self,
   if (edge != self->edge)
     {
       self->edge = edge;
+      pnl_dock_overlay_edge_update_edge (self);
       g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_EDGE]);
     }
 }

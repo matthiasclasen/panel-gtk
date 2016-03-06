@@ -27,15 +27,12 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (PnlTab, pnl_tab, PNL, TAB, GtkToggleButton)
 
-gboolean         pnl_tab_get_reveal_child (PnlTab          *self);
-void             pnl_tab_set_reveal_child (PnlTab          *self,
-                                           gboolean         reveal_child);
-const gchar     *pnl_tab_get_title        (PnlTab          *self);
-void             pnl_tab_set_title        (PnlTab          *self,
-                                           const gchar     *title);
-GtkPositionType  pnl_tab_get_edge         (PnlTab          *self);
-void             pnl_tab_set_edge         (PnlTab          *self,
-                                           GtkPositionType  edge);
+const gchar     *pnl_tab_get_title (PnlTab          *self);
+void             pnl_tab_set_title (PnlTab          *self,
+                                    const gchar     *title);
+GtkPositionType  pnl_tab_get_edge  (PnlTab          *self);
+void             pnl_tab_set_edge  (PnlTab          *self,
+                                    GtkPositionType  edge);
 
 G_END_DECLS
 

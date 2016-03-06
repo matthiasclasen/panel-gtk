@@ -18,10 +18,11 @@
 
 #include "pnl-dock-item.h"
 #include "pnl-dock-paned.h"
+#include "pnl-dock-stack.h"
 
 typedef struct
 {
-  void *foo;
+  GtkPositionType child_edge : 2;
 } PnlDockPanedPrivate;
 
 static void pnl_dock_paned_init_dock_group_iface (PnlDockGroupInterface *iface);
@@ -53,6 +54,9 @@ pnl_dock_paned_add (GtkContainer *container,
                  G_OBJECT_TYPE_NAME (self), G_OBJECT_TYPE_NAME (widget));
       return;
     }
+
+  if (PNL_IS_DOCK_STACK (widget))
+    pnl_dock_stack_set_edge (PNL_DOCK_STACK (widget), priv->child_edge);
 
   GTK_CONTAINER_CLASS (pnl_dock_paned_parent_class)->add (container, widget);
 }
@@ -101,10 +105,13 @@ pnl_dock_paned_class_init (PnlDockPanedClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+  GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
 
   object_class->finalize = pnl_dock_paned_finalize;
   object_class->get_property = pnl_dock_paned_get_property;
   object_class->set_property = pnl_dock_paned_set_property;
+
+  container_class->add = pnl_dock_paned_add;
 
   gtk_widget_class_set_css_name (widget_class, "dockpaned");
 }
@@ -112,6 +119,9 @@ pnl_dock_paned_class_init (PnlDockPanedClass *klass)
 static void
 pnl_dock_paned_init (PnlDockPaned *self)
 {
+  PnlDockPanedPrivate *priv = pnl_dock_paned_get_instance_private (self);
+
+  priv->child_edge = GTK_POS_TOP;
 }
 
 GtkWidget *
@@ -123,4 +133,34 @@ pnl_dock_paned_new (void)
 static void
 pnl_dock_paned_init_dock_group_iface (PnlDockGroupInterface *iface)
 {
+}
+
+static void
+pnl_dock_paned_update_child_edge (GtkWidget *widget,
+                                  gpointer   user_data)
+{
+  GtkPositionType child_edge = GPOINTER_TO_INT (user_data);
+
+  g_assert (GTK_IS_WIDGET (widget));
+
+  if (PNL_IS_DOCK_STACK (widget))
+    pnl_dock_stack_set_edge (PNL_DOCK_STACK (widget), child_edge);
+}
+
+void
+pnl_dock_paned_set_child_edge (PnlDockPaned    *self,
+                               GtkPositionType  child_edge)
+{
+  PnlDockPanedPrivate *priv = pnl_dock_paned_get_instance_private (self);
+
+  g_return_if_fail (PNL_IS_DOCK_PANED (self));
+
+  if (priv->child_edge != child_edge)
+    {
+      priv->child_edge = child_edge;
+
+      gtk_container_foreach (GTK_CONTAINER (self),
+                             pnl_dock_paned_update_child_edge,
+                             GINT_TO_POINTER (child_edge));
+    }
 }

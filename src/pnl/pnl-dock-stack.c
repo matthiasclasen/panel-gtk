@@ -22,8 +22,9 @@
 
 typedef struct
 {
-  GtkStack       *stack;
-  PnlTabStrip    *tab_strip;
+  GtkStack         *stack;
+  PnlTabStrip      *tab_strip;
+  GtkPositionType   edge : 2;
 } PnlDockStackPrivate;
 
 static void pnl_dock_stack_init_dock_group_iface (PnlDockGroupInterface *iface);
@@ -35,8 +36,11 @@ G_DEFINE_TYPE_EXTENDED (PnlDockStack, pnl_dock_stack, GTK_TYPE_BOX, 0,
 
 enum {
   PROP_0,
+  PROP_EDGE,
   N_PROPS
 };
+
+static GParamSpec *properties [N_PROPS];
 
 static void
 pnl_dock_stack_add (GtkContainer *container,
@@ -57,15 +61,6 @@ pnl_dock_stack_add (GtkContainer *container,
 }
 
 static void
-pnl_dock_stack_finalize (GObject *object)
-{
-  PnlDockStack *self = (PnlDockStack *)object;
-  PnlDockStackPrivate *priv = pnl_dock_stack_get_instance_private (self);
-
-  G_OBJECT_CLASS (pnl_dock_stack_parent_class)->finalize (object);
-}
-
-static void
 pnl_dock_stack_get_property (GObject    *object,
                              guint       prop_id,
                              GValue     *value,
@@ -75,6 +70,10 @@ pnl_dock_stack_get_property (GObject    *object,
 
   switch (prop_id)
     {
+    case PROP_EDGE:
+      g_value_set_enum (value, pnl_dock_stack_get_edge (self));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -90,6 +89,10 @@ pnl_dock_stack_set_property (GObject      *object,
 
   switch (prop_id)
     {
+    case PROP_EDGE:
+      pnl_dock_stack_set_edge (self, g_value_get_enum (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -102,11 +105,20 @@ pnl_dock_stack_class_init (PnlDockStackClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
 
-  object_class->finalize = pnl_dock_stack_finalize;
   object_class->get_property = pnl_dock_stack_get_property;
   object_class->set_property = pnl_dock_stack_set_property;
 
   container_class->add = pnl_dock_stack_add;
+
+  properties [PROP_EDGE] =
+    g_param_spec_enum ("edge",
+                       "Edge",
+                       "The edge for the tab strip",
+                       GTK_TYPE_POSITION_TYPE,
+                       GTK_POS_TOP,
+                       (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_properties (object_class, N_PROPS, properties);
 
   gtk_widget_class_set_css_name (widget_class, "dockstack");
 }
@@ -144,4 +156,68 @@ pnl_dock_stack_new (void)
 static void
 pnl_dock_stack_init_dock_group_iface (PnlDockGroupInterface *iface)
 {
+}
+
+GtkPositionType
+pnl_dock_stack_get_edge (PnlDockStack *self)
+{
+  PnlDockStackPrivate *priv = pnl_dock_stack_get_instance_private (self);
+
+  g_return_val_if_fail (PNL_IS_DOCK_STACK (self), 0);
+
+  return priv->edge;
+}
+
+void
+pnl_dock_stack_set_edge (PnlDockStack    *self,
+                         GtkPositionType  edge)
+{
+  PnlDockStackPrivate *priv = pnl_dock_stack_get_instance_private (self);
+
+  g_return_if_fail (PNL_IS_DOCK_STACK (self));
+  g_return_if_fail (edge >= 0);
+  g_return_if_fail (edge <= 3);
+
+  if (edge != priv->edge)
+    {
+      priv->edge = edge;
+
+      pnl_tab_strip_set_edge (priv->tab_strip, edge);
+
+      switch (edge)
+        {
+        case GTK_POS_TOP:
+          gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_VERTICAL);
+          gtk_container_child_set (GTK_CONTAINER (self), GTK_WIDGET (priv->tab_strip),
+                                   "position", 0,
+                                   NULL);
+          break;
+
+        case GTK_POS_BOTTOM:
+          gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_VERTICAL);
+          gtk_container_child_set (GTK_CONTAINER (self), GTK_WIDGET (priv->tab_strip),
+                                   "position", 1,
+                                   NULL);
+          break;
+
+        case GTK_POS_LEFT:
+          gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_HORIZONTAL);
+          gtk_container_child_set (GTK_CONTAINER (self), GTK_WIDGET (priv->tab_strip),
+                                   "position", 0,
+                                   NULL);
+          break;
+
+        case GTK_POS_RIGHT:
+          gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_HORIZONTAL);
+          gtk_container_child_set (GTK_CONTAINER (self), GTK_WIDGET (priv->tab_strip),
+                                   "position", 1,
+                                   NULL);
+          break;
+
+        default:
+          g_assert_not_reached ();
+        }
+
+      g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_EDGE]);
+    }
 }

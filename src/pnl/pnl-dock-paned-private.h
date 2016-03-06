@@ -1,4 +1,4 @@
-/* pnl-dock-stack.h
+/* pnl-dock-paned-private.h
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,23 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PNL_DOCK_STACK_H
-#define PNL_DOCK_STACK_H
+#ifndef PNL_DOCK_PANED_PRIVATE_H
+#define PNL_DOCK_PANED_PRIVATE_H
 
-#include "pnl-dock-group.h"
+#include "pnl-dock-paned.h"
 
 G_BEGIN_DECLS
 
-struct _PnlDockStackClass
-{
-  GtkBoxClass parent;
-};
-
-GtkWidget       *pnl_dock_stack_new      (void);
-GtkPositionType  pnl_dock_stack_get_edge (PnlDockStack    *self);
-void             pnl_dock_stack_set_edge (PnlDockStack    *self,
-                                          GtkPositionType  edge);
+void pnl_dock_paned_set_child_edge (PnlDockPaned    *self,
+                                    GtkPositionType  child_edge);
 
 G_END_DECLS
 
-#endif /* PNL_DOCK_STACK_H */
+#endif /* PNL_DOCK_PANED_PRIVATE_H */
