@@ -208,7 +208,7 @@ pnl_dock_overlay_edge_class_init (PnlDockOverlayEdgeClass *klass)
                       "The amount of pixels to overlap when mnemonics are visible",
                       0,
                       G_MAXINT,
-                      20,
+                      30,
                       (G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   gtk_widget_class_install_style_property (widget_class,
@@ -220,7 +220,7 @@ pnl_dock_overlay_edge_class_init (PnlDockOverlayEdgeClass *klass)
                       "The amount of pixels to overlap when hidden",
                       0,
                       G_MAXINT,
-                      3,
+                      5,
                       (G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   gtk_widget_class_install_style_property (widget_class,

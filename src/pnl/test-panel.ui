@@ -224,6 +224,13 @@
               <object class="PnlDockWidget">
                 <property name="title">Symbols</property>
                 <property name="visible">true</property>
+                  <object class="GtkTreeView">
+                    <property name="expand">true</property>
+                    <property name="width-request">100</property>
+                    <property name="height-request">100</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>

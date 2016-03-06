@@ -24,17 +24,21 @@
 #include "pnl-tab-strip.h"
 
 #define REVEAL_DURATION 300
+#define MNEMONIC_REVEAL_DURATION 100
 
 typedef struct
 {
   PnlDockOverlayEdge *edges [4];
   GtkAdjustment      *edge_adj [4];
+  GtkAdjustment      *edge_handle_adj [4];
   guint               child_reveal : 4;
-  guint               mnemonics_visible : 1;
 } PnlDockOverlayPrivate;
 
 static void pnl_dock_overlay_init_dock_iface      (PnlDockInterface  *iface);
 static void pnl_dock_overlay_init_buildable_iface (GtkBuildableIface *iface);
+static void pnl_dock_overlay_set_child_reveal     (PnlDockOverlay    *self,
+                                                   GtkWidget         *child,
+                                                   gboolean           reveal);
 
 G_DEFINE_TYPE_EXTENDED (PnlDockOverlay, pnl_dock_overlay, GTK_TYPE_OVERLAY, 0,
                         G_ADD_PRIVATE (PnlDockOverlay)
@@ -64,6 +68,7 @@ pnl_dock_overlay_get_edge_position (PnlDockOverlay     *self,
   PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
   GtkPositionType type;
   gdouble value;
+  gdouble handle_value;
   gint nat_width;
   gint nat_height;
 
@@ -95,6 +100,7 @@ pnl_dock_overlay_get_edge_position (PnlDockOverlay     *self,
     }
 
   value = gtk_adjustment_get_value (priv->edge_adj [type]);
+  handle_value = gtk_adjustment_get_value (priv->edge_handle_adj [type]);
 
   switch (type)
     {
@@ -102,6 +108,7 @@ pnl_dock_overlay_get_edge_position (PnlDockOverlay     *self,
       allocation->width = nat_width;
 
       allocation->x -= nat_width * value;
+      allocation->x += handle_value;
       break;
 
     case GTK_POS_RIGHT:
@@ -109,6 +116,7 @@ pnl_dock_overlay_get_edge_position (PnlDockOverlay     *self,
       allocation->width = nat_width;
 
       allocation->x += nat_width * value;
+      allocation->x -= handle_value;
       break;
 
     case GTK_POS_BOTTOM:
@@ -116,12 +124,14 @@ pnl_dock_overlay_get_edge_position (PnlDockOverlay     *self,
       allocation->height = nat_height;
 
       allocation->y += nat_height * value;
+      allocation->y -= handle_value;
       break;
 
     case GTK_POS_TOP:
       allocation->height = nat_height;
 
       allocation->y -= nat_height * value;
+      allocation->y += handle_value;
       break;
 
     default:
@@ -175,12 +185,32 @@ pnl_dock_overlay_toplevel_mnemonics (PnlDockOverlay *self,
                                      GtkWindow      *toplevel)
 {
   PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
+  const gchar *style_prop;
+  gboolean mnemonics_visible;
+  guint i;
 
   g_assert (PNL_IS_DOCK_OVERLAY (self));
   g_assert (pspec != NULL);
   g_assert (GTK_IS_WINDOW (toplevel));
 
-  priv->mnemonics_visible = gtk_window_get_mnemonics_visible (toplevel);
+  mnemonics_visible = gtk_window_get_mnemonics_visible (toplevel);
+  style_prop = mnemonics_visible ? "mnemonic-overlap-size" : "overlap-size";
+
+  for (i = 0; i < G_N_ELEMENTS (priv->edges); i++)
+    {
+      PnlDockOverlayEdge *edge = priv->edges [i];
+      GtkAdjustment *handle_adj = priv->edge_handle_adj [i];
+      gint overlap = 0;
+
+      gtk_widget_style_get (GTK_WIDGET (edge), style_prop, &overlap, NULL);
+
+      pnl_object_animate (handle_adj,
+                          PNL_ANIMATION_EASE_IN_OUT_CUBIC,
+                          MNEMONIC_REVEAL_DURATION,
+                          gtk_widget_get_frame_clock (GTK_WIDGET (edge)),
+                          "value", (gdouble)overlap,
+                          NULL);
+    }
 
   gtk_widget_queue_allocate (GTK_WIDGET (self));
 }
@@ -421,6 +451,13 @@ pnl_dock_overlay_init (PnlDockOverlay *self)
       priv->edge_adj [i] = gtk_adjustment_new (1, 0, 1, 0, 0, 0);
 
       g_signal_connect_swapped (priv->edge_adj [i],
+                                "value-changed",
+                                G_CALLBACK (gtk_widget_queue_allocate),
+                                self);
+
+      priv->edge_handle_adj [i] = gtk_adjustment_new (0, 0, 1000, 0, 0, 0);
+
+      g_signal_connect_swapped (priv->edge_handle_adj [i],
                                 "value-changed",
                                 G_CALLBACK (gtk_widget_queue_allocate),
                                 self);
