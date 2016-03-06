@@ -66,8 +66,7 @@
                     <property name="title">Color</property>
                     <property name="visible">true</property>
                     <child>
-                      <object class="GtkColorChooserWidget">
-                        <property name="show-editor">true</property>
+                      <object class="GtkLabel">
                         <property name="visible">true</property>
                       </object>
                     </child>
@@ -78,8 +77,7 @@
                     <property name="title">Swatches</property>
                     <property name="visible">true</property>
                     <child>
-                      <object class="GtkColorChooserWidget">
-                        <property name="show-editor">false</property>
+                      <object class="GtkLabel">
                         <property name="visible">true</property>
                       </object>
                     </child>

@@ -20,7 +20,7 @@
 
 typedef struct
 {
-  void *foo;
+  GPtrArray *docks;
 } PnlDockManagerPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (PnlDockManager, pnl_dock_manager, G_TYPE_OBJECT)
@@ -40,10 +40,68 @@ static GParamSpec *properties [N_PROPS];
 static guint signals [N_SIGNALS];
 
 static void
+pnl_dock_manager_weak_notify (gpointer  data,
+                              GObject  *where_the_object_was)
+{
+  PnlDockManager *self = data;
+  PnlDockManagerPrivate *priv = pnl_dock_manager_get_instance_private (self);
+
+  g_assert (PNL_IS_DOCK_MANAGER (self));
+
+  g_ptr_array_remove (priv->docks, where_the_object_was);
+}
+
+static void
+pnl_dock_manager_real_register_dock (PnlDockManager *self,
+                                     PnlDock        *dock)
+{
+  PnlDockManagerPrivate *priv = pnl_dock_manager_get_instance_private (self);
+
+  g_return_if_fail (PNL_IS_DOCK_MANAGER (self));
+  g_return_if_fail (PNL_IS_DOCK (dock));
+
+  g_object_weak_ref (G_OBJECT (dock), pnl_dock_manager_weak_notify, self);
+  g_ptr_array_add (priv->docks, dock);
+}
+
+static void
+pnl_dock_manager_real_unregister_dock (PnlDockManager *self,
+                                       PnlDock        *dock)
+{
+  PnlDockManagerPrivate *priv = pnl_dock_manager_get_instance_private (self);
+  guint i;
+
+  g_return_if_fail (PNL_IS_DOCK_MANAGER (self));
+  g_return_if_fail (PNL_IS_DOCK (dock));
+
+  for (i = 0; i < priv->docks->len; i++)
+    {
+      PnlDock *iter = g_ptr_array_index (priv->docks, i);
+
+      if (iter == dock)
+        {
+          g_object_weak_unref (G_OBJECT (dock), pnl_dock_manager_weak_notify, self);
+          g_ptr_array_remove_index (priv->docks, i);
+          break;
+        }
+    }
+}
+
+static void
 pnl_dock_manager_finalize (GObject *object)
 {
   PnlDockManager *self = (PnlDockManager *)object;
   PnlDockManagerPrivate *priv = pnl_dock_manager_get_instance_private (self);
+
+  while (priv->docks->len > 0)
+    {
+      PnlDock *dock = g_ptr_array_index (priv->docks, priv->docks->len - 1);
+
+      g_object_weak_unref (G_OBJECT (dock), pnl_dock_manager_weak_notify, self);
+      g_ptr_array_remove_index (priv->docks, priv->docks->len - 1);
+    }
+
+  g_clear_pointer (&priv->docks, g_ptr_array_unref);
 
   G_OBJECT_CLASS (pnl_dock_manager_parent_class)->finalize (object);
 }
@@ -87,6 +145,9 @@ pnl_dock_manager_class_init (PnlDockManagerClass *klass)
   object_class->get_property = pnl_dock_manager_get_property;
   object_class->set_property = pnl_dock_manager_set_property;
 
+  klass->register_dock = pnl_dock_manager_real_register_dock;
+  klass->unregister_dock = pnl_dock_manager_real_unregister_dock;
+
   signals [REGISTER_DOCK] =
     g_signal_new ("register-dock",
                   G_TYPE_FROM_CLASS (klass),
@@ -107,6 +168,9 @@ pnl_dock_manager_class_init (PnlDockManagerClass *klass)
 static void
 pnl_dock_manager_init (PnlDockManager *self)
 {
+  PnlDockManagerPrivate *priv = pnl_dock_manager_get_instance_private (self);
+
+  priv->docks = g_ptr_array_new ();
 }
 
 PnlDockManager *

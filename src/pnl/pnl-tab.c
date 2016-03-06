@@ -24,7 +24,8 @@ struct _PnlTab
 
   GtkPositionType edge : 2;
 
-  GtkLabel *title;
+  GtkRevealer *revealer;
+  GtkLabel    *title;
 };
 
 G_DEFINE_TYPE (PnlTab, pnl_tab, GTK_TYPE_TOGGLE_BUTTON)
@@ -32,6 +33,7 @@ G_DEFINE_TYPE (PnlTab, pnl_tab, GTK_TYPE_TOGGLE_BUTTON)
 enum {
   PROP_0,
   PROP_EDGE,
+  PROP_REVEAL_CHILD,
   PROP_TITLE,
   N_PROPS
 };
@@ -47,18 +49,30 @@ pnl_tab_update_edge (PnlTab *self)
     {
     case GTK_POS_TOP:
       gtk_label_set_angle (self->title, 0.0);
+      gtk_revealer_set_transition_type (self->revealer, GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP);
+      gtk_widget_set_valign (GTK_WIDGET (self->revealer), GTK_ALIGN_END);
+      gtk_widget_set_halign (GTK_WIDGET (self->revealer), GTK_ALIGN_FILL);
       break;
 
     case GTK_POS_BOTTOM:
       gtk_label_set_angle (self->title, 0.0);
+      gtk_revealer_set_transition_type (self->revealer, GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN);
+      gtk_widget_set_valign (GTK_WIDGET (self->revealer), GTK_ALIGN_START);
+      gtk_widget_set_halign (GTK_WIDGET (self->revealer), GTK_ALIGN_FILL);
       break;
 
     case GTK_POS_LEFT:
       gtk_label_set_angle (self->title, 90.0);
+      gtk_revealer_set_transition_type (self->revealer, GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT);
+      gtk_widget_set_valign (GTK_WIDGET (self->revealer), GTK_ALIGN_START);
+      gtk_widget_set_halign (GTK_WIDGET (self->revealer), GTK_ALIGN_START);
       break;
 
     case GTK_POS_RIGHT:
       gtk_label_set_angle (self->title, -90.0);
+      gtk_revealer_set_transition_type (self->revealer, GTK_REVEALER_TRANSITION_TYPE_SLIDE_LEFT);
+      gtk_widget_set_valign (GTK_WIDGET (self->revealer), GTK_ALIGN_START);
+      gtk_widget_set_halign (GTK_WIDGET (self->revealer), GTK_ALIGN_END);
       break;
 
     default:
@@ -78,6 +92,10 @@ pnl_tab_get_property (GObject    *object,
     {
     case PROP_EDGE:
       g_value_set_enum (value, pnl_tab_get_edge (self));
+      break;
+
+    case PROP_REVEAL_CHILD:
+      g_value_set_boolean (value, pnl_tab_get_reveal_child (self));
       break;
 
     case PROP_TITLE:
@@ -101,6 +119,10 @@ pnl_tab_set_property (GObject      *object,
     {
     case PROP_EDGE:
       pnl_tab_set_edge (self, g_value_get_enum (value));
+      break;
+
+    case PROP_REVEAL_CHILD:
+      pnl_tab_set_reveal_child (self, g_value_get_boolean (value));
       break;
 
     case PROP_TITLE:
@@ -131,6 +153,13 @@ pnl_tab_class_init (PnlTabClass *klass)
                        GTK_POS_TOP,
                        (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
 
+  properties [PROP_REVEAL_CHILD] =
+    g_param_spec_boolean ("reveal-child",
+                          "Reveal Child",
+                          "If the tab should be in full height or mini-height mode",
+                          TRUE,
+                          (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
+
   properties [PROP_TITLE] =
     g_param_spec_string ("title",
                          "Title",
@@ -146,12 +175,22 @@ pnl_tab_init (PnlTab *self)
 {
   self->edge = GTK_POS_TOP;
 
+  self->revealer = g_object_new (GTK_TYPE_REVEALER,
+                                 "transition-type", GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP,
+                                 "transition-duration", 150,
+                                 "reveal-child", TRUE,
+                                 "valign", GTK_ALIGN_END,
+                                 "visible", TRUE,
+                                 NULL);
+
+  gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (self->revealer));
+
   self->title = g_object_new (GTK_TYPE_LABEL,
                               "ellipsize", PANGO_ELLIPSIZE_END,
                               "visible", TRUE,
                               NULL);
 
-  gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (self->title));
+  gtk_container_add (GTK_CONTAINER (self->revealer), GTK_WIDGET (self->title));
 }
 
 const gchar *
@@ -192,5 +231,28 @@ pnl_tab_set_edge (PnlTab          *self,
       self->edge = edge;
       pnl_tab_update_edge (self);
       g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_EDGE]);
+    }
+}
+
+gboolean
+pnl_tab_get_reveal_child (PnlTab *self)
+{
+  g_return_val_if_fail (PNL_IS_TAB (self), FALSE);
+
+  return gtk_revealer_get_reveal_child (self->revealer);
+}
+
+void
+pnl_tab_set_reveal_child (PnlTab   *self,
+                          gboolean  reveal_child)
+{
+  g_return_if_fail (PNL_IS_TAB (self));
+
+  reveal_child = !!reveal_child;
+
+  if (reveal_child != pnl_tab_get_reveal_child (self))
+    {
+      gtk_revealer_set_reveal_child (self->revealer, reveal_child);
+      g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_REVEAL_CHILD]);
     }
 }

@@ -32,13 +32,16 @@ struct _PnlTabStripClass
   GtkBoxClass parent;
 };
 
-GtkWidget       *pnl_tab_strip_new       (void);
-GtkStack        *pnl_tab_strip_get_stack (PnlTabStrip     *self);
-void             pnl_tab_strip_set_stack (PnlTabStrip     *self,
-                                          GtkStack        *stack);
-GtkPositionType  pnl_tab_strip_get_edge  (PnlTabStrip     *self);
-void             pnl_tab_strip_set_edge  (PnlTabStrip     *self,
-                                          GtkPositionType  edge);
+GtkWidget       *pnl_tab_strip_new             (void);
+GtkStack        *pnl_tab_strip_get_stack       (PnlTabStrip     *self);
+void             pnl_tab_strip_set_stack       (PnlTabStrip     *self,
+                                                GtkStack        *stack);
+GtkPositionType  pnl_tab_strip_get_edge        (PnlTabStrip     *self);
+void             pnl_tab_strip_set_edge        (PnlTabStrip     *self,
+                                                GtkPositionType  edge);
+gboolean         pnl_tab_strip_get_show_labels (PnlTabStrip     *self);
+void             pnl_tab_strip_set_show_labels (PnlTabStrip     *self,
+                                                gboolean         show_labels);
 
 G_END_DECLS
 

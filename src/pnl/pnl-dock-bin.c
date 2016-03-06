@@ -19,8 +19,9 @@
 #include <stdlib.h>
 
 #include "pnl-dock-bin.h"
-#include "pnl-dock-edge-private.h"
+#include "pnl-dock-bin-edge-private.h"
 #include "pnl-dock-item.h"
+#include "pnl-util-private.h"
 
 #define HANDLE_WIDTH  10
 #define HANDLE_HEIGHT 10
@@ -752,7 +753,7 @@ pnl_dock_bin_size_allocate (GtkWidget     *widget,
 
       if (child->handle != NULL)
         {
-          if (PNL_IS_DOCK_EDGE (child->widget) &&
+          if (PNL_IS_DOCK_BIN_EDGE (child->widget) &&
               gtk_revealer_get_reveal_child (GTK_REVEALER (child->widget)))
             gdk_window_show (child->handle);
           else
@@ -1043,7 +1044,7 @@ pnl_dock_bin_pan_gesture_drag_end (PnlDockBin    *self,
     goto cleanup;
 
   g_assert (priv->drag_child != NULL);
-  g_assert (PNL_IS_DOCK_EDGE (priv->drag_child->widget));
+  g_assert (PNL_IS_DOCK_BIN_EDGE (priv->drag_child->widget));
 
   gtk_widget_get_allocation (priv->drag_child->widget, &child_alloc);
 
@@ -1053,7 +1054,7 @@ pnl_dock_bin_pan_gesture_drag_end (PnlDockBin    *self,
   else
     position = child_alloc.height;
 
-  pnl_dock_edge_set_position (PNL_DOCK_EDGE (priv->drag_child->widget), position);
+  pnl_dock_bin_edge_set_position (PNL_DOCK_BIN_EDGE (priv->drag_child->widget), position);
 
 cleanup:
   if (priv->drag_child != NULL)
@@ -1114,7 +1115,7 @@ pnl_dock_bin_pan_gesture_pan (PnlDockBin      *self,
 
   position = priv->drag_child->drag_offset + priv->drag_child->drag_begin_position;
   if (position >= 0)
-    pnl_dock_edge_set_position (PNL_DOCK_EDGE (priv->drag_child->widget), position);
+    pnl_dock_bin_edge_set_position (PNL_DOCK_BIN_EDGE (priv->drag_child->widget), position);
 }
 
 static void
@@ -1209,45 +1210,14 @@ pnl_dock_bin_drag_leave (GtkWidget      *widget,
   priv->dnd_drag_y = -1;
 }
 
-static void
-border_sum (GtkBorder *one,
-            GtkBorder *two)
-{
-  one->top += two->top;
-  one->right += two->right;
-  one->bottom += two->bottom;
-  one->left += two->left;
-}
-
 static gboolean
 pnl_dock_bin_draw (GtkWidget *widget,
                    cairo_t   *cr)
 {
-  PnlDockBin *self = (PnlDockBin *)widget;
-  PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
-  GtkStyleContext *style_context;
-  GtkStateFlags state;
-  GtkAllocation alloc;
-  GtkBorder border;
-  GtkBorder padding;
-
   g_assert (PNL_IS_DOCK_BIN (widget));
   g_assert (cr != NULL);
 
-  gtk_widget_get_allocation (widget, &alloc);
-
-  style_context = gtk_widget_get_style_context (widget);
-  state = gtk_style_context_get_state (style_context);
-  gtk_style_context_get_border (style_context, state, &border);
-  gtk_style_context_get_padding (style_context, state, &padding);
-
-  border_sum (&border, &padding);
-
-  gtk_render_background (gtk_widget_get_style_context (widget), cr,
-                         border.left,
-                         border.top,
-                         alloc.width - border.left - border.right,
-                         alloc.height - border.top - border.bottom);
+  pnl_gtk_render_background_simple (widget, cr);
 
   return GTK_WIDGET_CLASS (pnl_dock_bin_parent_class)->draw (widget, cr);
 }
@@ -1417,7 +1387,7 @@ pnl_dock_bin_init_child (PnlDockBin          *self,
   if (type == PNL_DOCK_BIN_CHILD_CENTER)
     return;
 
-  child->widget = g_object_new (PNL_TYPE_DOCK_EDGE,
+  child->widget = g_object_new (PNL_TYPE_DOCK_BIN_EDGE,
                                 "edge", (GtkPositionType)type,
                                 "reveal-child", FALSE,
                                 "visible", TRUE,
@@ -1610,7 +1580,7 @@ pnl_dock_bin_add_child (GtkBuildable *buildable,
   else
     bin_child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_LEFT);
 
-  if (PNL_IS_DOCK_EDGE (bin_child->widget))
+  if (PNL_IS_DOCK_BIN_EDGE (bin_child->widget))
     {
       GtkWidget *grandchild = gtk_bin_get_child (GTK_BIN (bin_child->widget));
 

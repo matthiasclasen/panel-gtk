@@ -24,6 +24,7 @@ typedef struct
   GAction         *action;
   GtkStack        *stack;
   GtkPositionType  edge : 2;
+  guint            show_labels : 1;
 } PnlTabStripPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (PnlTabStrip, pnl_tab_strip, GTK_TYPE_BOX)
@@ -31,6 +32,7 @@ G_DEFINE_TYPE_WITH_PRIVATE (PnlTabStrip, pnl_tab_strip, GTK_TYPE_BOX)
 enum {
   PROP_0,
   PROP_EDGE,
+  PROP_SHOW_LABELS,
   PROP_STACK,
   N_PROPS
 };
@@ -178,6 +180,13 @@ pnl_tab_strip_class_init (PnlTabStripClass *klass)
                        GTK_POS_TOP,
                        (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
 
+  properties [PROP_SHOW_LABELS] =
+    g_param_spec_boolean ("show-labels",
+                          "Show Labels",
+                          "If we are in compressed mode",
+                          TRUE,
+                          (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
+
   properties [PROP_STACK] =
     g_param_spec_object ("stack",
                          "Stack",
@@ -210,7 +219,7 @@ pnl_tab_strip_init (PnlTabStrip *self)
 
   priv->edge = GTK_POS_LEFT;
   style_context = gtk_widget_get_style_context (GTK_WIDGET (self));
-  gtk_style_context_add_class (style_context, "left");
+  gtk_style_context_add_class (style_context, "left-edge");
 }
 
 static void
@@ -474,10 +483,10 @@ pnl_tab_strip_set_edge (PnlTabStrip     *self,
 
       style_context = gtk_widget_get_style_context (GTK_WIDGET (self));
 
-      gtk_style_context_remove_class (style_context, "left");
-      gtk_style_context_remove_class (style_context, "top");
-      gtk_style_context_remove_class (style_context, "right");
-      gtk_style_context_remove_class (style_context, "bottom");
+      gtk_style_context_remove_class (style_context, "left-edge");
+      gtk_style_context_remove_class (style_context, "top-edge");
+      gtk_style_context_remove_class (style_context, "right-edge");
+      gtk_style_context_remove_class (style_context, "bottom-edge");
 
       switch (edge)
         {
@@ -504,5 +513,45 @@ pnl_tab_strip_set_edge (PnlTabStrip     *self,
       gtk_style_context_add_class (style_context, class_name);
 
       g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_EDGE]);
+    }
+}
+
+static void
+pnl_tab_strip_update_show_labels (GtkWidget *widget,
+                                  gpointer   user_data)
+{
+  gboolean show_labels = GPOINTER_TO_INT (user_data);
+
+  if (PNL_IS_TAB (widget))
+    pnl_tab_set_reveal_child (PNL_TAB (widget), show_labels);
+}
+
+gboolean
+pnl_tab_strip_get_show_labels (PnlTabStrip *self)
+{
+  PnlTabStripPrivate *priv = pnl_tab_strip_get_instance_private (self);
+
+  g_return_val_if_fail (PNL_IS_TAB_STRIP (self), FALSE);
+
+  return priv->show_labels;
+}
+
+void
+pnl_tab_strip_set_show_labels (PnlTabStrip *self,
+                               gboolean     show_labels)
+{
+  PnlTabStripPrivate *priv = pnl_tab_strip_get_instance_private (self);
+
+  g_return_if_fail (PNL_IS_TAB_STRIP (self));
+
+  show_labels = !!show_labels;
+
+  if (priv->show_labels != show_labels)
+    {
+      priv->show_labels = show_labels;
+      gtk_container_foreach (GTK_CONTAINER (self),
+                             pnl_tab_strip_update_show_labels,
+                             GINT_TO_POINTER (show_labels));
+      g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_SHOW_LABELS]);
     }
 }

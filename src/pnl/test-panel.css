@@ -7,28 +7,28 @@ dockbin {
  background: #282828;
 }
 
-tabstrip {
+dockstack tabstrip {
   background: #3a3a3a;
   box-shadow: 0  1px 0 #282828 inset,
               0 -1px 0 #4d4d4d inset;
 }
 
-tab {
+dockstack tab {
   background: transparent;
   border: 1px solid transparent;
   margin-top: 1px;
   transition-duration: 150ms;
 }
 
-tab:first-child {
+dockstack tab:first-child {
   margin-left: 1px;
 }
 
-tab:last-child {
+dockstack tab:last-child {
   margin-right: 1px;
 }
 
-tab:checked {
+dockstack tab:checked {
   background-image: linear-gradient(#555555, #525252);
   border-left: 1px solid #292826;
   border-right: 1px solid #292826;
@@ -36,7 +36,7 @@ tab:checked {
   border-bottom: 1px solid #525252;
 }
 
-tab label {
+dockstack tab label {
   padding: 4px 7px 4px 7px;
   font-weight: bold;
   font-size: 8px;
@@ -54,14 +54,12 @@ dockoverlay > tabstrip > tab:checked {
   background: transparent;
 }
 
-dockoverlay > tabstrip > tab > label {
+dockoverlay > tabstrip > tab label {
   padding: 4px;
-  font-weight: bold;
-  font-size: 8px;
+  font-size: 1em;
   color: white;
 }
 
-dockoverlay > tabstrip.left > tab {
-  background: blue;
-  border-right: 1px solid white;
+dockoverlay > tabstrip > tab {
+  background: #3a3a3a;
 }

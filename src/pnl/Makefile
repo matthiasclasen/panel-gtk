@@ -4,13 +4,14 @@ PKGS = gtk+-3.0
 
 OBJECTS = \
 	pnl-dock-bin.o \
+	pnl-dock-bin-edge.o \
+	pnl-dock-bin-edge-child.o \
 	pnl-dock-group.o \
 	pnl-dock-item.o \
 	pnl-dock.o \
-	pnl-dock-edge.o \
-	pnl-dock-edge-child.o \
 	pnl-dock-manager.o \
 	pnl-dock-overlay.o \
+	pnl-dock-overlay-edge.o \
 	pnl-dock-paned.o \
 	pnl-dock-stack.o \
 	pnl-dock-widget.o \
@@ -18,6 +19,7 @@ OBJECTS = \
 	pnl-multi-paned.o \
 	pnl-tab.o \
 	pnl-tab-strip.o \
+	pnl-util.o \
 	$(NULL)
 
 %.o: %.c %-private.h

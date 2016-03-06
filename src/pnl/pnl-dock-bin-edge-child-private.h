@@ -1,6 +1,6 @@
-/* pnl-dock-edge.h
+/* pnl-dock-edge-child-private.h
  *
- * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
+ * Copyright (C) 2016 Christian Hergert <christian@hergert.me>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,24 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PNL_DOCK_EDGE_H
-#define PNL_DOCK_EDGE_H
+#ifndef PNL_DOCK_BIN_EDGE_CHILD_PRIVATE_H
+#define PNL_DOCK_BIN_EDGE_CHILD_PRIVATE_H
 
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
-#define PNL_TYPE_DOCK_EDGE (pnl_dock_edge_get_type())
+#define PNL_TYPE_DOCK_BIN_EDGE_CHILD (pnl_dock_bin_edge_child_get_type())
 
-G_DECLARE_FINAL_TYPE (PnlDockEdge, pnl_dock_edge, PNL, DOCK_EDGE, GtkRevealer)
+G_DECLARE_FINAL_TYPE (PnlDockBinEdgeChild, pnl_dock_bin_edge_child, PNL, DOCK_BIN_EDGE_CHILD, GtkBin)
 
-GtkPositionType pnl_dock_edge_get_edge     (PnlDockEdge     *self);
-void            pnl_dock_edge_set_edge     (PnlDockEdge     *self,
-                                            GtkPositionType  edge);
-gint            pnl_dock_edge_get_position (PnlDockEdge     *self);
-void            pnl_dock_edge_set_position (PnlDockEdge     *self,
-                                            gint             position);
+gint pnl_dock_bin_edge_child_get_position (PnlDockBinEdgeChild *self);
+void pnl_dock_bin_edge_child_set_position (PnlDockBinEdgeChild *self,
+                                           gint                  position);
 
 G_END_DECLS
 
-#endif /* PNL_DOCK_EDGE_H */
+#endif /* PNL_DOCK_BIN_EDGE_CHILD_PRIVATE_H */
