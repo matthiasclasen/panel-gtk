@@ -32,30 +32,28 @@ static void
 pnl_dock_item_real_set_manager (PnlDockItem    *self,
                                 PnlDockManager *manager)
 {
-  g_autoptr(PnlDockManager) old_manager = NULL;
+  PnlDockManager *old_manager;
 
   g_assert (PNL_IS_DOCK_ITEM (self));
   g_assert (!manager || PNL_IS_DOCK_MANAGER (manager));
 
   if (NULL != (old_manager = pnl_dock_item_get_manager (self)))
-    g_object_ref (old_manager);
+    {
+      if (PNL_IS_DOCK (self))
+        pnl_dock_manager_unregister_dock (old_manager, PNL_DOCK (self));
+    }
 
   if (manager != NULL)
-    g_object_set_data_full (G_OBJECT (self),
-                            "PNL_DOCK_MANAGER",
-                            g_object_ref (manager),
-                            g_object_unref);
-  else
-    g_object_set_data (G_OBJECT (self), "PNL_DOCK_MANAGER", NULL);
-
-  if (PNL_IS_DOCK (self))
     {
-      if (old_manager != NULL)
-        pnl_dock_manager_unregister_dock (old_manager, PNL_DOCK (self));
-
-      if (manager != NULL)
+      g_object_set_data_full (G_OBJECT (self),
+                              "PNL_DOCK_MANAGER",
+                              g_object_ref (manager),
+                              g_object_unref);
+      if (PNL_IS_DOCK (self))
         pnl_dock_manager_register_dock (manager, PNL_DOCK (self));
     }
+  else
+    g_object_set_data (G_OBJECT (self), "PNL_DOCK_MANAGER", NULL);
 
   g_object_notify (G_OBJECT (self), "manager");
 
