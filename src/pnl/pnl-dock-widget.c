@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "pnl-dock-item.h"
 #include "pnl-dock-widget.h"
 
 typedef struct
@@ -23,10 +24,13 @@ typedef struct
   gchar *title;
 } PnlDockWidgetPrivate;
 
-G_DEFINE_TYPE_WITH_PRIVATE (PnlDockWidget, pnl_dock_widget, GTK_TYPE_BOX)
+G_DEFINE_TYPE_EXTENDED (PnlDockWidget, pnl_dock_widget, GTK_TYPE_BOX, 0,
+                        G_ADD_PRIVATE (PnlDockWidget)
+                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM, NULL))
 
 enum {
   PROP_0,
+  PROP_MANAGER,
   PROP_TITLE,
   N_PROPS
 };
@@ -54,6 +58,10 @@ pnl_dock_widget_get_property (GObject    *object,
 
   switch (prop_id)
     {
+    case PROP_MANAGER:
+      g_value_set_object (value, pnl_dock_item_get_manager (PNL_DOCK_ITEM (self)));
+      break;
+
     case PROP_TITLE:
       g_value_set_string (value, pnl_dock_widget_get_title (self));
       break;
@@ -73,6 +81,10 @@ pnl_dock_widget_set_property (GObject      *object,
 
   switch (prop_id)
     {
+    case PROP_MANAGER:
+      pnl_dock_item_set_manager (PNL_DOCK_ITEM (self), g_value_get_object (value));
+      break;
+
     case PROP_TITLE:
       pnl_dock_widget_set_title (self, g_value_get_string (value));
       break;
@@ -90,6 +102,13 @@ pnl_dock_widget_class_init (PnlDockWidgetClass *klass)
   object_class->finalize = pnl_dock_widget_finalize;
   object_class->get_property = pnl_dock_widget_get_property;
   object_class->set_property = pnl_dock_widget_set_property;
+
+  properties [PROP_MANAGER] =
+    g_param_spec_object ("manager",
+                         "Manager",
+                         "The panel manager",
+                         PNL_TYPE_DOCK_MANAGER,
+                         (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   properties [PROP_TITLE] =
     g_param_spec_string ("title",
