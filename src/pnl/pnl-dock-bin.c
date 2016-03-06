@@ -249,6 +249,37 @@ pnl_dock_bin_get_child_typed (PnlDockBin          *self,
   return NULL;
 }
 
+static void
+pnl_dock_bin_update_focus_chain (PnlDockBin *self)
+{
+  PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
+  PnlDockBinChild *child;
+  GList *focus_chain = NULL;
+  guint i;
+
+  g_assert (PNL_IS_DOCK_BIN (self));
+
+  for (i = G_N_ELEMENTS (priv->children); i > 0; i--)
+    {
+      child = &priv->children [i - 1];
+
+      if ((child->widget != NULL) &&
+          (child->type != PNL_DOCK_BIN_CHILD_CENTER))
+        focus_chain = g_list_prepend (focus_chain, child->widget);
+    }
+
+  child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_CENTER);
+
+  if (child->widget != NULL)
+    focus_chain = g_list_prepend (focus_chain, child->widget);
+
+  if (focus_chain != NULL)
+    {
+      gtk_container_set_focus_chain (GTK_CONTAINER (self), focus_chain);
+      g_list_free (focus_chain);
+    }
+}
+
 static GAction *
 pnl_dock_bin_get_action_for_type (PnlDockBin          *self,
                                   PnlDockBinChildType  type)
@@ -303,6 +334,8 @@ pnl_dock_bin_add (GtkContainer *container,
 
   child->widget = g_object_ref_sink (widget);
   gtk_widget_set_parent (widget, GTK_WIDGET (self));
+
+  pnl_dock_bin_update_focus_chain (self);
 
   gtk_widget_queue_resize (GTK_WIDGET (self));
 }
@@ -1471,6 +1504,8 @@ pnl_dock_bin_init (PnlDockBin *self)
 
   priv->dnd_drag_x = -1;
   priv->dnd_drag_y = -1;
+
+  pnl_dock_bin_update_focus_chain (self);
 }
 
 GtkWidget *
