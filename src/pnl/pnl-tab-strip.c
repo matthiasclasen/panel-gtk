@@ -316,9 +316,9 @@ pnl_tab_strip_stack_add (PnlTabStrip *self,
                       "action-name", "tab-strip.tab",
                       "action-target", target,
                       "edge", priv->edge,
+                      "widget", widget,
                       NULL);
 
-  g_object_set_data (G_OBJECT (tab), "PNL_TAB_STRIP_WIDGET", widget);
   g_object_set_data (G_OBJECT (widget), "PNL_TAB", tab);
 
   g_signal_connect_object (widget,

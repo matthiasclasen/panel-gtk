@@ -23,6 +23,7 @@ struct _PnlTab
   GtkToggleButton  parent;
   GtkPositionType  edge : 2;
   GtkLabel        *title;
+  GtkWidget       *widget;
 };
 
 G_DEFINE_TYPE (PnlTab, pnl_tab, GTK_TYPE_TOGGLE_BUTTON)
@@ -31,10 +32,25 @@ enum {
   PROP_0,
   PROP_EDGE,
   PROP_TITLE,
+  PROP_WIDGET,
   N_PROPS
 };
 
 static GParamSpec *properties [N_PROPS];
+
+static void
+pnl_tab_destroy (GtkWidget *widget)
+{
+  PnlTab *self = (PnlTab *)widget;
+
+  if (self->widget)
+    {
+      g_object_remove_weak_pointer (G_OBJECT (self->widget), (gpointer *)&self->widget);
+      self->widget = NULL;
+    }
+
+  GTK_WIDGET_CLASS (pnl_tab_parent_class)->destroy (widget);
+}
 
 static void
 pnl_tab_update_edge (PnlTab *self)
@@ -82,6 +98,10 @@ pnl_tab_get_property (GObject    *object,
       g_value_set_string (value, pnl_tab_get_title (self));
       break;
 
+    case PROP_WIDGET:
+      g_value_set_object (value, pnl_tab_get_widget (self));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -105,6 +125,10 @@ pnl_tab_set_property (GObject      *object,
       pnl_tab_set_title (self, g_value_get_string (value));
       break;
 
+    case PROP_WIDGET:
+      pnl_tab_set_widget (self, g_value_get_object (value));
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -118,6 +142,8 @@ pnl_tab_class_init (PnlTabClass *klass)
 
   object_class->get_property = pnl_tab_get_property;
   object_class->set_property = pnl_tab_set_property;
+
+  widget_class->destroy = pnl_tab_destroy;
 
   gtk_widget_class_set_css_name (widget_class, "tab");
 
@@ -136,6 +162,13 @@ pnl_tab_class_init (PnlTabClass *klass)
                          NULL,
                          (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
+  properties [PROP_WIDGET] =
+    g_param_spec_object ("widget",
+                         "Widget",
+                         "The widget the tab represents",
+                         GTK_TYPE_WIDGET,
+                         (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
+
   g_object_class_install_properties (object_class, N_PROPS, properties);
 }
 
@@ -146,6 +179,7 @@ pnl_tab_init (PnlTab *self)
 
   self->title = g_object_new (GTK_TYPE_LABEL,
                               "ellipsize", PANGO_ELLIPSIZE_END,
+                              "use-underline", TRUE,
                               "visible", TRUE,
                               NULL);
 
@@ -190,5 +224,35 @@ pnl_tab_set_edge (PnlTab          *self,
       self->edge = edge;
       pnl_tab_update_edge (self);
       g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_EDGE]);
+    }
+}
+
+GtkWidget *
+pnl_tab_get_widget (PnlTab *self)
+{
+  g_return_val_if_fail (PNL_IS_TAB (self), NULL);
+
+  return self->widget;
+}
+
+void
+pnl_tab_set_widget (PnlTab    *self,
+                    GtkWidget *widget)
+{
+  g_return_if_fail (PNL_IS_TAB (self));
+
+  if (self->widget != widget)
+    {
+      if (self->widget)
+        g_object_remove_weak_pointer (G_OBJECT (self->widget), (gpointer *)&self->widget);
+
+      self->widget = widget;
+
+      if (widget)
+        g_object_add_weak_pointer (G_OBJECT (self->widget), (gpointer *)&self->widget);
+
+      gtk_label_set_mnemonic_widget (self->title, widget);
+
+      g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_WIDGET]);
     }
 }
