@@ -38,6 +38,18 @@ enum {
 static GParamSpec *properties [N_PROPS];
 
 static void
+pnl_dock_widget_grab_focus (GtkWidget *widget)
+{
+  PnlDockWidget *self = (PnlDockWidget *)widget;
+
+  g_assert (PNL_IS_DOCK_WIDGET (self));
+
+  pnl_dock_item_present (PNL_DOCK_ITEM (self));
+
+  GTK_WIDGET_CLASS (pnl_dock_widget_parent_class)->grab_focus (widget);
+}
+
+static void
 pnl_dock_widget_finalize (GObject *object)
 {
   PnlDockWidget *self = (PnlDockWidget *)object;
@@ -98,10 +110,13 @@ static void
 pnl_dock_widget_class_init (PnlDockWidgetClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   object_class->finalize = pnl_dock_widget_finalize;
   object_class->get_property = pnl_dock_widget_get_property;
   object_class->set_property = pnl_dock_widget_set_property;
+
+  widget_class->grab_focus = pnl_dock_widget_grab_focus;
 
   properties [PROP_MANAGER] =
     g_param_spec_object ("manager",
@@ -124,6 +139,7 @@ static void
 pnl_dock_widget_init (PnlDockWidget *self)
 {
   gtk_widget_set_has_window (GTK_WIDGET (self), FALSE);
+  gtk_widget_set_can_focus (GTK_WIDGET (self), TRUE);
 }
 
 GtkWidget *

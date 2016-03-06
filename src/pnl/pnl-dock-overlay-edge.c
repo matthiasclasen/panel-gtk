@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "pnl-dock-item.h"
 #include "pnl-dock-overlay-edge-private.h"
 #include "pnl-dock-paned.h"
 #include "pnl-dock-paned-private.h"
@@ -29,7 +30,8 @@ struct _PnlDockOverlayEdge
   gint            position;
 };
 
-G_DEFINE_TYPE (PnlDockOverlayEdge, pnl_dock_overlay_edge, GTK_TYPE_BIN)
+G_DEFINE_TYPE_EXTENDED (PnlDockOverlayEdge, pnl_dock_overlay_edge, GTK_TYPE_BIN, 0,
+                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM, NULL))
 
 enum {
   PROP_0,
@@ -117,6 +119,9 @@ pnl_dock_overlay_edge_add (GtkContainer *container,
 
   g_assert (PNL_IS_DOCK_OVERLAY_EDGE (self));
   g_assert (GTK_IS_WIDGET (child));
+
+  if (PNL_IS_DOCK_ITEM (child))
+    pnl_dock_item_adopt (PNL_DOCK_ITEM (self), PNL_DOCK_ITEM (child));
 
   GTK_CONTAINER_CLASS (pnl_dock_overlay_edge_parent_class)->add (container, child);
 

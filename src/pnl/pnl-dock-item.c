@@ -140,3 +140,47 @@ pnl_dock_item_adopt (PnlDockItem *self,
 
   return FALSE;
 }
+
+void
+pnl_dock_item_present_child (PnlDockItem *self,
+                             PnlDockItem *child)
+{
+  g_assert (PNL_IS_DOCK_ITEM (self));
+  g_assert (PNL_IS_DOCK_ITEM (child));
+
+#if 0
+  g_print ("present_child (%s, %s)\n",
+           G_OBJECT_TYPE_NAME (self),
+           G_OBJECT_TYPE_NAME (child));
+#endif
+
+  if (PNL_DOCK_ITEM_GET_IFACE (self)->present_child)
+    PNL_DOCK_ITEM_GET_IFACE (self)->present_child (self, child);
+}
+
+/**
+ * pnl_dock_item_present:
+ * @self: A #PnlDockItem
+ *
+ * This widget will walk the widget hierarchy to ensure that the
+ * dock item is visible to the user.
+ */
+void
+pnl_dock_item_present (PnlDockItem *self)
+{
+  GtkWidget *parent;
+
+  g_return_if_fail (PNL_IS_DOCK_ITEM (self));
+
+  for (parent = gtk_widget_get_parent (GTK_WIDGET (self));
+       parent != NULL;
+       parent = gtk_widget_get_parent (parent))
+    {
+      if (PNL_IS_DOCK_ITEM (parent))
+        {
+          pnl_dock_item_present_child (PNL_DOCK_ITEM (parent), self);
+          pnl_dock_item_present (PNL_DOCK_ITEM (parent));
+          return;
+        }
+    }
+}

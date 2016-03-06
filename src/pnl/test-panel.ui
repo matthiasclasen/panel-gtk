@@ -53,6 +53,17 @@
         <child>
           <object class="PnlDockBin" id="dockbin">
             <property name="visible">true</property>
+            <child>
+              <object class="GtkScrolledWindow">
+                <property name="visible">true</property>
+                <child>
+                  <object class="GtkTextView">
+                    <property name="monospace">true</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
+              </object>
+            </child>
             <child type="left">
               <object class="PnlDockPaned">
                 <property name="visible">true</property>

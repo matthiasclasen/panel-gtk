@@ -1328,16 +1328,16 @@ pnl_dock_bin_class_init (PnlDockBinClass *klass)
   object_class->set_property = pnl_dock_bin_set_property;
 
   widget_class->destroy = pnl_dock_bin_destroy;
+  widget_class->drag_leave = pnl_dock_bin_drag_leave;
+  widget_class->drag_motion = pnl_dock_bin_drag_motion;
+  widget_class->draw = pnl_dock_bin_draw;
   widget_class->get_preferred_height = pnl_dock_bin_get_preferred_height;
   widget_class->get_preferred_width = pnl_dock_bin_get_preferred_width;
-  widget_class->size_allocate = pnl_dock_bin_size_allocate;
-  widget_class->realize = pnl_dock_bin_realize;
-  widget_class->unrealize = pnl_dock_bin_unrealize;
   widget_class->map = pnl_dock_bin_map;
+  widget_class->realize = pnl_dock_bin_realize;
+  widget_class->size_allocate = pnl_dock_bin_size_allocate;
   widget_class->unmap = pnl_dock_bin_unmap;
-  widget_class->drag_motion = pnl_dock_bin_drag_motion;
-  widget_class->drag_leave = pnl_dock_bin_drag_leave;
-  widget_class->draw = pnl_dock_bin_draw;
+  widget_class->unrealize = pnl_dock_bin_unrealize;
 
   container_class->add = pnl_dock_bin_add;
   container_class->forall = pnl_dock_bin_forall;
@@ -1565,7 +1565,7 @@ pnl_dock_bin_add_child (GtkBuildable *buildable,
       return;
     }
 
-  if (g_strcmp0 ("center", type) == 0)
+  if (!type || !*type || (g_strcmp0 ("center", type) == 0))
     {
       gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (child));
       return;

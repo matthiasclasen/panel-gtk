@@ -34,16 +34,17 @@ typedef struct
   guint               child_reveal : 4;
 } PnlDockOverlayPrivate;
 
-static void pnl_dock_overlay_init_dock_iface      (PnlDockInterface  *iface);
-static void pnl_dock_overlay_init_buildable_iface (GtkBuildableIface *iface);
-static void pnl_dock_overlay_set_child_reveal     (PnlDockOverlay    *self,
-                                                   GtkWidget         *child,
-                                                   gboolean           reveal);
+static void pnl_dock_overlay_init_dock_iface      (PnlDockInterface     *iface);
+static void pnl_dock_overlay_init_dock_item_iface (PnlDockItemInterface *iface);
+static void pnl_dock_overlay_init_buildable_iface (GtkBuildableIface    *iface);
+static void pnl_dock_overlay_set_child_reveal     (PnlDockOverlay       *self,
+                                                   GtkWidget            *child,
+                                                   gboolean              reveal);
 
 G_DEFINE_TYPE_EXTENDED (PnlDockOverlay, pnl_dock_overlay, GTK_TYPE_OVERLAY, 0,
                         G_ADD_PRIVATE (PnlDockOverlay)
                         G_IMPLEMENT_INTERFACE (GTK_TYPE_BUILDABLE, pnl_dock_overlay_init_buildable_iface)
-                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM, NULL)
+                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM, pnl_dock_overlay_init_dock_item_iface)
                         G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK, pnl_dock_overlay_init_dock_iface))
 
 enum {
@@ -526,4 +527,24 @@ static void
 pnl_dock_overlay_init_buildable_iface (GtkBuildableIface *iface)
 {
   iface->add_child = pnl_dock_overlay_add_child;
+}
+
+static void
+pnl_dock_overlay_present_child (PnlDockItem *item,
+                                PnlDockItem *child)
+{
+  PnlDockOverlay *self = (PnlDockOverlay *)item;
+
+  g_assert (PNL_IS_DOCK_OVERLAY (self));
+  g_assert (PNL_IS_DOCK_ITEM (child));
+
+  gtk_container_child_set (GTK_CONTAINER (self), GTK_WIDGET (child),
+                           "reveal", TRUE,
+                           NULL);
+}
+
+static void
+pnl_dock_overlay_init_dock_item_iface (PnlDockItemInterface *iface)
+{
+  iface->present_child = pnl_dock_overlay_present_child;
 }
