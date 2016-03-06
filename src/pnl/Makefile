@@ -3,6 +3,8 @@ all: test-panel
 PKGS = gtk+-3.0
 
 OBJECTS = \
+	pnl-animation.o \
+	pnl-frame-source.o \
 	pnl-dock-bin.o \
 	pnl-dock-bin-edge.o \
 	pnl-dock-bin-edge-child.o \
