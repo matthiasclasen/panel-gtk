@@ -16,18 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "pnl-animation.h"
 #include "pnl-dock-overlay-edge-private.h"
 #include "pnl-dock-item.h"
 #include "pnl-dock-overlay.h"
 #include "pnl-tab.h"
 #include "pnl-tab-strip.h"
 
+#define REVEAL_DURATION 300
+
 typedef struct
 {
-  PnlDockOverlayEdge *bottom;
-  PnlDockOverlayEdge *left;
-  PnlDockOverlayEdge *right;
-  PnlDockOverlayEdge *top;
+  PnlDockOverlayEdge *edges [4];
+  GtkAdjustment      *edge_adj [4];
+  guint               child_reveal : 4;
+  guint               mnemonics_visible : 1;
 } PnlDockOverlayPrivate;
 
 static void pnl_dock_overlay_init_dock_iface      (PnlDockInterface  *iface);
@@ -45,13 +48,22 @@ enum {
   N_PROPS
 };
 
+enum {
+  CHILD_PROP_0,
+  CHILD_PROP_REVEAL,
+  N_CHILD_PROPS
+};
+
+static GParamSpec *child_properties [N_CHILD_PROPS];
+
 static void
-pnl_dock_overlay_get_edge_position (PnlDockOverlay *self,
-                                    PnlDockOverlayEdge    *edge,
-                                    GtkAllocation  *allocation)
+pnl_dock_overlay_get_edge_position (PnlDockOverlay     *self,
+                                    PnlDockOverlayEdge *edge,
+                                    GtkAllocation      *allocation)
 {
   PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
   GtkPositionType type;
+  gdouble value;
   gint nat_width;
   gint nat_height;
 
@@ -67,34 +79,49 @@ pnl_dock_overlay_get_edge_position (PnlDockOverlay *self,
   type = pnl_dock_overlay_edge_get_edge (edge);
 
   if (type == GTK_POS_LEFT || type == GTK_POS_RIGHT)
-    gtk_widget_get_preferred_width_for_height (GTK_WIDGET (edge),
-                                               MAX (allocation->height, 1),
-                                               NULL,
-                                               &nat_width);
+    {
+      nat_height = MAX (allocation->height, 1);
+      gtk_widget_get_preferred_width_for_height (GTK_WIDGET (edge), nat_height, NULL, &nat_width);
+    }
+  else if (type == GTK_POS_TOP || type == GTK_POS_BOTTOM)
+    {
+      nat_width = MAX (allocation->width, 1);
+      gtk_widget_get_preferred_height_for_width (GTK_WIDGET (edge), nat_width, NULL, &nat_height);
+    }
   else
-    gtk_widget_get_preferred_height_for_width (GTK_WIDGET (edge),
-                                               MAX (allocation->width, 1),
-                                               NULL,
-                                               &nat_height);
+    {
+      g_assert_not_reached ();
+      return;
+    }
+
+  value = gtk_adjustment_get_value (priv->edge_adj [type]);
 
   switch (type)
     {
     case GTK_POS_LEFT:
       allocation->width = nat_width;
+
+      allocation->x -= nat_width * value;
       break;
 
     case GTK_POS_RIGHT:
       allocation->x = allocation->x + allocation->width - nat_width;
-      allocation->width - nat_width;
+      allocation->width = nat_width;
+
+      allocation->x += nat_width * value;
       break;
 
     case GTK_POS_BOTTOM:
       allocation->y = allocation->y + allocation->height - nat_height;
       allocation->height = nat_height;
+
+      allocation->y += nat_height * value;
       break;
 
     case GTK_POS_TOP:
       allocation->height = nat_height;
+
+      allocation->y -= nat_height * value;
       break;
 
     default:
@@ -119,7 +146,7 @@ pnl_dock_overlay_get_child_position (GtkOverlay    *overlay,
       return TRUE;
     }
 
-  return FALSE;
+  return GTK_OVERLAY_CLASS (pnl_dock_overlay_parent_class)->get_child_position (overlay, widget, allocation);
 }
 
 static void
@@ -148,20 +175,29 @@ pnl_dock_overlay_toplevel_mnemonics (PnlDockOverlay *self,
                                      GtkWindow      *toplevel)
 {
   PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
-  gboolean reveal_child;
 
   g_assert (PNL_IS_DOCK_OVERLAY (self));
   g_assert (pspec != NULL);
   g_assert (GTK_IS_WINDOW (toplevel));
 
-  reveal_child = gtk_window_get_mnemonics_visible (toplevel);
+  priv->mnemonics_visible = gtk_window_get_mnemonics_visible (toplevel);
 
-#if 0
-  pnl_tab_strip_set_show_labels (priv->top_strip, reveal_child);
-  pnl_tab_strip_set_show_labels (priv->bottom_strip, reveal_child);
-  pnl_tab_strip_set_show_labels (priv->left_strip, reveal_child);
-  pnl_tab_strip_set_show_labels (priv->right_strip, reveal_child);
-#endif
+  gtk_widget_queue_allocate (GTK_WIDGET (self));
+}
+
+static void
+pnl_dock_overlay_destroy (GtkWidget *widget)
+{
+  PnlDockOverlay *self = (PnlDockOverlay *)widget;
+  PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
+  guint i;
+
+  g_assert (GTK_IS_WIDGET (widget));
+
+  for (i = 0; i < G_N_ELEMENTS (priv->edge_adj); i++)
+    g_clear_object (&priv->edge_adj [i]);
+
+  GTK_WIDGET_CLASS (pnl_dock_overlay_parent_class)->destroy (widget);
 }
 
 static void
@@ -192,6 +228,67 @@ pnl_dock_overlay_hierarchy_changed (GtkWidget *widget,
                                self,
                                G_CONNECT_SWAPPED);
     }
+}
+
+static gboolean
+pnl_dock_overlay_get_child_reveal (PnlDockOverlay *self,
+                                   GtkWidget      *child)
+{
+  PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
+
+  g_assert (PNL_IS_DOCK_OVERLAY (self));
+  g_assert (GTK_IS_WIDGET (child));
+
+  if (PNL_IS_DOCK_OVERLAY_EDGE (child))
+    {
+      GtkPositionType edge;
+
+      edge = pnl_dock_overlay_edge_get_edge (PNL_DOCK_OVERLAY_EDGE (child));
+
+      return !!(priv->child_reveal & (1 << edge));
+    }
+
+  return FALSE;
+}
+
+static void
+pnl_dock_overlay_set_child_reveal (PnlDockOverlay *self,
+                                   GtkWidget      *child,
+                                   gboolean        reveal)
+{
+  PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
+  GtkPositionType edge;
+  guint child_reveal;
+
+  g_assert (PNL_IS_DOCK_OVERLAY (self));
+  g_assert (GTK_IS_WIDGET (child));
+
+  if (!PNL_IS_DOCK_OVERLAY_EDGE (child))
+    return;
+
+  edge = pnl_dock_overlay_edge_get_edge (PNL_DOCK_OVERLAY_EDGE (child));
+
+  if (reveal)
+    child_reveal = priv->child_reveal | (1 << edge);
+  else
+    child_reveal = priv->child_reveal & ~(1 << edge);
+
+  if (priv->child_reveal != child_reveal)
+    {
+      priv->child_reveal = child_reveal;
+
+      pnl_object_animate (priv->edge_adj [edge],
+                          PNL_ANIMATION_EASE_IN_OUT_CUBIC,
+                          REVEAL_DURATION,
+                          gtk_widget_get_frame_clock (child),
+                          "value", reveal ? 0.0 : 1.0,
+                          NULL);
+
+      gtk_container_child_notify_by_pspec (GTK_CONTAINER (self),
+                                           child,
+                                           child_properties [CHILD_PROP_REVEAL]);
+    }
+
 }
 
 static void
@@ -233,6 +330,46 @@ pnl_dock_overlay_set_property (GObject      *object,
 }
 
 static void
+pnl_dock_overlay_get_child_property (GtkContainer *container,
+                                     GtkWidget    *widget,
+                                     guint         prop_id,
+                                     GValue       *value,
+                                     GParamSpec   *pspec)
+{
+  PnlDockOverlay *self = PNL_DOCK_OVERLAY (container);
+
+  switch (prop_id)
+    {
+    case CHILD_PROP_REVEAL:
+      g_value_set_boolean (value, pnl_dock_overlay_get_child_reveal (self, widget));
+      break;
+
+    default:
+      GTK_CONTAINER_WARN_INVALID_CHILD_PROPERTY_ID (container, prop_id, pspec);
+    }
+}
+
+static void
+pnl_dock_overlay_set_child_property (GtkContainer *container,
+                                     GtkWidget    *widget,
+                                     guint         prop_id,
+                                     const GValue *value,
+                                     GParamSpec   *pspec)
+{
+  PnlDockOverlay *self = PNL_DOCK_OVERLAY (container);
+
+  switch (prop_id)
+    {
+    case CHILD_PROP_REVEAL:
+      pnl_dock_overlay_set_child_reveal (self, widget, g_value_get_boolean (value));
+      break;
+
+    default:
+      GTK_CONTAINER_WARN_INVALID_CHILD_PROPERTY_ID (container, prop_id, pspec);
+    }
+}
+
+static void
 pnl_dock_overlay_class_init (PnlDockOverlayClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -243,42 +380,51 @@ pnl_dock_overlay_class_init (PnlDockOverlayClass *klass)
   object_class->get_property = pnl_dock_overlay_get_property;
   object_class->set_property = pnl_dock_overlay_set_property;
 
+  widget_class->destroy = pnl_dock_overlay_destroy;
   widget_class->hierarchy_changed = pnl_dock_overlay_hierarchy_changed;
 
   container_class->add = pnl_dock_overlay_add;
+  container_class->get_child_property = pnl_dock_overlay_get_child_property;
+  container_class->set_child_property = pnl_dock_overlay_set_child_property;
 
   overlay_class->get_child_position = pnl_dock_overlay_get_child_position;
 
   g_object_class_override_property (object_class, PROP_MANAGER, "manager");
 
+  child_properties [CHILD_PROP_REVEAL] =
+    g_param_spec_boolean ("reveal",
+                          "Reveal",
+                          "If the panel edge should be revealed",
+                          FALSE,
+                          (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  gtk_container_class_install_child_properties (container_class, N_CHILD_PROPS, child_properties);
+
   gtk_widget_class_set_css_name (widget_class, "dockoverlay");
-}
-
-static void
-pnl_dock_overlay_init_child (PnlDockOverlay      *self,
-                             PnlDockOverlayEdge **edge,
-                             GtkPositionType      type)
-{
-  g_assert (PNL_IS_DOCK_OVERLAY (self));
-  g_assert (edge != NULL);
-
-  *edge = g_object_new (PNL_TYPE_DOCK_OVERLAY_EDGE,
-                        "edge", type,
-                        "visible", TRUE,
-                        NULL);
-
-  gtk_overlay_add_overlay (GTK_OVERLAY (self), GTK_WIDGET (*edge));
 }
 
 static void
 pnl_dock_overlay_init (PnlDockOverlay *self)
 {
   PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
+  guint i;
 
-  pnl_dock_overlay_init_child (self, &priv->bottom, GTK_POS_BOTTOM);
-  pnl_dock_overlay_init_child (self, &priv->left, GTK_POS_LEFT);
-  pnl_dock_overlay_init_child (self, &priv->right, GTK_POS_RIGHT);
-  pnl_dock_overlay_init_child (self, &priv->top, GTK_POS_TOP);
+  for (i = 0; i <= GTK_POS_BOTTOM; i++)
+    {
+      priv->edges [i] = g_object_new (PNL_TYPE_DOCK_OVERLAY_EDGE,
+                                      "edge", (GtkPositionType)i,
+                                      "visible", TRUE,
+                                      NULL);
+
+      gtk_overlay_add_overlay (GTK_OVERLAY (self), GTK_WIDGET (priv->edges [i]));
+
+      priv->edge_adj [i] = gtk_adjustment_new (1, 0, 1, 0, 0, 0);
+
+      g_signal_connect_swapped (priv->edge_adj [i],
+                                "value-changed",
+                                G_CALLBACK (gtk_widget_queue_allocate),
+                                self);
+    }
 }
 
 static void
@@ -328,13 +474,13 @@ pnl_dock_overlay_add_child (GtkBuildable *buildable,
     }
 
   if (g_strcmp0 ("top", type) == 0)
-    parent = priv->top;
+    parent = priv->edges [GTK_POS_TOP];
   else if (g_strcmp0 ("bottom", type) == 0)
-    parent = priv->bottom;
+    parent = priv->edges [GTK_POS_BOTTOM];
   else if (g_strcmp0 ("right", type) == 0)
-    parent = priv->right;
+    parent = priv->edges [GTK_POS_RIGHT];
   else
-    parent = priv->left;
+    parent = priv->edges [GTK_POS_LEFT];
 
   gtk_container_add (GTK_CONTAINER (parent), GTK_WIDGET (child));
 }

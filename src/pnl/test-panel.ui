@@ -207,6 +207,12 @@
               <object class="PnlDockWidget">
                 <property name="title">Documentation</property>
                 <property name="visible">true</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">My Label</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
