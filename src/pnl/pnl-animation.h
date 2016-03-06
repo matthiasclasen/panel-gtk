@@ -39,6 +39,7 @@ enum _PnlAnimationMode
   PNL_ANIMATION_EASE_IN_OUT_QUAD,
   PNL_ANIMATION_EASE_IN_CUBIC,
   PNL_ANIMATION_EASE_OUT_CUBIC,
+  PNL_ANIMATION_EASE_IN_OUT_CUBIC,
 
   PNL_ANIMATION_LAST
 };
@@ -49,13 +50,13 @@ void          pnl_animation_stop          (PnlAnimation     *animation);
 void          pnl_animation_add_property  (PnlAnimation     *animation,
                                            GParamSpec       *pspec,
                                            const GValue     *value);
-PnlAnimation* egg_object_animate          (gpointer          object,
+PnlAnimation* pnl_object_animate          (gpointer          object,
                                            PnlAnimationMode  mode,
                                            guint             duration_msec,
                                            GdkFrameClock    *frame_clock,
                                            const gchar      *first_property,
                                            ...) G_GNUC_NULL_TERMINATED;
-PnlAnimation* egg_object_animate_full     (gpointer          object,
+PnlAnimation* pnl_object_animate_full     (gpointer          object,
                                            PnlAnimationMode  mode,
                                            guint             duration_msec,
                                            GdkFrameClock    *frame_clock,

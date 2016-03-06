@@ -20,6 +20,7 @@
 #include <gobject/gvaluecollector.h>
 #include <gdk/gdk.h>
 #include <gtk/gtk.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "pnl-animation.h"
@@ -102,6 +103,7 @@ static gboolean    debug;
 static GParamSpec *properties[LAST_PROP];
 static guint       signals[LAST_SIGNAL];
 static TweenFunc   tween_funcs[LAST_FUNDAMENTAL];
+static guint       slow_down_factor = 1;
 
 
 /*
@@ -136,6 +138,15 @@ pnl_animation_alpha_ease_out_cubic (gdouble offset)
   gdouble p = offset - 1.0;
 
   return p * p * p + 1.0;
+}
+
+static gdouble
+pnl_animation_alpha_ease_in_out_cubic (gdouble offset)
+{
+  if (offset < .5)
+    return pnl_animation_alpha_ease_in_cubic (offset * 2.0) / 2.0;
+  else
+    return .5 + pnl_animation_alpha_ease_out_cubic ((offset - .5) * 2.0) / 2.0;
 }
 
 
@@ -795,7 +806,7 @@ pnl_animation_set_property (GObject      *object,
   switch (prop_id)
     {
     case PROP_DURATION:
-      animation->duration_msec = g_value_get_uint (value);
+      animation->duration_msec = g_value_get_uint (value) * slow_down_factor;
       break;
 
     case PROP_FRAME_CLOCK:
@@ -828,8 +839,13 @@ static void
 pnl_animation_class_init (PnlAnimationClass *klass)
 {
   GObjectClass *object_class;
+  const gchar *slow_down_factor_env;
 
   debug = !!g_getenv ("PNL_ANIMATION_DEBUG");
+  slow_down_factor_env = g_getenv ("PNL_ANIMATION_SLOW_DOWN_FACTOR");
+
+  if (slow_down_factor_env)
+    slow_down_factor = MAX (1, atoi (slow_down_factor_env));
 
   object_class = G_OBJECT_CLASS (klass);
   object_class->dispose = pnl_animation_dispose;
@@ -918,6 +934,7 @@ pnl_animation_class_init (PnlAnimationClass *klass)
   SET_ALPHA (EASE_IN_OUT_QUAD, ease_in_out_quad);
   SET_ALPHA (EASE_IN_CUBIC, ease_in_cubic);
   SET_ALPHA (EASE_OUT_CUBIC, ease_out_cubic);
+  SET_ALPHA (EASE_IN_OUT_CUBIC, ease_in_out_cubic);
 
 #define SET_TWEEN(_T, _t) \
   G_STMT_START { \
@@ -965,12 +982,13 @@ pnl_animation_mode_get_type (void)
 {
   static GType type_id = 0;
   static const GEnumValue values[] = {
-    { PNL_ANIMATION_LINEAR, "PNL_ANIMATION_LINEAR", "LINEAR" },
-    { PNL_ANIMATION_EASE_IN_QUAD, "PNL_ANIMATION_EASE_IN_QUAD", "EASE_IN_QUAD" },
-    { PNL_ANIMATION_EASE_IN_OUT_QUAD, "PNL_ANIMATION_EASE_IN_OUT_QUAD", "EASE_IN_OUT_QUAD" },
-    { PNL_ANIMATION_EASE_OUT_QUAD, "PNL_ANIMATION_EASE_OUT_QUAD", "EASE_OUT_QUAD" },
-    { PNL_ANIMATION_EASE_IN_CUBIC, "PNL_ANIMATION_EASE_IN_CUBIC", "EASE_IN_CUBIC" },
-    { PNL_ANIMATION_EASE_OUT_CUBIC, "PNL_ANIMATION_EASE_OUT_CUBIC", "EASE_OUT_CUBIC" },
+    { PNL_ANIMATION_LINEAR, "PNL_ANIMATION_LINEAR", "linear" },
+    { PNL_ANIMATION_EASE_IN_QUAD, "PNL_ANIMATION_EASE_IN_QUAD", "ease-in-quad" },
+    { PNL_ANIMATION_EASE_IN_OUT_QUAD, "PNL_ANIMATION_EASE_IN_OUT_QUAD", "ease-in-out-quad" },
+    { PNL_ANIMATION_EASE_OUT_QUAD, "PNL_ANIMATION_EASE_OUT_QUAD", "ease-out-quad" },
+    { PNL_ANIMATION_EASE_IN_CUBIC, "PNL_ANIMATION_EASE_IN_CUBIC", "ease-in-cubic" },
+    { PNL_ANIMATION_EASE_OUT_CUBIC, "PNL_ANIMATION_EASE_OUT_CUBIC", "ease-out-cubic" },
+    { PNL_ANIMATION_EASE_IN_OUT_CUBIC, "PNL_ANIMATION_EASE_IN_OUT_CUBIC", "ease-in-out-cubic" },
     { 0 }
   };
 
