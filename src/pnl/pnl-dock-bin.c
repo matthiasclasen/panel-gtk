@@ -1223,6 +1223,36 @@ pnl_dock_bin_draw (GtkWidget *widget,
 }
 
 static void
+pnl_dock_bin_grab_focus (GtkWidget *widget)
+{
+  PnlDockBin *self = (PnlDockBin *)widget;
+  PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
+  PnlDockBinChild *child;
+  guint i;
+
+  g_assert (PNL_IS_DOCK_BIN (self));
+
+  child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_CENTER);
+
+  if (child->widget != NULL)
+    {
+      if (gtk_widget_child_focus (child->widget, GTK_DIR_TAB_FORWARD))
+        return;
+    }
+
+  for (i = 0; i < G_N_ELEMENTS (priv->children); i++)
+    {
+      child = &priv->children [i];
+
+      if (child->widget != NULL)
+        {
+          if (gtk_widget_child_focus (child->widget, GTK_DIR_TAB_FORWARD))
+            return;
+        }
+    }
+}
+
+static void
 pnl_dock_bin_destroy (GtkWidget *widget)
 {
   PnlDockBin *self = PNL_DOCK_BIN (widget);
@@ -1333,6 +1363,7 @@ pnl_dock_bin_class_init (PnlDockBinClass *klass)
   widget_class->draw = pnl_dock_bin_draw;
   widget_class->get_preferred_height = pnl_dock_bin_get_preferred_height;
   widget_class->get_preferred_width = pnl_dock_bin_get_preferred_width;
+  widget_class->grab_focus = pnl_dock_bin_grab_focus;
   widget_class->map = pnl_dock_bin_map;
   widget_class->realize = pnl_dock_bin_realize;
   widget_class->size_allocate = pnl_dock_bin_size_allocate;
