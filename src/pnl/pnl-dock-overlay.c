@@ -68,6 +68,36 @@ static GParamSpec *child_properties [N_CHILD_PROPS];
 static guint signals [N_SIGNALS];
 
 static void
+pnl_dock_overlay_update_focus_chain (PnlDockOverlay *self)
+{
+  PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
+  GList *focus_chain = NULL;
+  GtkWidget *child;
+  guint i;
+
+  g_assert (PNL_IS_DOCK_OVERLAY (self));
+
+  for (i = G_N_ELEMENTS (priv->edges); i > 0; i--)
+    {
+      PnlDockOverlayEdge *edge = priv->edges [i - 1];
+
+      if (edge != NULL)
+        focus_chain = g_list_prepend (focus_chain, edge);
+    }
+
+  child = gtk_bin_get_child (GTK_BIN (self));
+
+  if (child != NULL)
+    focus_chain = g_list_prepend (focus_chain, child);
+
+  if (focus_chain != NULL)
+    {
+      gtk_container_set_focus_chain (GTK_CONTAINER (self), focus_chain);
+      g_list_free (focus_chain);
+    }
+}
+
+static void
 pnl_dock_overlay_get_edge_position (PnlDockOverlay     *self,
                                     PnlDockOverlayEdge *edge,
                                     GtkAllocation      *allocation)
@@ -187,6 +217,8 @@ pnl_dock_overlay_add (GtkContainer *container,
     }
 
   GTK_CONTAINER_CLASS (pnl_dock_overlay_parent_class)->add (container, widget);
+
+  pnl_dock_overlay_update_focus_chain (self);
 }
 
 static void
