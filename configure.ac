@@ -77,7 +77,11 @@ VAPIGEN_CHECK
 dnl ***********************************************************************
 dnl Check for required packages
 dnl ***********************************************************************
-PKG_CHECK_MODULES(PANEL_GTK, [gtk+-3.0 >= 3.19.7])
+m4_define([gtk_required_version], [3.19.7])
+
+PKG_CHECK_MODULES(PANEL_GTK, [gtk+-3.0 >= gtk_required_version])
+
+AC_SUBST([GTK_REQUIRED_VERSION],gtk_required_version)
 
 
 dnl ***********************************************************************

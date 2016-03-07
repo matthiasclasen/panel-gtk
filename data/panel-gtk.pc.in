@@ -1,0 +1,13 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+pnl_api_version=@API_VERSION@
+
+Name: Panel-GTK
+Description: A docking panel library for GTK
+Version: @VERSION@
+Requires: gtk+-3.0 >= @GTK_REQUIRED_VERSION@
+Libs: -L${libdir} -lpanel-gtk-@API_VERSION@
+Cflags: -I${includedir}/panel-gtk-@API_VERSION@
