@@ -54,18 +54,6 @@ pnl_dock_widget_grab_focus (GtkWidget *widget)
     gtk_widget_child_focus (child, GTK_DIR_TAB_FORWARD);
 }
 
-static gboolean
-pnl_dock_widget_draw (GtkWidget *widget,
-                      cairo_t   *cr)
-{
-  g_assert (PNL_IS_DOCK_WIDGET (widget));
-  g_assert (cr != NULL);
-
-  pnl_gtk_render_background_simple (widget, cr);
-
-  return GTK_WIDGET_CLASS (pnl_dock_widget_parent_class)->draw (widget, cr);
-}
-
 static void
 pnl_dock_widget_finalize (GObject *object)
 {
@@ -133,8 +121,9 @@ pnl_dock_widget_class_init (PnlDockWidgetClass *klass)
   object_class->get_property = pnl_dock_widget_get_property;
   object_class->set_property = pnl_dock_widget_set_property;
 
-  widget_class->draw = pnl_dock_widget_draw;
+  widget_class->draw = pnl_gtk_bin_draw;
   widget_class->grab_focus = pnl_dock_widget_grab_focus;
+  widget_class->size_allocate = pnl_gtk_bin_size_allocate;
 
   properties [PROP_MANAGER] =
     g_param_spec_object ("manager",

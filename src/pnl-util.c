@@ -28,15 +28,16 @@ pnl_gtk_border_sum (GtkBorder       *one,
   one->left += two->left;
 }
 
-void
-pnl_gtk_render_background_simple (GtkWidget *widget,
-                                  cairo_t   *cr)
+gboolean
+pnl_gtk_bin_draw (GtkWidget *widget,
+                  cairo_t   *cr)
 {
   GtkStyleContext *style_context;
   GtkStateFlags state;
   GtkAllocation alloc;
   GtkBorder border;
   GtkBorder padding;
+  GtkWidget *child;
 
   g_assert (GTK_IS_WIDGET (widget));
   g_assert (cr != NULL);
@@ -55,4 +56,54 @@ pnl_gtk_render_background_simple (GtkWidget *widget,
                          border.top,
                          alloc.width - border.left - border.right,
                          alloc.height - border.top - border.bottom);
+
+  child = gtk_bin_get_child (GTK_BIN (widget));
+
+  if (child != NULL)
+    gtk_container_propagate_draw (GTK_CONTAINER (widget), child, cr);
+
+  return GDK_EVENT_PROPAGATE;
+}
+
+void
+pnl_gtk_bin_size_allocate (GtkWidget     *widget,
+                           GtkAllocation *allocation)
+{
+  GtkStyleContext *style_context;
+  GtkStateFlags state;
+  GtkBorder border;
+  GtkBorder padding;
+  gint border_width;
+  GtkWidget *child;
+
+  g_return_if_fail (GTK_IS_BIN (widget));
+  g_return_if_fail (allocation != NULL);
+
+  gtk_widget_set_allocation (widget, allocation);
+
+  child = gtk_bin_get_child (GTK_BIN (widget));
+
+  if (child == NULL)
+    return;
+
+  style_context = gtk_widget_get_style_context (widget);
+  state = gtk_style_context_get_state (style_context);
+  gtk_style_context_get_border (style_context, state, &border);
+  gtk_style_context_get_padding (style_context, state, &padding);
+
+  pnl_gtk_border_sum (&border, &padding);
+
+  allocation->x += border.left;
+  allocation->y += border.top;
+  allocation->width -= border.left + border.right;
+  allocation->height -= border.top + border.bottom;
+
+  border_width = gtk_container_get_border_width (GTK_CONTAINER (widget));
+
+  allocation->x += border_width;
+  allocation->y += border_width;
+  allocation->width -= border_width * 2;
+  allocation->height -= border_width * 2;
+
+  gtk_widget_size_allocate (child, allocation);
 }

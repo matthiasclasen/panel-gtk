@@ -21,7 +21,6 @@
 #include "pnl-dock-bin.h"
 #include "pnl-dock-bin-edge-private.h"
 #include "pnl-dock-item.h"
-#include "pnl-util-private.h"
 
 #define HANDLE_WIDTH  10
 #define HANDLE_HEIGHT 10
@@ -1247,18 +1246,6 @@ pnl_dock_bin_drag_leave (GtkWidget      *widget,
   priv->dnd_drag_y = -1;
 }
 
-static gboolean
-pnl_dock_bin_draw (GtkWidget *widget,
-                   cairo_t   *cr)
-{
-  g_assert (PNL_IS_DOCK_BIN (widget));
-  g_assert (cr != NULL);
-
-  pnl_gtk_render_background_simple (widget, cr);
-
-  return GTK_WIDGET_CLASS (pnl_dock_bin_parent_class)->draw (widget, cr);
-}
-
 static void
 pnl_dock_bin_grab_focus (GtkWidget *widget)
 {
@@ -1397,7 +1384,6 @@ pnl_dock_bin_class_init (PnlDockBinClass *klass)
   widget_class->destroy = pnl_dock_bin_destroy;
   widget_class->drag_leave = pnl_dock_bin_drag_leave;
   widget_class->drag_motion = pnl_dock_bin_drag_motion;
-  widget_class->draw = pnl_dock_bin_draw;
   widget_class->get_preferred_height = pnl_dock_bin_get_preferred_height;
   widget_class->get_preferred_width = pnl_dock_bin_get_preferred_width;
   widget_class->grab_focus = pnl_dock_bin_grab_focus;

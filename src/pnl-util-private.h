@@ -23,8 +23,10 @@
 
 G_BEGIN_DECLS
 
-void pnl_gtk_render_background_simple (GtkWidget *widget,
-                                       cairo_t   *cr);
+gboolean pnl_gtk_bin_draw          (GtkWidget *widget,
+                                    cairo_t   *cr);
+void     pnl_gtk_bin_size_allocate (GtkWidget     *widget,
+                                    GtkAllocation *allocation);
 
 G_END_DECLS
 

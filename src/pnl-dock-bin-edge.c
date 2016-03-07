@@ -262,7 +262,7 @@ pnl_dock_bin_edge_class_init (PnlDockBinEdgeClass *klass)
 
   g_object_class_install_properties (object_class, LAST_PROP, properties);
 
-  gtk_widget_class_set_css_name (widget_class, "dockedge");
+  gtk_widget_class_set_css_name (widget_class, "dockbinedge");
 }
 
 static void

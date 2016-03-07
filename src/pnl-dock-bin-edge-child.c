@@ -19,6 +19,7 @@
 #include "pnl-dock-bin-edge-private.h"
 #include "pnl-dock-bin-edge-child-private.h"
 #include "pnl-dock-paned.h"
+#include "pnl-util-private.h"
 
 /*
  * This class has a simple purpose. It is to help ease the process of
@@ -81,27 +82,10 @@ pnl_dock_bin_edge_child_add (GtkContainer *container,
   gtk_container_add (GTK_CONTAINER (prev_child), widget);
 }
 
-static gboolean
-pnl_dock_bin_edge_child_draw (GtkWidget *widget,
-                          cairo_t   *cr)
-{
-  GtkStyleContext *style_context;
-  GtkAllocation alloc;
-
-  g_assert (PNL_IS_DOCK_BIN_EDGE_CHILD (widget));
-  g_assert (cr != NULL);
-
-  style_context = gtk_widget_get_style_context (widget);
-  gtk_widget_get_allocation (widget, &alloc);
-  gtk_render_background (style_context, cr, alloc.x, alloc.y, alloc.width, alloc.height);
-
-  return GTK_WIDGET_CLASS (pnl_dock_bin_edge_child_parent_class)->draw (widget, cr);
-}
-
 static void
 pnl_dock_bin_edge_child_get_preferred_height (GtkWidget *widget,
-                                          gint      *min_height,
-                                          gint      *nat_height)
+                                              gint      *min_height,
+                                              gint      *nat_height)
 {
   PnlDockBinEdgeChild *self = (PnlDockBinEdgeChild *)widget;
   GtkWidget *parent;
@@ -127,8 +111,8 @@ pnl_dock_bin_edge_child_get_preferred_height (GtkWidget *widget,
 
 static void
 pnl_dock_bin_edge_child_get_preferred_width (GtkWidget *widget,
-                                         gint      *min_width,
-                                         gint      *nat_width)
+                                             gint      *min_width,
+                                             gint      *nat_width)
 {
   PnlDockBinEdgeChild *self = (PnlDockBinEdgeChild *)widget;
   GtkWidget *parent;
@@ -177,9 +161,9 @@ pnl_dock_bin_edge_child_get_request_mode (GtkWidget *widget)
 
 static void
 pnl_dock_bin_edge_child_get_property (GObject    *object,
-                                  guint       prop_id,
-                                  GValue     *value,
-                                  GParamSpec *pspec)
+                                      guint       prop_id,
+                                      GValue     *value,
+                                      GParamSpec *pspec)
 {
   PnlDockBinEdgeChild *self = PNL_DOCK_BIN_EDGE_CHILD (object);
 
@@ -196,9 +180,9 @@ pnl_dock_bin_edge_child_get_property (GObject    *object,
 
 static void
 pnl_dock_bin_edge_child_set_property (GObject      *object,
-                                  guint         prop_id,
-                                  const GValue *value,
-                                  GParamSpec   *pspec)
+                                      guint         prop_id,
+                                      const GValue *value,
+                                      GParamSpec   *pspec)
 {
   PnlDockBinEdgeChild *self = PNL_DOCK_BIN_EDGE_CHILD (object);
 
@@ -226,7 +210,8 @@ pnl_dock_bin_edge_child_class_init (PnlDockBinEdgeChildClass *klass)
   widget_class->get_preferred_height = pnl_dock_bin_edge_child_get_preferred_height;
   widget_class->get_preferred_width = pnl_dock_bin_edge_child_get_preferred_width;
   widget_class->get_request_mode = pnl_dock_bin_edge_child_get_request_mode;
-  widget_class->draw = pnl_dock_bin_edge_child_draw;
+  widget_class->draw = pnl_gtk_bin_draw;
+  widget_class->size_allocate = pnl_gtk_bin_size_allocate;
 
   container_class->add = pnl_dock_bin_edge_child_add;
 
@@ -241,7 +226,7 @@ pnl_dock_bin_edge_child_class_init (PnlDockBinEdgeChildClass *klass)
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
 
-  gtk_widget_class_set_css_name (widget_class, "dockedgechild");
+  gtk_widget_class_set_css_name (widget_class, "dockbinedgechild");
 }
 
 static void
@@ -259,7 +244,7 @@ pnl_dock_bin_edge_child_get_position (PnlDockBinEdgeChild *self)
 
 void
 pnl_dock_bin_edge_child_set_position (PnlDockBinEdgeChild *self,
-                                  gint              position)
+                                      gint                 position)
 {
   g_return_if_fail (PNL_IS_DOCK_BIN_EDGE_CHILD (self));
 

@@ -61,18 +61,26 @@ pnl_tab_update_edge (PnlTab *self)
     {
     case GTK_POS_TOP:
       gtk_label_set_angle (self->title, 0.0);
+      gtk_widget_set_hexpand (GTK_WIDGET (self), TRUE);
+      gtk_widget_set_vexpand (GTK_WIDGET (self), FALSE);
       break;
 
     case GTK_POS_BOTTOM:
       gtk_label_set_angle (self->title, 0.0);
+      gtk_widget_set_hexpand (GTK_WIDGET (self), TRUE);
+      gtk_widget_set_vexpand (GTK_WIDGET (self), FALSE);
       break;
 
     case GTK_POS_LEFT:
       gtk_label_set_angle (self->title, -90.0);
+      gtk_widget_set_hexpand (GTK_WIDGET (self), FALSE);
+      gtk_widget_set_vexpand (GTK_WIDGET (self), TRUE);
       break;
 
     case GTK_POS_RIGHT:
       gtk_label_set_angle (self->title, 90.0);
+      gtk_widget_set_hexpand (GTK_WIDGET (self), FALSE);
+      gtk_widget_set_vexpand (GTK_WIDGET (self), TRUE);
       break;
 
     default:
@@ -176,6 +184,9 @@ static void
 pnl_tab_init (PnlTab *self)
 {
   self->edge = GTK_POS_TOP;
+
+  gtk_widget_set_hexpand (GTK_WIDGET (self), TRUE);
+  gtk_widget_set_vexpand (GTK_WIDGET (self), FALSE);
 
   self->title = g_object_new (GTK_TYPE_LABEL,
                               "ellipsize", PANGO_ELLIPSIZE_END,

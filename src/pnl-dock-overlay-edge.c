@@ -99,18 +99,6 @@ pnl_dock_overlay_edge_update_edge (PnlDockOverlayEdge *self)
     }
 }
 
-static gboolean
-pnl_dock_overlay_edge_draw (GtkWidget *widget,
-                            cairo_t   *cr)
-{
-  g_assert (PNL_IS_DOCK_OVERLAY_EDGE (widget));
-  g_assert (cr != NULL);
-
-  pnl_gtk_render_background_simple (widget, cr);
-
-  return GTK_WIDGET_CLASS (pnl_dock_overlay_edge_parent_class)->draw (widget, cr);
-}
-
 static void
 pnl_dock_overlay_edge_add (GtkContainer *container,
                            GtkWidget    *child)
@@ -186,7 +174,8 @@ pnl_dock_overlay_edge_class_init (PnlDockOverlayEdgeClass *klass)
 
   container_class->add = pnl_dock_overlay_edge_add;
 
-  widget_class->draw = pnl_dock_overlay_edge_draw;
+  widget_class->draw = pnl_gtk_bin_draw;
+  widget_class->size_allocate = pnl_gtk_bin_size_allocate;
 
   properties [PROP_EDGE] =
     g_param_spec_enum ("edge",
