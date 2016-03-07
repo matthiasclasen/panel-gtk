@@ -55,36 +55,51 @@ pnl_dock_overlay_edge_update_edge (PnlDockOverlayEdge *self)
 {
   GtkWidget *child;
   GtkPositionType edge;
+  GtkStyleContext *style_context;
   GtkOrientation orientation;
+  const gchar *style_class;
 
   g_assert (PNL_IS_DOCK_OVERLAY_EDGE (self));
+
+  style_context = gtk_widget_get_style_context (GTK_WIDGET (self));
+
+  gtk_style_context_remove_class (style_context, "left-edge");
+  gtk_style_context_remove_class (style_context, "right-edge");
+  gtk_style_context_remove_class (style_context, "top-edge");
+  gtk_style_context_remove_class (style_context, "bottom-edge");
 
   switch (self->edge)
     {
     case GTK_POS_TOP:
       edge = GTK_POS_BOTTOM;
       orientation = GTK_ORIENTATION_HORIZONTAL;
+      style_class = "top-edge";
       break;
 
     case GTK_POS_BOTTOM:
       edge = GTK_POS_TOP;
       orientation = GTK_ORIENTATION_HORIZONTAL;
+      style_class = "bottom-edge";
       break;
 
     case GTK_POS_LEFT:
       edge = GTK_POS_RIGHT;
       orientation = GTK_ORIENTATION_VERTICAL;
+      style_class = "left-edge";
       break;
 
     case GTK_POS_RIGHT:
       edge = GTK_POS_LEFT;
       orientation = GTK_ORIENTATION_VERTICAL;
+      style_class = "right-edge";
       break;
 
     default:
       g_assert_not_reached ();
       return;
     }
+
+  gtk_style_context_add_class (style_context, style_class);
 
   child = gtk_bin_get_child (GTK_BIN (self));
 

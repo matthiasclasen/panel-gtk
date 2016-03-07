@@ -1,13 +1,13 @@
 tabstrip {
   background-color: #dfdfdf;
-  color: #2e3436;
   padding-top: 3px;
   border-bottom: 1px solid #919191;
   padding: 0 6px 0 6px;
 }
 
 tab:checked {
-  border-bottom: 2px solid @theme_selected_bg_color;
+  border-bottom: 2px solid #4a90d9;
+  color: #2e3436;
 }
 
 tab {
@@ -15,9 +15,25 @@ tab {
   border-bottom: 2px solid transparent;
   transition-duration: 300ms;
   transition-timing-function: ease;
+  outline-offset: -6px;
+  font-weight: bold;
   min-height: 35px;
+  color: #8d9091;
 }
 
 tab > * {
   padding: 0 6px 0 6px;
+}
+
+dockoverlayedge {
+  background-color: @theme_bg_color;
+}
+
+dockoverlayedge.left-edge tabstrip {
+  padding: 0;
+}
+
+dockoverlayedge.left-edge tab:checked {
+  border: 2px solid transparent;
+  border-right: 2px solid #4a90d9;
 }
