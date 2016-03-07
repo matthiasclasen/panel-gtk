@@ -72,19 +72,33 @@
           <object class="PnlDockBin" id="dockbin">
             <property name="visible">true</property>
             <child>
-              <object class="GtkScrolledWindow">
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
                 <property name="visible">true</property>
                 <child>
-                  <object class="GtkTextView">
-                    <property name="monospace">true</property>
+                  <object class="PnlTabStrip">
+                    <property name="edge">top</property>
                     <property name="visible">true</property>
+                    <child>
+                      <object class="PnlTab">
+                        <property name="title">foo-panel.h</property>
+                        <property name="visible">true</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
-              </object>
-            </child>
-            <child type="left">
-              <object class="PnlDockPaned">
-                <property name="visible">true</property>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="expand">true</property>
+                    <property name="visible">true</property>
+                    <child>
+                      <object class="GtkTextView">
+                        <property name="monospace">true</property>
+                        <property name="visible">true</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
             </child>
             <child type="right">
@@ -124,7 +138,7 @@
                     <child>
                       <object class="GtkListBox">
                         <property name="hexpand">true</property>
-                        <property name="height-request">100</property>
+                        <property name="vexpand">true</property>
                         <property name="visible">true</property>
                       </object>
                     </child>
@@ -208,8 +222,8 @@
                     <property name="visible">true</property>
                     <child>
                       <object class="GtkListBox">
-                        <property name="height-request">100</property>
                         <property name="hexpand">true</property>
+                        <property name="vexpand">true</property>
                         <property name="visible">true</property>
                         <child>
                           <object class="GtkLabel">
