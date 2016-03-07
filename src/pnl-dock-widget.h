@@ -16,48 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if !defined(PNL_INSIDE) && !defined(PNL_COMPILATION)
+# error "Only <pnl.h> can be included directly."
+#endif
+
 #ifndef PNL_DOCK_WIDGET_H
 #define PNL_DOCK_WIDGET_H
 
-#include <gtk/gtk.h>
+#include "pnl-dock-types.h"
 
 G_BEGIN_DECLS
-
-#define PNL_TYPE_DOCK_WIDGET (pnl_dock_widget_get_type())
-
-G_DECLARE_DERIVABLE_TYPE (PnlDockWidget, pnl_dock_widget, PNL, DOCK_WIDGET, GtkBin)
 
 struct _PnlDockWidgetClass
 {
   GtkBinClass parent;
-
-  gboolean (*close)      (PnlDockWidget *self);
-  void     (*begin_drag) (PnlDockWidget *self,
-                          gint           button,
-                          GdkEvent      *event,
-                          gint           x,
-                          gint           y);
 };
 
-GtkWidget   *pnl_dock_widget_new                   (void);
-gboolean     pnl_dock_widget_get_reveal_child      (PnlDockWidget  *self);
-void         pnl_dock_widget_set_reveal_child      (PnlDockWidget  *self,
-                                                    gboolean        reveal_child);
-const gchar *pnl_dock_widget_get_title             (PnlDockWidget  *self);
-void         pnl_dock_widget_set_title             (PnlDockWidget  *self,
-                                                    const gchar    *title);
-GtkWidget   *pnl_dock_widget_get_custom_title      (PnlDockWidget  *self);
-void         pnl_dock_widget_set_custom_title      (PnlDockWidget  *self,
-                                                    GtkWidget      *custom_title);
-gboolean     pnl_dock_widget_get_show_close_button (PnlDockWidget  *self);
-void         pnl_dock_widget_set_show_close_button (PnlDockWidget  *self,
-                                                    gboolean        show_close_button);
-void         pnl_dock_widget_close                 (PnlDockWidget  *self);
-void         pnl_dock_widget_begin_drag            (PnlDockWidget  *self,
-                                                    gint            button,
-                                                    GdkEvent       *event,
-                                                    gint            x,
-                                                    gint            y);
+GtkWidget   *pnl_dock_widget_new       (void);
+const gchar *pnl_dock_widget_get_title (PnlDockWidget *self);
+void         pnl_dock_widget_set_title (PnlDockWidget *self,
+                                        const gchar   *title);
 
 G_END_DECLS
 

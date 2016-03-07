@@ -26,17 +26,11 @@ typedef struct
 G_DEFINE_TYPE_WITH_PRIVATE (PnlDockManager, pnl_dock_manager, G_TYPE_OBJECT)
 
 enum {
-  PROP_0,
-  N_PROPS
-};
-
-enum {
   REGISTER_DOCK,
   UNREGISTER_DOCK,
   N_SIGNALS
 };
 
-static GParamSpec *properties [N_PROPS];
 static guint signals [N_SIGNALS];
 
 static void
@@ -112,8 +106,6 @@ pnl_dock_manager_get_property (GObject    *object,
                                GValue     *value,
                                GParamSpec *pspec)
 {
-  PnlDockManager *self = PNL_DOCK_MANAGER (object);
-
   switch (prop_id)
     {
     default:
@@ -127,8 +119,6 @@ pnl_dock_manager_set_property (GObject      *object,
                                const GValue *value,
                                GParamSpec   *pspec)
 {
-  PnlDockManager *self = PNL_DOCK_MANAGER (object);
-
   switch (prop_id)
     {
     default:

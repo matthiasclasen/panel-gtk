@@ -1,4 +1,4 @@
-/* pnl-dock.c
+/* pnl-dock-group.h
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,17 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "pnl-dock.h"
+#if !defined(PNL_INSIDE) && !defined(PNL_COMPILATION)
+# error "Only <pnl.h> can be included directly."
+#endif
 
-G_DEFINE_INTERFACE (PnlDock, pnl_dock, GTK_TYPE_CONTAINER)
+#ifndef PNL_DOCK_GROUP_H
+#define PNL_DOCK_GROUP_H
 
-static void
-pnl_dock_default_init (PnlDockInterface *iface)
+#include "pnl-dock-types.h"
+
+G_BEGIN_DECLS
+
+struct _PnlDockGroupInterface
 {
-  g_object_interface_install_property (iface,
-                                       g_param_spec_object ("manager",
-                                                            "Manager",
-                                                            "Manager",
-                                                            PNL_TYPE_DOCK_MANAGER,
-                                                            (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS)));
-}
+  GTypeInterface parent;
+};
+
+G_END_DECLS
+
+#endif /* PNL_DOCK_GROUP_H */

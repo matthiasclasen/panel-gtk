@@ -1,4 +1,4 @@
-/* pnl-dock-window.h
+/* pnl-dock-bin-bin.h
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,20 +16,29 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PNL_DOCK_WINDOW_H
-#define PNL_DOCK_WINDOW_H
+#if !defined(PNL_INSIDE) && !defined(PNL_COMPILATION)
+# error "Only <pnl.h> can be included directly."
+#endif
+
+#ifndef PNL_DOCK_BIN_BIN_H
+#define PNL_DOCK_BIN_BIN_H
 
 #include "pnl-dock.h"
 
 G_BEGIN_DECLS
 
-struct _PnlDockWindowClass
+struct _PnlDockBinClass
 {
-  GtkWindowClass parent;
+  GtkContainerClass parent;
 };
 
-GtkWidget *pnl_dock_window_new (void);
+GtkWidget *pnl_dock_bin_new               (void);
+GtkWidget *pnl_dock_bin_get_center_widget (PnlDockBin   *self);
+GtkWidget *pnl_dock_bin_get_top_edge      (PnlDockBin   *self);
+GtkWidget *pnl_dock_bin_get_left_edge     (PnlDockBin   *self);
+GtkWidget *pnl_dock_bin_get_bottom_edge   (PnlDockBin   *self);
+GtkWidget *pnl_dock_bin_get_right_edge    (PnlDockBin   *self);
 
 G_END_DECLS
 
-#endif /* PNL_DOCK_WINDOW_H */
+#endif /* PNL_DOCK_BIN_BIN_H */

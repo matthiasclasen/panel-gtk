@@ -1,4 +1,4 @@
-/* pnl.h
+/* pnl-dock-paned.h
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,30 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PNL_H
-#define PNL_H
+#if !defined(PNL_INSIDE) && !defined(PNL_COMPILATION)
+# error "Only <pnl.h> can be included directly."
+#endif
 
-#include <gtk/gtk.h>
+#ifndef PNL_DOCK_PANED_H
+#define PNL_DOCK_PANED_H
+
+#include "pnl-dock-group.h"
 
 G_BEGIN_DECLS
 
-#include "pnl-dock.h"
-#include "pnl-dock-bin.h"
-#include "pnl-dock-group.h"
-#include "pnl-dock-item.h"
-#include "pnl-dock-manager.h"
-#include "pnl-dock-overlay.h"
-#include "pnl-dock-paned.h"
-#include "pnl-dock-stack.h"
-#include "pnl-dock-types.h"
-#include "pnl-dock-widget.h"
-#include "pnl-dock-window.h"
+struct _PnlDockPanedClass
+{
+  PnlMultiPanedClass parent;
+};
 
-/* Some useful reusable things */
-#include "pnl-tab.h"
-#include "pnl-tab-strip.h"
-#include "pnl-multi-paned.h"
+GtkWidget *pnl_dock_paned_new (void);
 
 G_END_DECLS
 
-#endif /* PNL_H */
+#endif /* PNL_DOCK_PANED_H */

@@ -191,6 +191,7 @@ pnl_dock_bin_get_child (PnlDockBin *self,
   return NULL;
 }
 
+#if 0
 static PnlDockBinChild *
 pnl_dock_bin_get_child_at_coordinates (PnlDockBin *self,
                                        gint        x,
@@ -226,6 +227,7 @@ pnl_dock_bin_get_child_at_coordinates (PnlDockBin *self,
 
   return NULL;
 }
+#endif
 
 static PnlDockBinChild *
 pnl_dock_bin_get_child_typed (PnlDockBin          *self,
@@ -1537,36 +1539,6 @@ pnl_dock_bin_get_center_widget (PnlDockBin *self)
   return child->widget;
 }
 
-void
-pnl_dock_bin_set_child (PnlDockBin *self,
-                        GtkWidget  *widget)
-{
-  PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
-  PnlDockBinChild *child;
-
-  g_return_if_fail (PNL_IS_DOCK_BIN (self));
-  g_return_if_fail (!widget || GTK_IS_WIDGET (widget));
-
-  child = &priv->children [PNL_DOCK_BIN_CHILD_CENTER];
-
-  if (widget != child->widget)
-    {
-      if (child->widget != NULL)
-        {
-          gtk_widget_unparent (child->widget);
-          g_clear_object (&child->widget);
-        }
-
-      if (widget != NULL)
-        {
-          child->widget = g_object_ref_sink (widget);
-          gtk_widget_set_parent (widget, GTK_WIDGET (self));
-        }
-
-      gtk_widget_queue_resize (GTK_WIDGET (self));
-    }
-}
-
 GtkWidget *
 pnl_dock_bin_get_top_edge (PnlDockBin *self)
 {
@@ -1611,7 +1583,6 @@ pnl_dock_bin_add_child (GtkBuildable *buildable,
                         const gchar  *type)
 {
   PnlDockBin *self = (PnlDockBin *)buildable;
-  PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
   PnlDockBinChild *bin_child;
 
   g_assert (PNL_IS_DOCK_BIN (self));
@@ -1664,15 +1635,15 @@ pnl_dock_bin_init_buildable_iface (GtkBuildableIface *iface)
 
 static void
 pnl_dock_bin_present_child (PnlDockItem *item,
-                            PnlDockItem *child)
+                            PnlDockItem *widget)
 {
   PnlDockBin *self = (PnlDockBin *)item;
   PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
   guint i;
 
   g_assert (PNL_IS_DOCK_BIN (self));
-  g_assert (PNL_IS_DOCK_ITEM (child));
-  g_assert (GTK_IS_WIDGET (child));
+  g_assert (PNL_IS_DOCK_ITEM (widget));
+  g_assert (GTK_IS_WIDGET (widget));
 
   for (i = 0; i < G_N_ELEMENTS (priv->children); i++)
     {

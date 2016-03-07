@@ -16,34 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined(PANEL_GTK_INSIDE) && !defined(PANEL_GTK_COMPILATION)
-# error "Only <panel-gtk.h> can be included directly."
+#if !defined(PNL_INSIDE) && !defined(PNL_COMPILATION)
+# error "Only <pnl.h> can be included directly."
 #endif
 
 #ifndef PNL_DOCK_H
 #define PNL_DOCK_H
 
-#include <gtk/gtk.h>
+#include "pnl-dock-types.h"
 
 G_BEGIN_DECLS
 
-#define PNL_TYPE_DOCK (pnl_dock_get_type())
-
-G_DECLARE_DERIVABLE_TYPE (PnlDock, pnl_dock, PNL, DOCK, GtkContainer)
-
-struct _PnlDockClass
+struct _PnlDockInterface
 {
-  GtkContainerClass parent;
+  GTypeInterface parent;
 };
-
-GtkWidget *pnl_dock_new               (void);
-void       pnl_dock_set_center_widget (PnlDock   *self,
-                                       GtkWidget *widget);
-GtkWidget *pnl_dock_get_center_widget (PnlDock   *self);
-GtkWidget *pnl_dock_get_top_edge      (PnlDock   *self);
-GtkWidget *pnl_dock_get_left_edge     (PnlDock   *self);
-GtkWidget *pnl_dock_get_bottom_edge   (PnlDock   *self);
-GtkWidget *pnl_dock_get_right_edge    (PnlDock   *self);
 
 G_END_DECLS
 

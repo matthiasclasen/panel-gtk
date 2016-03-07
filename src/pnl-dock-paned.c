@@ -18,6 +18,7 @@
 
 #include "pnl-dock-item.h"
 #include "pnl-dock-paned.h"
+#include "pnl-dock-paned-private.h"
 #include "pnl-dock-stack.h"
 
 typedef struct
@@ -33,11 +34,6 @@ G_DEFINE_TYPE_EXTENDED (PnlDockPaned, pnl_dock_paned, PNL_TYPE_MULTI_PANED, 0,
                         G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_GROUP,
                                                pnl_dock_paned_init_dock_group_iface))
 
-enum {
-  PROP_0,
-  N_PROPS
-};
-
 static void
 pnl_dock_paned_add (GtkContainer *container,
                     GtkWidget    *widget)
@@ -50,7 +46,7 @@ pnl_dock_paned_add (GtkContainer *container,
   if (PNL_IS_DOCK_ITEM (widget) &&
       !pnl_dock_item_adopt (PNL_DOCK_ITEM (self), PNL_DOCK_ITEM (widget)))
     {
-      g_warning ("%s failed to adopt child %x",
+      g_warning ("%s failed to adopt child %s",
                  G_OBJECT_TYPE_NAME (self), G_OBJECT_TYPE_NAME (widget));
       return;
     }
@@ -62,22 +58,11 @@ pnl_dock_paned_add (GtkContainer *container,
 }
 
 static void
-pnl_dock_paned_finalize (GObject *object)
-{
-  PnlDockPaned *self = (PnlDockPaned *)object;
-  PnlDockPanedPrivate *priv = pnl_dock_paned_get_instance_private (self);
-
-  G_OBJECT_CLASS (pnl_dock_paned_parent_class)->finalize (object);
-}
-
-static void
 pnl_dock_paned_get_property (GObject    *object,
                              guint       prop_id,
                              GValue     *value,
                              GParamSpec *pspec)
 {
-  PnlDockPaned *self = PNL_DOCK_PANED (object);
-
   switch (prop_id)
     {
     default:
@@ -91,8 +76,6 @@ pnl_dock_paned_set_property (GObject      *object,
                              const GValue *value,
                              GParamSpec   *pspec)
 {
-  PnlDockPaned *self = PNL_DOCK_PANED (object);
-
   switch (prop_id)
     {
     default:
@@ -107,7 +90,6 @@ pnl_dock_paned_class_init (PnlDockPanedClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
 
-  object_class->finalize = pnl_dock_paned_finalize;
   object_class->get_property = pnl_dock_paned_get_property;
   object_class->set_property = pnl_dock_paned_set_property;
 

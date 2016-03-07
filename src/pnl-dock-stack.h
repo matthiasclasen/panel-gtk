@@ -1,4 +1,4 @@
-/* pnl-panel.h
+/* pnl-dock-stack.h
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,24 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PNL_PANEL_H
-#define PNL_PANEL_H
+#if !defined(PNL_INSIDE) && !defined(PNL_COMPILATION)
+# error "Only <pnl.h> can be included directly."
+#endif
 
-#include "pnl-multi-paned.h"
+#ifndef PNL_DOCK_STACK_H
+#define PNL_DOCK_STACK_H
+
+#include "pnl-dock-group.h"
 
 G_BEGIN_DECLS
 
-#define PNL_TYPE_PANEL (pnl_panel_get_type())
-
-G_DECLARE_DERIVABLE_TYPE (PnlPanel, pnl_panel, PNL, PANEL, PnlMultiPaned)
-
-struct _PnlPanelClass
+struct _PnlDockStackClass
 {
-  PnlMultiPanedClass parent_class;
+  GtkBoxClass parent;
 };
 
-GtkWidget *pnl_panel_new (void);
+GtkWidget       *pnl_dock_stack_new      (void);
+GtkPositionType  pnl_dock_stack_get_edge (PnlDockStack    *self);
+void             pnl_dock_stack_set_edge (PnlDockStack    *self,
+                                          GtkPositionType  edge);
 
 G_END_DECLS
 
-#endif /* PNL_PANEL_H */
+#endif /* PNL_DOCK_STACK_H */

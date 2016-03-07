@@ -1,4 +1,4 @@
-/* pnl-dock-group.h
+/* pnl.h
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,18 +16,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PNL_DOCK_GROUP_H
-#define PNL_DOCK_GROUP_H
+#ifndef PNL_H
+#define PNL_H
 
-#include "pnl-dock-types.h"
+#include <gtk/gtk.h>
 
 G_BEGIN_DECLS
 
-struct _PnlDockGroupInterface
-{
-  GTypeInterface parent;
-};
+#define PNL_INSIDE
+
+#include "pnl-dock.h"
+#include "pnl-dock-bin.h"
+#include "pnl-dock-group.h"
+#include "pnl-dock-item.h"
+#include "pnl-dock-manager.h"
+#include "pnl-dock-overlay.h"
+#include "pnl-dock-paned.h"
+#include "pnl-dock-stack.h"
+#include "pnl-dock-types.h"
+#include "pnl-dock-widget.h"
+#include "pnl-dock-window.h"
+
+#include "pnl-version.h"
+
+#include "pnl-tab.h"
+#include "pnl-tab-strip.h"
+#include "pnl-multi-paned.h"
+
+#undef PNL_INSIDE
 
 G_END_DECLS
 
-#endif /* PNL_DOCK_GROUP_H */
+#endif /* PNL_H */

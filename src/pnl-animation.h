@@ -16,6 +16,10 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if !defined(PNL_INSIDE) && !defined(PNL_COMPILATION)
+# error "Only <pnl.h> can be included directly."
+#endif
+
 #ifndef PNL_ANIMATION_H
 #define PNL_ANIMATION_H
 
@@ -50,6 +54,13 @@ void          pnl_animation_stop          (PnlAnimation     *animation);
 void          pnl_animation_add_property  (PnlAnimation     *animation,
                                            GParamSpec       *pspec,
                                            const GValue     *value);
+
+PnlAnimation *pnl_object_animatev         (gpointer          object,
+                                           PnlAnimationMode  mode,
+                                           guint             duration_msec,
+                                           GdkFrameClock    *frame_clock,
+                                           const gchar      *first_property,
+                                           va_list           args);
 PnlAnimation* pnl_object_animate          (gpointer          object,
                                            PnlAnimationMode  mode,
                                            guint             duration_msec,

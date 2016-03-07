@@ -1,107 +1,81 @@
-
-dockedge.left > dockedgechild {
- box-shadow: -1px 0px 1px alpha(@borders, 0.4) inset;
+dockedgechild {
+  background: #4d4d4d;
+  color: #e4e4e4;
 }
 
-dockedge.right > dockedgechild {
- box-shadow: 1px 0px 1px alpha(@borders, 0.4) inset;
+dockbin {
+ background: #282828;
 }
 
-dockedge.top > dockedgechild {
- box-shadow: 0px -1px 1px alpha(@borders, 0.4) inset;
+dockstack tabstrip {
+  background: #3a3a3a;
+  box-shadow: 0  1px 0 #282828 inset,
+              0 -1px 0 #4d4d4d inset;
 }
 
-dockedge.bottom > dockedgechild {
- box-shadow: 0px 1px 1px alpha(@borders, 0.4) inset;
+dockstack tab {
+  background: transparent;
+  border: 1px solid transparent;
+  margin-top: 1px;
+  transition-duration: 150ms;
 }
 
-dockedge > dockedgechild > panel {
-  border: 1px solid alpha(@borders, 0.4);
+dockstack tab:first-child {
+  margin-left: 1px;
+}
+
+dockstack tab:last-child {
+  margin-right: 1px;
+}
+
+dockstack tab:checked {
+  background-image: linear-gradient(#555555, #525252);
+  border-left: 1px solid #292826;
+  border-right: 1px solid #292826;
+  border-top: 1px solid #676767;
+  border-bottom: 1px solid #525252;
+}
+
+dockstack tab label {
+  padding: 4px 7px 4px 7px;
+  font-weight: bold;
+  font-size: 8px;
+}
+
+dockedgechild list {
+  background: #4d4d4d;
+}
+
+dockoverlayedge dockstack tabstrip {
+  background: transparent;
+}
+
+dockoverlay > tabstrip > tab:checked {
+  background: transparent;
+}
+
+dockoverlay > tabstrip > tab label {
+  padding: 4px;
+  font-size: 1em;
+  color: white;
+}
+
+dockoverlay > tabstrip > tab {
+  background: #3a3a3a;
+}
+
+dockoverlayedge dockstack tabstrip {
+  margin-top: 24px;
+}
+
+dockoverlayedge {
+ -PnlDockOverlayEdge-overlap-size: 3;
+}
+
+textview {
+  padding: 12px;
 }
 
 dockwidget {
-  background: @theme_bg_color;
-}
-
-dockedge.left > dockedgechild > panel dockwidget {
-  padding-right: 1px;
-}
-
-dockedge.right > dockedgechild > panel dockwidget {
-  padding-left: 1px;
-}
-
-dockedge.top > dockedgechild > panel dockwidget {
-  padding-bottom: 1px;
-}
-
-dockedge.bottom > dockedgechild > panel dockwidget {
-  padding-top: 1px;
-}
-
-dockedge > dockedgechild > panel dockwidget revealer > * {
-  padding: 6px;
-}
-
-dockedge > dockedgechild > panel dockheader box {
-  padding: 3px;
-  background: shade(@theme_base_color,1.2);
-  transition-duration: 250ms;
-  transition-timing-function: ease;
-}
-
-dockedge > dockedgechild > panel dockheader.horizontal label {
-  margin-left: 2px;
-}
-
-dockedge > dockedgechild > panel dockheader.vertical label {
-  margin-bottom: 2px;
-}
-
-dockedge > dockedgechild > panel dockheader:hover box {
-  background: mix(@theme_base_color,@theme_bg_color,0.75);
-}
-
-dockedge > dockedgechild > panel dockheader box button {
-  background: none;
-  box-shadow: none;
-  border: none;
-  padding: 0px;
-  margin: 0px;
-}
-
-dockedge > dockedgechild > panel dockheader.horizontal label {
-  margin-right: 3px;
-}
-
-dockedge > dockedgechild > panel dockheader.vertical label {
-  margin-top: 3px;
-}
-
-dockedge > dockedgechild > panel dockheader button image {
-  color: #bebebe;
-}
-
-dockedge > dockedgechild > panel dockheader:hover button image {
-  color: #aeaeae;
-}
-
-dockedge > dockedgechild > panel dockheader:hover button:hover image {
-  color: #2e3436;
-}
-
-dockedge.left dockheader box {
- margin-right: 1px;
-}
-
-dockedge.right dockheader box {
- margin-left: 1px;
-}
-
-dockedge.bottom dockheader box {
- margin-top: 1px;
-}
-
-dockedge.top dockheader box {
- margin-bottom: 1px;
+  background: #4d4d4d;
 }

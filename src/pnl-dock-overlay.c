@@ -329,7 +329,6 @@ pnl_dock_overlay_hierarchy_changed (GtkWidget *widget,
                                     GtkWidget *old_toplevel)
 {
   PnlDockOverlay *self = (PnlDockOverlay *)widget;
-  PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
   GtkWidget *toplevel;
 
   g_assert (PNL_IS_DOCK_OVERLAY (self));

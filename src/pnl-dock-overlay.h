@@ -1,4 +1,4 @@
-/* pnl-multi-paned.h
+/* pnl-dock-overlay.h
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,30 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PNL_MULTI_PANED_H
-#define PNL_MULTI_PANED_H
+#if !defined(PNL_INSIDE) && !defined(PNL_COMPILATION)
+# error "Only <pnl.h> can be included directly."
+#endif
 
-#include <gtk/gtk.h>
+#ifndef PNL_DOCK_OVERLAY_H
+#define PNL_DOCK_OVERLAY_H
+
+#include "pnl-dock.h"
 
 G_BEGIN_DECLS
 
-#define PNL_TYPE_MULTI_PANED (pnl_multi_paned_get_type())
-
-G_DECLARE_DERIVABLE_TYPE (PnlMultiPaned, pnl_multi_paned, PNL, MULTI_PANED, GtkContainer)
-
-struct _PnlMultiPanedClass
+struct _PnlDockOverlayClass
 {
-  GtkContainerClass parent;
+  GtkOverlayClass parent;
 
-  void (*resize_drag_begin) (PnlMultiPaned *self,
-                             GtkWidget     *child);
-  void (*resize_drag_end)   (PnlMultiPaned *self,
-                             GtkWidget     *child);
+  void (*hide_edges) (PnlDockOverlay *self);
 };
 
-GtkWidget *pnl_multi_paned_new            (void);
-guint      pnl_multi_paned_get_n_children (PnlMultiPaned *self);
+GtkWidget *pnl_dock_overlay_new (void);
 
 G_END_DECLS
 
-#endif /* PNL_MULTI_PANED_H */
+#endif /* PNL_DOCK_OVERLAY_H */

@@ -1,4 +1,4 @@
-/* pnl-dock.h
+/* pnl-dock-window.h
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,18 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PNL_DOCK_H
-#define PNL_DOCK_H
+#if !defined(PNL_INSIDE) && !defined(PNL_COMPILATION)
+# error "Only <pnl.h> can be included directly."
+#endif
 
-#include "pnl-dock-types.h"
+#ifndef PNL_DOCK_WINDOW_H
+#define PNL_DOCK_WINDOW_H
+
+#include "pnl-dock.h"
 
 G_BEGIN_DECLS
 
-struct _PnlDockInterface
+struct _PnlDockWindowClass
 {
-  GTypeInterface parent;
+  GtkWindowClass parent;
 };
+
+GtkWidget *pnl_dock_window_new (void);
 
 G_END_DECLS
 
-#endif /* PNL_DOCK_H */
+#endif /* PNL_DOCK_WINDOW_H */

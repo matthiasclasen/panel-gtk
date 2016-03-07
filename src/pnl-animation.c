@@ -240,7 +240,7 @@ pnl_animation_load_begin_values (PnlAnimation *animation)
 {
   GtkContainer *container;
   Tween *tween;
-  gint i;
+  guint i;
 
   g_return_if_fail (PNL_IS_ANIMATION (animation));
 
@@ -279,7 +279,7 @@ static void
 pnl_animation_unload_begin_values (PnlAnimation *animation)
 {
   Tween *tween;
-  gint i;
+  guint i;
 
   g_return_if_fail (PNL_IS_ANIMATION (animation));
 
@@ -468,7 +468,7 @@ pnl_animation_tick (PnlAnimation *animation,
   gdouble alpha;
   GValue value = { 0 };
   Tween *tween;
-  gint i;
+  guint i;
 
   g_return_val_if_fail (PNL_IS_ANIMATION (animation), FALSE);
 
@@ -770,7 +770,7 @@ pnl_animation_finalize (GObject *object)
 {
   PnlAnimation *self = PNL_ANIMATION (object);
   Tween *tween;
-  gint i;
+  guint i;
 
   for (i = 0; i < self->tweens->len; i++)
     {
