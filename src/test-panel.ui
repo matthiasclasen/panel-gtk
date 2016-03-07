@@ -9,6 +9,13 @@
         <property name="show-close-button">true</property>
         <property name="visible">true</property>
         <child>
+          <object class="GtkButton">
+            <property name="label">Toggle All</property>
+            <property name="visible">true</property>
+            <signal name="clicked" handler="toggle_all" />
+          </object>
+        </child>
+        <child>
           <object class="GtkBox">
             <property name="visible">true</property>
             <style>
@@ -17,32 +24,43 @@
             <child>
               <object class="GtkToggleButton">
                 <property name="action-name">dockbin.left-visible</property>
-                <property name="label">Left</property>
                 <property name="visible">true</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkToggleButton">
-                <property name="action-name">dockbin.right-visible</property>
-                <property name="label">Right</property>
-                <property name="visible">true</property>
-              </object>
-            </child>
-            <child>
-              <object class="GtkToggleButton">
-                <property name="action-name">dockbin.top-visible</property>
-                <property name="label">Top</property>
-                <property name="visible">true</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="icon-name">panel-left-pane-symbolic</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
               <object class="GtkToggleButton">
                 <property name="action-name">dockbin.bottom-visible</property>
-                <property name="label">Bottom</property>
                 <property name="visible">true</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="icon-name">panel-bottom-pane-symbolic</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkToggleButton">
+                <property name="action-name">dockbin.right-visible</property>
+                <property name="visible">true</property>
+                <child>
+                  <object class="GtkImage">
+                    <property name="icon-name">panel-right-pane-symbolic</property>
+                    <property name="visible">true</property>
+                  </object>
+                </child>
               </object>
             </child>
           </object>
+          <packing>
+            <property name="pack-type">end</property>
+          </packing>
         </child>
       </object>
     </child>

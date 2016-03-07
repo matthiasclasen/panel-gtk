@@ -102,6 +102,7 @@ AC_CONFIG_FILES([
 
 	data/Makefile
 	data/panel-gtk-$API_VERSION.pc:data/panel-gtk.pc.in
+	data/icons/Makefile
 
 	po/Makefile.in
 ],[],

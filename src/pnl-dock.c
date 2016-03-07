@@ -17,12 +17,17 @@
  */
 
 #include "pnl-dock.h"
+#include "pnl-resources.h"
 
 G_DEFINE_INTERFACE (PnlDock, pnl_dock, GTK_TYPE_CONTAINER)
 
 static void
 pnl_dock_default_init (PnlDockInterface *iface)
 {
+  g_resources_register (pnl_get_resource ());
+  gtk_icon_theme_add_resource_path (gtk_icon_theme_get_default (),
+                                    "/org/gnome/panel-gtk/icons");
+
   g_object_interface_install_property (iface,
                                        g_param_spec_object ("manager",
                                                             "Manager",

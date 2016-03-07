@@ -1,6 +1,10 @@
 lib_LTLIBRARIES = libpanel-gtk-@API_VERSION@.la
 noinst_PROGRAMS = test-panel
 
+DISTCLEANFILES =
+CLEANFILES =
+BUILT_SOURCES =
+
 headersdir = $(includedir)/panel-gtk-@API_VERSION@
 headers_DATA = \
 	pnl-animation.h \
@@ -45,6 +49,8 @@ libpanel_gtk_@API_VERSION@_la_SOURCES = \
 	pnl-dock.c \
 	pnl-frame-source.c \
 	pnl-multi-paned.c \
+	pnl-resources.c \
+	pnl-resources.h \
 	pnl-tab-strip.c \
 	pnl-tab.c \
 	pnl-util-private.h \
@@ -72,5 +78,11 @@ test_panel_CFLAGS = $(PANEL_GTK_CFLAGS)
 EXTRA_DIST = \
 	test-panel.ui \
 	test-panel.css
+
+glib_resources_h = pnl-resources.h
+glib_resources_c = pnl-resources.c
+glib_resources_xml = pnl.gresource.xml
+glib_resources_namespace = pnl
+include $(top_srcdir)/gresources.mk
 
 -include $(top_srcdir)/git.mk

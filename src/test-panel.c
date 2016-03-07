@@ -1,5 +1,22 @@
 #include "pnl.h"
 
+static void
+toggle_all (GtkButton  *button,
+            PnlDockBin *dock)
+{
+  GtkRevealer *edge;
+
+  edge = GTK_REVEALER (pnl_dock_bin_get_left_edge (dock));
+  gtk_revealer_set_reveal_child (edge, !gtk_revealer_get_reveal_child (edge));
+
+  edge = GTK_REVEALER (pnl_dock_bin_get_right_edge (dock));
+  gtk_revealer_set_reveal_child (edge, !gtk_revealer_get_reveal_child (edge));
+
+  edge = GTK_REVEALER (pnl_dock_bin_get_bottom_edge (dock));
+  gtk_revealer_set_reveal_child (edge, !gtk_revealer_get_reveal_child (edge));
+}
+
+
 gint
 main (gint   argc,
       gchar *argv[])
@@ -27,6 +44,7 @@ main (gint   argc,
                                              GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 
   builder = gtk_builder_new ();
+  gtk_builder_add_callback_symbol (builder, "toggle_all", G_CALLBACK (toggle_all));
   gtk_builder_add_from_file (builder, "test-panel.ui", &error);
   g_assert_no_error (error);
 
@@ -36,6 +54,8 @@ main (gint   argc,
   dockbin = GTK_WIDGET (gtk_builder_get_object (builder, "dockbin"));
   group = gtk_widget_get_action_group (dockbin, "dockbin");
   gtk_widget_insert_action_group (GTK_WIDGET (window), "dockbin", group);
+
+  gtk_builder_connect_signals (builder, dockbin);
 
   gtk_window_present (window);
   gtk_main ();
