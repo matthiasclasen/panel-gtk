@@ -196,28 +196,40 @@ pnl_dock_stack_set_edge (PnlDockStack    *self,
       switch (edge)
         {
         case GTK_POS_TOP:
-          gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_VERTICAL);
+          gtk_orientable_set_orientation (GTK_ORIENTABLE (self),
+                                          GTK_ORIENTATION_VERTICAL);
+          gtk_orientable_set_orientation (GTK_ORIENTABLE (priv->tab_strip),
+                                          GTK_ORIENTATION_HORIZONTAL);
           gtk_container_child_set (GTK_CONTAINER (self), GTK_WIDGET (priv->tab_strip),
                                    "position", 0,
                                    NULL);
           break;
 
         case GTK_POS_BOTTOM:
-          gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_VERTICAL);
+          gtk_orientable_set_orientation (GTK_ORIENTABLE (self),
+                                          GTK_ORIENTATION_VERTICAL);
+          gtk_orientable_set_orientation (GTK_ORIENTABLE (priv->tab_strip),
+                                          GTK_ORIENTATION_HORIZONTAL);
           gtk_container_child_set (GTK_CONTAINER (self), GTK_WIDGET (priv->tab_strip),
                                    "position", 1,
                                    NULL);
           break;
 
         case GTK_POS_LEFT:
-          gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_HORIZONTAL);
+          gtk_orientable_set_orientation (GTK_ORIENTABLE (self),
+                                          GTK_ORIENTATION_HORIZONTAL);
+          gtk_orientable_set_orientation (GTK_ORIENTABLE (priv->tab_strip),
+                                          GTK_ORIENTATION_VERTICAL);
           gtk_container_child_set (GTK_CONTAINER (self), GTK_WIDGET (priv->tab_strip),
                                    "position", 0,
                                    NULL);
           break;
 
         case GTK_POS_RIGHT:
-          gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_HORIZONTAL);
+          gtk_orientable_set_orientation (GTK_ORIENTABLE (self),
+                                          GTK_ORIENTATION_HORIZONTAL);
+          gtk_orientable_set_orientation (GTK_ORIENTABLE (priv->tab_strip),
+                                          GTK_ORIENTATION_VERTICAL);
           gtk_container_child_set (GTK_CONTAINER (self), GTK_WIDGET (priv->tab_strip),
                                    "position", 1,
                                    NULL);
