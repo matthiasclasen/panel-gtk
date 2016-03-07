@@ -18,6 +18,7 @@
 
 #include "pnl-dock-item.h"
 #include "pnl-dock-widget.h"
+#include "pnl-util-private.h"
 
 typedef struct
 {
@@ -51,6 +52,18 @@ pnl_dock_widget_grab_focus (GtkWidget *widget)
 
   if (child != NULL)
     gtk_widget_child_focus (child, GTK_DIR_TAB_FORWARD);
+}
+
+static gboolean
+pnl_dock_widget_draw (GtkWidget *widget,
+                      cairo_t   *cr)
+{
+  g_assert (PNL_IS_DOCK_WIDGET (widget));
+  g_assert (cr != NULL);
+
+  pnl_gtk_render_background_simple (widget, cr);
+
+  return GTK_WIDGET_CLASS (pnl_dock_widget_parent_class)->draw (widget, cr);
 }
 
 static void
@@ -120,6 +133,7 @@ pnl_dock_widget_class_init (PnlDockWidgetClass *klass)
   object_class->get_property = pnl_dock_widget_get_property;
   object_class->set_property = pnl_dock_widget_set_property;
 
+  widget_class->draw = pnl_dock_widget_draw;
   widget_class->grab_focus = pnl_dock_widget_grab_focus;
 
   properties [PROP_MANAGER] =
@@ -137,6 +151,8 @@ pnl_dock_widget_class_init (PnlDockWidgetClass *klass)
                          (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
+
+  gtk_widget_class_set_css_name (widget_class, "dockwidget");
 }
 
 static void
