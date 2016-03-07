@@ -68,6 +68,10 @@ dockoverlayedge dockstack tabstrip {
   margin-top: 24px;
 }
 
+dockoverlayedge {
+ -PnlDockOverlayEdge-overlap-size: 3;
+}
+
 textview {
   padding: 12px;
 }
