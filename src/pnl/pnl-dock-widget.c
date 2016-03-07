@@ -24,7 +24,7 @@ typedef struct
   gchar *title;
 } PnlDockWidgetPrivate;
 
-G_DEFINE_TYPE_EXTENDED (PnlDockWidget, pnl_dock_widget, GTK_TYPE_BOX, 0,
+G_DEFINE_TYPE_EXTENDED (PnlDockWidget, pnl_dock_widget, GTK_TYPE_BIN, 0,
                         G_ADD_PRIVATE (PnlDockWidget)
                         G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM, NULL))
 

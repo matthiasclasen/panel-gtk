@@ -25,7 +25,7 @@ G_BEGIN_DECLS
 
 struct _PnlDockWidgetClass
 {
-  GtkBoxClass parent;
+  GtkBinClass parent;
 };
 
 GtkWidget   *pnl_dock_widget_new       (void);
