@@ -23,6 +23,12 @@
 
 G_BEGIN_DECLS
 
+#define pnl_clear_weak_pointer(ptr) \
+  (*(ptr) ? (g_object_remove_weak_pointer((GObject*)*(ptr), (gpointer*)ptr),*(ptr)=NULL,1) : 0)
+
+#define pnl_set_weak_pointer(ptr,obj) \
+  ((obj!=*(ptr))?(pnl_clear_weak_pointer(ptr),*(ptr)=obj,((obj)?g_object_add_weak_pointer((GObject*)obj,(gpointer*)ptr),NULL:NULL),1):0)
+
 gboolean pnl_gtk_bin_draw          (GtkWidget *widget,
                                     cairo_t   *cr);
 void     pnl_gtk_bin_size_allocate (GtkWidget     *widget,
