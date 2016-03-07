@@ -46,7 +46,7 @@ dockedgechild list {
   background: #4d4d4d;
 }
 
-dockoverlay > tabstrip {
+dockoverlayedge dockstack tabstrip {
   background: transparent;
 }
 
@@ -62,6 +62,10 @@ dockoverlay > tabstrip > tab label {
 
 dockoverlay > tabstrip > tab {
   background: #3a3a3a;
+}
+
+dockoverlayedge dockstack tabstrip {
+  margin-top: 24px;
 }
 
 textview {
