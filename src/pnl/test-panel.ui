@@ -186,8 +186,22 @@
                 <property name="visible">true</property>
                 <child>
                   <object class="PnlDockWidget">
-                    <property name="title">Files</property>
+                    <property name="title">_Files</property>
                     <property name="visible">true</property>
+                    <child>
+                      <object class="GtkListBox">
+                        <property name="height-request">100</property>
+                        <property name="hexpand">true</property>
+                        <property name="visible">true</property>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label">Some Item</property>
+                            <property name="xalign">0</property>
+                            <property name="visible">true</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                 </child>
                 <child>

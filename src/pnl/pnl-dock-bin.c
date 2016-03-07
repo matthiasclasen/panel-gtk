@@ -124,14 +124,16 @@ typedef struct
   gint dnd_drag_y;
 } PnlDockBinPrivate;
 
-static void pnl_dock_bin_init_buildable_iface (GtkBuildableIface *iface);
-static void pnl_dock_bin_init_dock_iface      (PnlDockInterface *iface);
+static void pnl_dock_bin_init_buildable_iface (GtkBuildableIface    *iface);
+static void pnl_dock_bin_init_dock_iface      (PnlDockInterface     *iface);
+static void pnl_dock_bin_init_dock_item_iface (PnlDockItemInterface *iface);
 
 G_DEFINE_TYPE_EXTENDED (PnlDockBin, pnl_dock_bin, GTK_TYPE_CONTAINER, 0,
                         G_ADD_PRIVATE (PnlDockBin)
                         G_IMPLEMENT_INTERFACE (GTK_TYPE_BUILDABLE,
                                                pnl_dock_bin_init_buildable_iface)
-                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM, NULL)
+                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM,
+                                               pnl_dock_bin_init_dock_item_iface)
                         G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK,
                                                pnl_dock_bin_init_dock_iface))
 
@@ -1658,4 +1660,35 @@ static void
 pnl_dock_bin_init_buildable_iface (GtkBuildableIface *iface)
 {
   iface->add_child = pnl_dock_bin_add_child;
+}
+
+static void
+pnl_dock_bin_present_child (PnlDockItem *item,
+                            PnlDockItem *child)
+{
+  PnlDockBin *self = (PnlDockBin *)item;
+  PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
+  guint i;
+
+  g_assert (PNL_IS_DOCK_BIN (self));
+  g_assert (PNL_IS_DOCK_ITEM (child));
+  g_assert (GTK_IS_WIDGET (child));
+
+  for (i = 0; i < G_N_ELEMENTS (priv->children); i++)
+    {
+      PnlDockBinChild *child = &priv->children [i];
+
+      if (PNL_IS_DOCK_BIN_EDGE (child->widget) &&
+          gtk_widget_is_ancestor (GTK_WIDGET (child->widget), child->widget))
+        {
+          gtk_revealer_set_reveal_child (GTK_REVEALER (child->widget), TRUE);
+          return;
+        }
+    }
+}
+
+static void
+pnl_dock_bin_init_dock_item_iface (PnlDockItemInterface *iface)
+{
+  iface->present_child = pnl_dock_bin_present_child;
 }
