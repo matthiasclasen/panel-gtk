@@ -41,12 +41,16 @@ static void
 pnl_dock_widget_grab_focus (GtkWidget *widget)
 {
   PnlDockWidget *self = (PnlDockWidget *)widget;
+  GtkWidget *child;
 
   g_assert (PNL_IS_DOCK_WIDGET (self));
 
   pnl_dock_item_present (PNL_DOCK_ITEM (self));
 
-  GTK_WIDGET_CLASS (pnl_dock_widget_parent_class)->grab_focus (widget);
+  child = gtk_bin_get_child (GTK_BIN (self));
+
+  if (child != NULL)
+    gtk_widget_child_focus (child, GTK_DIR_TAB_FORWARD);
 }
 
 static void
