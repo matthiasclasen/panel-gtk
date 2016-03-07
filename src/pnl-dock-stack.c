@@ -28,15 +28,12 @@ typedef struct
   GtkPositionType   edge : 2;
 } PnlDockStackPrivate;
 
-static void pnl_dock_stack_init_dock_item_iface  (PnlDockItemInterface  *iface);
-static void pnl_dock_stack_init_dock_group_iface (PnlDockGroupInterface *iface);
+static void pnl_dock_stack_init_dock_item_iface (PnlDockItemInterface *iface);
 
 G_DEFINE_TYPE_EXTENDED (PnlDockStack, pnl_dock_stack, GTK_TYPE_BOX, 0,
                         G_ADD_PRIVATE (PnlDockStack)
                         G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM,
-                                               pnl_dock_stack_init_dock_item_iface)
-                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_GROUP,
-                                               pnl_dock_stack_init_dock_group_iface))
+                                               pnl_dock_stack_init_dock_item_iface))
 
 enum {
   PROP_0,
@@ -160,11 +157,6 @@ GtkWidget *
 pnl_dock_stack_new (void)
 {
   return g_object_new (PNL_TYPE_DOCK_STACK, NULL);
-}
-
-static void
-pnl_dock_stack_init_dock_group_iface (PnlDockGroupInterface *iface)
-{
 }
 
 GtkPositionType

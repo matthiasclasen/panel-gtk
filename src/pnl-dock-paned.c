@@ -26,13 +26,9 @@ typedef struct
   GtkPositionType child_edge : 2;
 } PnlDockPanedPrivate;
 
-static void pnl_dock_paned_init_dock_group_iface (PnlDockGroupInterface *iface);
-
 G_DEFINE_TYPE_EXTENDED (PnlDockPaned, pnl_dock_paned, PNL_TYPE_MULTI_PANED, 0,
                         G_ADD_PRIVATE (PnlDockPaned)
-                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM, NULL)
-                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_GROUP,
-                                               pnl_dock_paned_init_dock_group_iface))
+                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM, NULL))
 
 static void
 pnl_dock_paned_add (GtkContainer *container,
@@ -110,11 +106,6 @@ GtkWidget *
 pnl_dock_paned_new (void)
 {
   return g_object_new (PNL_TYPE_DOCK_PANED, NULL);
-}
-
-static void
-pnl_dock_paned_init_dock_group_iface (PnlDockGroupInterface *iface)
-{
 }
 
 static void

@@ -23,7 +23,7 @@
 #ifndef PNL_DOCK_STACK_H
 #define PNL_DOCK_STACK_H
 
-#include "pnl-dock-group.h"
+#include "pnl-dock-types.h"
 
 G_BEGIN_DECLS
 

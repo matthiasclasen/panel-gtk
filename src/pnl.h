@@ -27,7 +27,6 @@ G_BEGIN_DECLS
 
 #include "pnl-dock.h"
 #include "pnl-dock-bin.h"
-#include "pnl-dock-group.h"
 #include "pnl-dock-item.h"
 #include "pnl-dock-manager.h"
 #include "pnl-dock-overlay.h"
