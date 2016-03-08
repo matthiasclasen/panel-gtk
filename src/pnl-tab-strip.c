@@ -195,7 +195,6 @@ pnl_tab_strip_init (PnlTabStrip *self)
 {
   PnlTabStripPrivate *priv = pnl_tab_strip_get_instance_private (self);
   GSimpleActionGroup *group;
-  GtkStyleContext *style_context;
   static const GActionEntry entries[] = {
     { "tab", NULL, "i", "0", set_tab_state },
   };
@@ -208,9 +207,7 @@ pnl_tab_strip_init (PnlTabStrip *self)
   gtk_widget_insert_action_group (GTK_WIDGET (self), "tab-strip", G_ACTION_GROUP (group));
   g_object_unref (group);
 
-  priv->edge = GTK_POS_LEFT;
-  style_context = gtk_widget_get_style_context (GTK_WIDGET (self));
-  gtk_style_context_add_class (style_context, "left-edge");
+  pnl_tab_strip_set_edge (self, GTK_POS_TOP);
 }
 
 static void
