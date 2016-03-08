@@ -142,6 +142,7 @@
             </child>
             <child type="right">
               <object class="PnlDockStack">
+                <property name="expand">true</property>
                 <property name="visible">true</property>
                 <child>
                   <object class="PnlDockWidget">
@@ -149,8 +150,7 @@
                     <property name="visible">true</property>
                     <child>
                       <object class="GtkListBox">
-                        <property name="hexpand">true</property>
-                        <property name="height-request">100</property>
+                        <property name="expand">true</property>
                         <property name="visible">true</property>
                       </object>
                     </child>
