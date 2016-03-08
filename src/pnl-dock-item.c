@@ -55,8 +55,6 @@ pnl_dock_item_real_set_manager (PnlDockItem    *self,
   else
     g_object_set_data (G_OBJECT (self), "PNL_DOCK_MANAGER", NULL);
 
-  g_object_notify (G_OBJECT (self), "manager");
-
   g_signal_emit (self, signals [MANAGER_SET], 0, old_manager);
 }
 
@@ -129,16 +127,12 @@ pnl_dock_item_adopt (PnlDockItem *self,
   manager = pnl_dock_item_get_manager (self);
   child_manager = pnl_dock_item_get_manager (child);
 
-  if (manager == child_manager)
-    return TRUE;
+  if (child_manager != manager && child_manager != NULL)
+    return FALSE;
+  else if (child_manager == NULL)
+    pnl_dock_item_set_manager (child, manager);
 
-  if (child_manager == NULL)
-    {
-      pnl_dock_item_set_manager (child, manager);
-      return TRUE;
-    }
-
-  return FALSE;
+  return TRUE;
 }
 
 void
