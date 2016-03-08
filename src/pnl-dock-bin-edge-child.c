@@ -47,7 +47,7 @@ static GParamSpec *properties [N_PROPS];
 
 static void
 pnl_dock_bin_edge_child_add (GtkContainer *container,
-                         GtkWidget    *widget)
+                             GtkWidget    *widget)
 {
   PnlDockBinEdgeChild *self = (PnlDockBinEdgeChild *)container;
   GtkWidget *prev_child;
