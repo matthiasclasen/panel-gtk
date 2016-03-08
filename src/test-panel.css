@@ -1,3 +1,7 @@
+dockwidget {
+  background-color: transparent;
+}
+
 tabstrip {
   background-color: #dfdfdf;
   padding-top: 3px;
@@ -44,4 +48,20 @@ dockoverlayedge.left-edge tab:checked {
 dockoverlayedge.right-edge tab:checked {
   border-left-color: @theme_selected_bg_color;
   border-bottom-color: transparent;
+}
+
+dockbinedge.right dockbinedgechild {
+  box-shadow: 1px 0 0 @borders inset;
+}
+
+dockbinedge.right dockstack {
+  margin-left: 1px;
+}
+
+dockbinedge.left dockbinedgechild {
+  box-shadow: -1px 0 0 @borders inset;
+}
+
+dockbinedge.left dockstack {
+  margin-right: 1px;
 }
