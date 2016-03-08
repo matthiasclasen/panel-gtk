@@ -1,5 +1,5 @@
 lib_LTLIBRARIES = libpanel-gtk-@API_VERSION@.la
-noinst_PROGRAMS = test-panel test-multi-paned
+noinst_PROGRAMS = test-panel test-multi-paned test-tab-strip
 
 DISTCLEANFILES =
 CLEANFILES =
@@ -78,6 +78,12 @@ test_multi_paned_LDADD = \
 	$(PANEL_GTK_LIBS) \
 	libpanel-gtk-@API_VERSION@.la
 test_multi_paned_CFLAGS = $(PANEL_GTK_CFLAGS)
+
+test_tab_strip_SOURCES = test-tab-strip.c
+test_tab_strip_LDADD = \
+	$(PANEL_GTK_LIBS) \
+	libpanel-gtk-@API_VERSION@.la
+test_tab_strip_CFLAGS = $(PANEL_GTK_CFLAGS)
 
 EXTRA_DIST = \
 	test-panel.ui \
