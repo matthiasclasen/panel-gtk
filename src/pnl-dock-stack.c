@@ -65,6 +65,23 @@ pnl_dock_stack_add (GtkContainer *container,
 }
 
 static void
+pnl_dock_stack_grab_focus (GtkWidget *widget)
+{
+  PnlDockStack *self = (PnlDockStack *)widget;
+  PnlDockStackPrivate *priv = pnl_dock_stack_get_instance_private (self);
+  GtkWidget *child;
+
+  g_assert (PNL_IS_DOCK_STACK (self));
+
+  child = gtk_stack_get_visible_child (priv->stack);
+
+  if (child != NULL)
+    gtk_widget_grab_focus (GTK_WIDGET (priv->stack));
+  else
+    GTK_WIDGET_CLASS (pnl_dock_stack_parent_class)->grab_focus (widget);
+}
+
+static void
 pnl_dock_stack_get_property (GObject    *object,
                              guint       prop_id,
                              GValue     *value,
@@ -111,6 +128,8 @@ pnl_dock_stack_class_init (PnlDockStackClass *klass)
 
   object_class->get_property = pnl_dock_stack_get_property;
   object_class->set_property = pnl_dock_stack_set_property;
+
+  widget_class->grab_focus = pnl_dock_stack_grab_focus;
 
   container_class->add = pnl_dock_stack_add;
 
