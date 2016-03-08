@@ -93,10 +93,47 @@ pnl_dock_item_real_update_visibility (PnlDockItem *self)
 }
 
 static void
+pnl_dock_item_propagate_manager (PnlDockItem *self)
+{
+  PnlDockManager *manager;
+  GPtrArray *ar;
+  guint i;
+
+  g_return_if_fail (PNL_IS_DOCK_ITEM (self));
+
+  if (!GTK_IS_CONTAINER (self))
+    return;
+
+  if (NULL == (manager = pnl_dock_item_get_manager (self)))
+    return;
+
+  if (NULL == (ar = g_object_get_data (G_OBJECT (self), "PNL_DOCK_ITEM_DESCENDANTS")))
+    return;
+
+  for (i = 0; i < ar->len; i++)
+    {
+      PnlDockItem *item = g_ptr_array_index (ar, i);
+
+      pnl_dock_item_set_manager (item, manager);
+    }
+}
+
+static void
+pnl_dock_item_real_manager_set (PnlDockItem    *self,
+                                PnlDockManager *manager)
+{
+  g_assert (PNL_IS_DOCK_ITEM (self));
+  g_assert (!manager || PNL_IS_DOCK_MANAGER (manager));
+
+  pnl_dock_item_propagate_manager (self);
+}
+
+static void
 pnl_dock_item_default_init (PnlDockItemInterface *iface)
 {
   iface->get_manager = pnl_dock_item_real_get_manager;
   iface->set_manager = pnl_dock_item_real_set_manager;
+  iface->manager_set = pnl_dock_item_real_manager_set;
   iface->update_visibility = pnl_dock_item_real_update_visibility;
 
   signals [MANAGER_SET] =
@@ -235,9 +272,10 @@ pnl_dock_item_adopt (PnlDockItem *self,
   manager = pnl_dock_item_get_manager (self);
   child_manager = pnl_dock_item_get_manager (child);
 
-  if (child_manager != manager && child_manager != NULL)
+  if ((child_manager != NULL) && (manager != NULL) && (child_manager != manager))
     return FALSE;
-  else if (child_manager == NULL)
+
+  if (manager != NULL)
     pnl_dock_item_set_manager (child, manager);
 
   pnl_dock_item_track_child (self, child);
