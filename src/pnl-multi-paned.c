@@ -738,6 +738,14 @@ pnl_multi_paned_child_size_allocate (PnlMultiPaned      *self,
 
       allocation->x += child_alloc.width + handle_size;
       allocation->width -= child_alloc.width + handle_size;
+
+      if ((allocation->width > 0) &&
+          pnl_multi_paned_is_last_visible_child (self, child) &&
+          gtk_widget_get_hexpand (child->widget))
+        {
+          child_alloc.width += allocation->width;
+          allocation->width = 0;
+        }
     }
   else
     {
@@ -776,6 +784,14 @@ pnl_multi_paned_child_size_allocate (PnlMultiPaned      *self,
 
       allocation->y += child_alloc.height + handle_size;
       allocation->height -= child_alloc.height + handle_size;
+
+      if ((allocation->height > 0) &&
+          pnl_multi_paned_is_last_visible_child (self, child) &&
+          gtk_widget_get_vexpand (child->widget))
+        {
+          child_alloc.height += allocation->height;
+          allocation->height = 0;
+        }
     }
 
   if (child->handle != NULL && !pnl_multi_paned_is_last_visible_child (self, child))
