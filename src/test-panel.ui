@@ -8,6 +8,12 @@
       <object class="GtkHeaderBar">
         <property name="show-close-button">true</property>
         <property name="visible">true</property>
+        <child type="title">
+          <object class="GtkSearchEntry">
+            <property name="max-width-chars">50</property>
+            <property name="visible">true</property>
+          </object>
+        </child>
         <child>
           <object class="GtkButton">
             <property name="label">Toggle All</property>
