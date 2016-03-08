@@ -123,12 +123,12 @@ pnl_dock_overlay_edge_add (GtkContainer *container,
   g_assert (PNL_IS_DOCK_OVERLAY_EDGE (self));
   g_assert (GTK_IS_WIDGET (child));
 
-  if (PNL_IS_DOCK_ITEM (child))
-    pnl_dock_item_adopt (PNL_DOCK_ITEM (self), PNL_DOCK_ITEM (child));
-
   GTK_CONTAINER_CLASS (pnl_dock_overlay_edge_parent_class)->add (container, child);
 
   pnl_dock_overlay_edge_update_edge (self);
+
+  if (PNL_IS_DOCK_ITEM (child))
+    pnl_dock_item_adopt (PNL_DOCK_ITEM (self), PNL_DOCK_ITEM (child));
 }
 
 static void

@@ -39,18 +39,13 @@ pnl_dock_paned_add (GtkContainer *container,
 
   g_assert (PNL_IS_DOCK_PANED (self));
 
-  if (PNL_IS_DOCK_ITEM (widget) &&
-      !pnl_dock_item_adopt (PNL_DOCK_ITEM (self), PNL_DOCK_ITEM (widget)))
-    {
-      g_warning ("%s failed to adopt child %s",
-                 G_OBJECT_TYPE_NAME (self), G_OBJECT_TYPE_NAME (widget));
-      return;
-    }
-
   if (PNL_IS_DOCK_STACK (widget))
     pnl_dock_stack_set_edge (PNL_DOCK_STACK (widget), priv->child_edge);
 
   GTK_CONTAINER_CLASS (pnl_dock_paned_parent_class)->add (container, widget);
+
+  if (PNL_IS_DOCK_ITEM (widget))
+    pnl_dock_item_adopt (PNL_DOCK_ITEM (self), PNL_DOCK_ITEM (widget));
 }
 
 static void
