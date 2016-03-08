@@ -18,6 +18,7 @@
 
 #include "pnl-dock-item.h"
 #include "pnl-dock-manager.h"
+#include "pnl-dock-widget.h"
 
 G_DEFINE_INTERFACE (PnlDockItem, pnl_dock_item, GTK_TYPE_WIDGET)
 
@@ -73,10 +74,30 @@ pnl_dock_item_real_get_manager (PnlDockItem *self)
 }
 
 static void
+pnl_dock_item_real_update_visibility (PnlDockItem *self)
+{
+  GtkWidget *parent;
+
+  g_assert (PNL_IS_DOCK_ITEM (self));
+
+  for (parent = gtk_widget_get_parent (GTK_WIDGET (self));
+       parent != NULL;
+       parent = gtk_widget_get_parent (parent))
+    {
+      if (PNL_IS_DOCK_ITEM (parent))
+        {
+          pnl_dock_item_update_visibility (PNL_DOCK_ITEM (parent));
+          break;
+        }
+    }
+}
+
+static void
 pnl_dock_item_default_init (PnlDockItemInterface *iface)
 {
   iface->get_manager = pnl_dock_item_real_get_manager;
   iface->set_manager = pnl_dock_item_real_set_manager;
+  iface->update_visibility = pnl_dock_item_real_update_visibility;
 
   signals [MANAGER_SET] =
     g_signal_new ("manager-set",
@@ -120,6 +141,14 @@ pnl_dock_item_set_manager (PnlDockItem    *self,
   PNL_DOCK_ITEM_GET_IFACE (self)->set_manager (self, manager);
 }
 
+void
+pnl_dock_item_update_visibility (PnlDockItem *self)
+{
+  g_return_if_fail (PNL_IS_DOCK_ITEM (self));
+
+  PNL_DOCK_ITEM_GET_IFACE (self)->update_visibility (self);
+}
+
 static void
 pnl_dock_item_child_weak_notify (gpointer  data,
                                  GObject  *where_object_was)
@@ -133,6 +162,8 @@ pnl_dock_item_child_weak_notify (gpointer  data,
 
   if (descendants != NULL)
     g_ptr_array_remove (descendants, where_object_was);
+
+  pnl_dock_item_update_visibility (self);
 }
 
 static void
@@ -187,6 +218,8 @@ pnl_dock_item_track_child (PnlDockItem *self,
   g_object_weak_ref (G_OBJECT (child),
                      pnl_dock_item_child_weak_notify,
                      self);
+
+  pnl_dock_item_update_visibility (self);
 }
 
 gboolean
@@ -254,4 +287,32 @@ pnl_dock_item_present (PnlDockItem *self)
           return;
         }
     }
+}
+
+gboolean
+pnl_dock_item_has_widgets (PnlDockItem *self)
+{
+  GPtrArray *ar;
+
+  g_return_val_if_fail (PNL_IS_DOCK_ITEM (self), FALSE);
+
+  if (PNL_IS_DOCK_WIDGET (self))
+    return TRUE;
+
+  ar = g_object_get_data (G_OBJECT (self), "PNL_DOCK_ITEM_DESCENDANTS");
+
+  if (ar != NULL)
+    {
+      guint i;
+
+      for (i = 0; i < ar->len; i++)
+        {
+          PnlDockItem *child = g_ptr_array_index (ar, i);
+
+          if (pnl_dock_item_has_widgets (child))
+            return TRUE;
+        }
+    }
+
+  return FALSE;
 }

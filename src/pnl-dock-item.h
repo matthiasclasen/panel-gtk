@@ -27,23 +27,26 @@ struct _PnlDockItemInterface
 {
   GTypeInterface parent;
 
-  void            (*set_manager)   (PnlDockItem    *self,
-                                    PnlDockManager *manager);
-  PnlDockManager *(*get_manager)   (PnlDockItem    *self);
-  void            (*manager_set)   (PnlDockItem    *self,
-                                    PnlDockManager *old_manager);
-  void            (*present_child) (PnlDockItem    *self,
-                                    PnlDockItem    *child);
+  void            (*set_manager)       (PnlDockItem    *self,
+                                        PnlDockManager *manager);
+  PnlDockManager *(*get_manager)       (PnlDockItem    *self);
+  void            (*manager_set)       (PnlDockItem    *self,
+                                        PnlDockManager *old_manager);
+  void            (*present_child)     (PnlDockItem    *self,
+                                        PnlDockItem    *child);
+  void            (*update_visibility) (PnlDockItem    *self);
 };
 
-PnlDockManager *pnl_dock_item_get_manager   (PnlDockItem    *self);
-void            pnl_dock_item_set_manager   (PnlDockItem    *self,
-                                             PnlDockManager *manager);
-gboolean        pnl_dock_item_adopt         (PnlDockItem    *self,
-                                             PnlDockItem    *child);
-void            pnl_dock_item_present       (PnlDockItem    *self);
-void            pnl_dock_item_present_child (PnlDockItem    *self,
-                                             PnlDockItem    *child);
+PnlDockManager *pnl_dock_item_get_manager       (PnlDockItem    *self);
+void            pnl_dock_item_set_manager       (PnlDockItem    *self,
+                                                 PnlDockManager *manager);
+gboolean        pnl_dock_item_adopt             (PnlDockItem    *self,
+                                                 PnlDockItem    *child);
+void            pnl_dock_item_present           (PnlDockItem    *self);
+void            pnl_dock_item_present_child     (PnlDockItem    *self,
+                                                 PnlDockItem    *child);
+void            pnl_dock_item_update_visibility (PnlDockItem    *self);
+gboolean        pnl_dock_item_has_widgets       (PnlDockItem    *self);
 
 G_END_DECLS
 

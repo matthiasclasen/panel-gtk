@@ -22,6 +22,7 @@
 #include "pnl-dock-overlay.h"
 #include "pnl-tab.h"
 #include "pnl-tab-strip.h"
+#include "pnl-util-private.h"
 
 #define REVEAL_DURATION 300
 #define MNEMONIC_REVEAL_DURATION 100
@@ -562,10 +563,14 @@ pnl_dock_overlay_init (PnlDockOverlay *self)
 
   for (i = 0; i <= GTK_POS_BOTTOM; i++)
     {
-      priv->edges [i] = g_object_new (PNL_TYPE_DOCK_OVERLAY_EDGE,
-                                      "edge", (GtkPositionType)i,
-                                      "visible", TRUE,
-                                      NULL);
+      PnlDockOverlayEdge *edge;
+
+      edge = g_object_new (PNL_TYPE_DOCK_OVERLAY_EDGE,
+                           "edge", (GtkPositionType)i,
+                           "visible", TRUE,
+                           NULL);
+
+      pnl_set_weak_pointer (&priv->edges[i], edge);
 
       gtk_overlay_add_overlay (GTK_OVERLAY (self), GTK_WIDGET (priv->edges [i]));
 
@@ -664,7 +669,31 @@ pnl_dock_overlay_present_child (PnlDockItem *item,
 }
 
 static void
+pnl_dock_overlay_update_visibility (PnlDockItem *item)
+{
+  PnlDockOverlay *self = (PnlDockOverlay *)item;
+  PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
+  guint i;
+
+  g_assert (PNL_IS_DOCK_OVERLAY (self));
+
+  for (i = 0; i < G_N_ELEMENTS (priv->edges); i++)
+    {
+      PnlDockOverlayEdge *edge = priv->edges [i];
+
+      if (edge == NULL)
+        continue;
+
+      gtk_widget_set_child_visible (GTK_WIDGET (edge),
+                                    pnl_dock_item_has_widgets (PNL_DOCK_ITEM (edge)));
+    }
+
+  gtk_widget_queue_resize (GTK_WIDGET (self));
+}
+
+static void
 pnl_dock_overlay_init_dock_item_iface (PnlDockItemInterface *iface)
 {
   iface->present_child = pnl_dock_overlay_present_child;
+  iface->update_visibility = pnl_dock_overlay_update_visibility;
 }
