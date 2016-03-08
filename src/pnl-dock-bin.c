@@ -895,7 +895,7 @@ pnl_dock_bin_create_child_handle (PnlDockBin      *self,
   attributes.window_type = GDK_WINDOW_CHILD;
   attributes.wclass = GDK_INPUT_ONLY;
   attributes.x = -1;
-  attributes.x = -1;
+  attributes.y = -1;
   attributes.width = 1;
   attributes.height = 1;
   attributes.visual = gtk_widget_get_visual (GTK_WIDGET (self));
