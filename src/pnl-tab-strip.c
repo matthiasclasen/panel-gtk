@@ -374,6 +374,15 @@ pnl_tab_strip_get_stack (PnlTabStrip *self)
   return priv->stack;
 }
 
+static void
+add_cb (GtkWidget    *widget,
+        PnlTabStrip  *self)
+{
+  PnlTabStripPrivate *priv = pnl_tab_strip_get_instance_private (self);
+
+  pnl_tab_strip_stack_add (self, widget, GTK_STACK (priv->stack));
+}
+
 void
 pnl_tab_strip_set_stack (PnlTabStrip *self,
                          GtkStack    *stack)
@@ -425,6 +434,8 @@ pnl_tab_strip_set_stack (PnlTabStrip *self,
                                    G_CALLBACK (pnl_tab_strip_stack_remove),
                                    self,
                                    G_CONNECT_SWAPPED);
+
+          gtk_container_foreach (GTK_CONTAINER (priv->stack), (GtkCallback)add_cb, self);
         }
     }
 }
