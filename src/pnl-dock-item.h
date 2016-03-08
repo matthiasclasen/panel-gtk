@@ -47,8 +47,7 @@ void            pnl_dock_item_present_child     (PnlDockItem    *self,
                                                  PnlDockItem    *child);
 void            pnl_dock_item_update_visibility (PnlDockItem    *self);
 gboolean        pnl_dock_item_has_widgets       (PnlDockItem    *self);
-
-void _pnl_dock_item_printf (PnlDockItem *self);
+void            _pnl_dock_item_printf           (PnlDockItem    *self);
 
 G_END_DECLS
 
