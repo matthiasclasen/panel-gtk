@@ -243,9 +243,7 @@ pnl_dock_item_track_child (PnlDockItem *self,
   if (descendants == NULL)
     {
       descendants = g_ptr_array_new ();
-      g_object_set_data (G_OBJECT (self),
-                         "PNL_DOCK_ITEM_DESCENDANTS",
-                         descendants);
+      g_object_set_data (G_OBJECT (self), "PNL_DOCK_ITEM_DESCENDANTS", descendants);
       g_signal_connect (self,
                         "destroy",
                         G_CALLBACK (pnl_dock_item_destroy),
@@ -255,6 +253,8 @@ pnl_dock_item_track_child (PnlDockItem *self,
   g_object_weak_ref (G_OBJECT (child),
                      pnl_dock_item_child_weak_notify,
                      self);
+
+  g_ptr_array_add (descendants, child);
 
   pnl_dock_item_update_visibility (child);
 }
