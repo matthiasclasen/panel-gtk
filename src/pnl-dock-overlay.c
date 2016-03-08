@@ -25,7 +25,7 @@
 #include "pnl-util-private.h"
 
 #define REVEAL_DURATION 300
-#define MNEMONIC_REVEAL_DURATION 100
+#define MNEMONIC_REVEAL_DURATION 200
 
 typedef struct
 {
