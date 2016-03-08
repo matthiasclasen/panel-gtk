@@ -209,17 +209,15 @@ pnl_dock_overlay_add (GtkContainer *container,
   g_assert (PNL_IS_DOCK_OVERLAY (self));
   g_assert (GTK_IS_WIDGET (widget));
 
-  if (PNL_IS_DOCK_ITEM (widget) &&
-      !pnl_dock_item_adopt (PNL_DOCK_ITEM (self), PNL_DOCK_ITEM (widget)))
-    {
-      g_warning ("Child of type %s has a different PnlDockManager than %s",
-                 G_OBJECT_TYPE_NAME (widget), G_OBJECT_TYPE_NAME (self));
-      return;
-    }
-
   GTK_CONTAINER_CLASS (pnl_dock_overlay_parent_class)->add (container, widget);
 
   pnl_dock_overlay_update_focus_chain (self);
+
+  if (PNL_IS_DOCK_ITEM (widget))
+    {
+      pnl_dock_item_adopt (PNL_DOCK_ITEM (self), PNL_DOCK_ITEM (widget));
+      pnl_dock_item_update_visibility (PNL_DOCK_ITEM (widget));
+    }
 }
 
 static void
@@ -622,18 +620,10 @@ pnl_dock_overlay_add_child (GtkBuildable *buildable,
       return;
     }
 
-  if (PNL_IS_DOCK_ITEM (child) &&
-      !pnl_dock_item_adopt (PNL_DOCK_ITEM (self), PNL_DOCK_ITEM (child)))
-    {
-      g_warning ("Child of type %s has a different PnlDockManager than %s",
-                 G_OBJECT_TYPE_NAME (child), G_OBJECT_TYPE_NAME (self));
-      return;
-    }
-
   if ((type == NULL) || (g_strcmp0 ("center", type) == 0))
     {
       gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (child));
-      return;
+      goto adopt;
     }
 
   if (g_strcmp0 ("top", type) == 0)
@@ -646,6 +636,10 @@ pnl_dock_overlay_add_child (GtkBuildable *buildable,
     parent = priv->edges [GTK_POS_LEFT];
 
   gtk_container_add (GTK_CONTAINER (parent), GTK_WIDGET (child));
+
+adopt:
+  if (PNL_IS_DOCK_ITEM (child))
+    pnl_dock_item_adopt (PNL_DOCK_ITEM (self), PNL_DOCK_ITEM (child));
 }
 
 static void
@@ -680,12 +674,14 @@ pnl_dock_overlay_update_visibility (PnlDockItem *item)
   for (i = 0; i < G_N_ELEMENTS (priv->edges); i++)
     {
       PnlDockOverlayEdge *edge = priv->edges [i];
+      gboolean has_widgets;
 
       if (edge == NULL)
         continue;
 
-      gtk_widget_set_child_visible (GTK_WIDGET (edge),
-                                    pnl_dock_item_has_widgets (PNL_DOCK_ITEM (edge)));
+      has_widgets = pnl_dock_item_has_widgets (PNL_DOCK_ITEM (edge));
+
+      gtk_widget_set_child_visible (GTK_WIDGET (edge), has_widgets);
     }
 
   gtk_widget_queue_resize (GTK_WIDGET (self));
