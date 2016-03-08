@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<interface>
+  <object class="GtkWindow" id="window">
+    <property name="title">Test Panel</property>
+    <child>
+      <object class="GtkBox">
+        <property name="visible">true</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="PnlTabStrip">
+            <property name="visible">true</property>
+            <property name="stack">stack</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStack" id="stack">
+            <property name="visible">true</property>
+            <property name="vexpand">true</property>
+            <child>
+              <object class="GtkTextView">
+                <property name="monospace">true</property>
+                <property name="visible">true</property>
+              </object>
+              <packing>
+                <property name="name">tab1</property>
+                <property name="title">Tab 1</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkTextView">
+                <property name="monospace">true</property>
+                <property name="visible">true</property>
+              </object>
+              <packing>
+                <property name="name">tab2</property>
+                <property name="title">Tab 2</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkTextView">
+                <property name="monospace">true</property>
+                <property name="visible">true</property>
+              </object>
+              <packing>
+                <property name="name">tab3</property>
+                <property name="title">Tab 3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkTextView">
+                <property name="monospace">true</property>
+                <property name="visible">true</property>
+              </object>
+              <packing>
+                <property name="name">tab4</property>
+                <property name="title">Tab 4</property>
+              </packing>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>
