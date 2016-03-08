@@ -5,20 +5,23 @@ tabstrip {
   padding: 0 6px 0 6px;
 }
 
-tab:checked {
-  border-bottom: 2px solid #4a90d9;
-  color: #2e3436;
-}
-
 tab {
-  background: transparent;
-  border-bottom: 2px solid transparent;
-  transition-duration: 300ms;
-  transition-timing-function: ease;
-  outline-offset: -6px;
+  background-image: none;
+  background-color: transparent;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 2px;
+  color: #8d9091;
   font-weight: bold;
   min-height: 35px;
-  color: #8d9091;
+  outline-offset: -6px;
+  transition-duration: 300ms;
+  transition-timing-function: ease;
+}
+
+tab:checked {
+  border-bottom-color: @theme_selected_bg_color;
+  color: #2e3436;
 }
 
 tab > * {
@@ -29,11 +32,16 @@ dockoverlayedge {
   background-color: @theme_bg_color;
 }
 
-dockoverlayedge.left-edge tabstrip {
+dockoverlayedge tabstrip {
   padding: 0;
+  border: none;
 }
 
 dockoverlayedge.left-edge tab:checked {
-  border: 2px solid transparent;
-  border-right: 2px solid #4a90d9;
+  border-right-color: @theme_selected_bg_color;
+  border-bottom-color: transparent;
+}
+dockoverlayedge.right-edge tab:checked {
+  border-left-color: @theme_selected_bg_color;
+  border-bottom-color: transparent;
 }
