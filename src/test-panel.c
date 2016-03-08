@@ -25,6 +25,7 @@ main (gint   argc,
   GtkWindow *window = NULL;
   GActionGroup *group;
   GtkWidget *dockbin;
+  GtkWidget *dockoverlay;
   GtkCssProvider *provider;
   GError *error = NULL;
 
@@ -44,6 +45,9 @@ main (gint   argc,
 
   window = GTK_WINDOW (gtk_builder_get_object (builder, "window"));
   g_signal_connect (window, "delete-event", gtk_main_quit, NULL);
+
+  dockoverlay = GTK_WIDGET (gtk_builder_get_object (builder, "dockoverlay"));
+  _pnl_dock_item_printf (PNL_DOCK_ITEM (dockoverlay));
 
   dockbin = GTK_WIDGET (gtk_builder_get_object (builder, "dockbin"));
   group = gtk_widget_get_action_group (dockbin, "dockbin");

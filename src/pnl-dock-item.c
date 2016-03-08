@@ -354,3 +354,44 @@ pnl_dock_item_has_widgets (PnlDockItem *self)
 
   return FALSE;
 }
+
+static void
+pnl_dock_item_printf_internal (PnlDockItem *self,
+                               GString     *str,
+                               guint        depth)
+{
+  GPtrArray *ar;
+  guint i;
+
+  g_assert (PNL_IS_DOCK_ITEM (self));
+  g_assert (str != NULL);
+
+
+  for (i = 0; i < depth; i++)
+    g_string_append_c (str, ' ');
+
+  g_string_append_printf (str, "%s\n", G_OBJECT_TYPE_NAME (self));
+
+  ++depth;
+
+  ar = g_object_get_data (G_OBJECT (self), "PNL_DOCK_ITEM_DESCENDANTS");
+
+  if (ar != NULL)
+    {
+      for (i = 0; i < ar->len; i++)
+        pnl_dock_item_printf_internal (g_ptr_array_index (ar, i), str, depth);
+    }
+}
+
+void
+_pnl_dock_item_printf (PnlDockItem *self)
+{
+  GString *str;
+
+  g_return_if_fail (PNL_IS_DOCK_ITEM (self));
+
+  str = g_string_new (NULL);
+  pnl_dock_item_printf_internal (self, str, 0);
+  g_printerr ("%s", str->str);
+  g_string_free (str, TRUE);
+}

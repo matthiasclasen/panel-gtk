@@ -71,7 +71,7 @@
       </object>
     </child>
     <child>
-      <object class="PnlDockOverlay">
+      <object class="PnlDockOverlay" id="dockoverlay">
         <property name="manager">manager</property>
         <property name="visible">true</property>
         <child>
