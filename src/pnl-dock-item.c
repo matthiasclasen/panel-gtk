@@ -21,6 +21,12 @@
 
 G_DEFINE_INTERFACE (PnlDockItem, pnl_dock_item, GTK_TYPE_WIDGET)
 
+/*
+ * The PnlDockItem is an interface that acts more like a mixin.
+ * This is mostly out of wanting to preserve widget inheritance
+ * without having to duplicate all sorts of plumbing.
+ */
+
 enum {
   MANAGER_SET,
   N_SIGNALS
@@ -114,6 +120,75 @@ pnl_dock_item_set_manager (PnlDockItem    *self,
   PNL_DOCK_ITEM_GET_IFACE (self)->set_manager (self, manager);
 }
 
+static void
+pnl_dock_item_child_weak_notify (gpointer  data,
+                                 GObject  *where_object_was)
+{
+  PnlDockItem *self = data;
+  GPtrArray *descendants;
+
+  g_assert (PNL_IS_DOCK_ITEM (self));
+
+  descendants = g_object_get_data (G_OBJECT (self), "PNL_DOCK_ITEM_DESCENDANTS");
+
+  if (descendants != NULL)
+    g_ptr_array_remove (descendants, where_object_was);
+}
+
+static void
+pnl_dock_item_destroy (PnlDockItem *self)
+{
+  GPtrArray *descendants;
+  guint i;
+
+  g_assert (PNL_IS_DOCK_ITEM (self));
+
+  descendants = g_object_get_data (G_OBJECT (self), "PNL_DOCK_ITEM_DESCENDANTS");
+
+  if (descendants != NULL)
+    {
+      for (i = 0; i < descendants->len; i++)
+        {
+          PnlDockItem *child = g_ptr_array_index (descendants, i);
+
+          g_object_weak_unref (G_OBJECT (child),
+                               pnl_dock_item_child_weak_notify,
+                               self);
+        }
+
+      g_object_set_data (G_OBJECT (self), "PNL_DOCK_ITEM_DESCENDANTS", NULL);
+      g_ptr_array_unref (descendants);
+    }
+}
+
+static void
+pnl_dock_item_track_child (PnlDockItem *self,
+                           PnlDockItem *child)
+{
+  GPtrArray *descendants;
+
+  g_assert (PNL_IS_DOCK_ITEM (self));
+  g_assert (PNL_IS_DOCK_ITEM (child));
+
+  descendants = g_object_get_data (G_OBJECT (self), "PNL_DOCK_ITEM_DESCENDANTS");
+
+  if (descendants == NULL)
+    {
+      descendants = g_ptr_array_new ();
+      g_object_set_data (G_OBJECT (self),
+                         "PNL_DOCK_ITEM_DESCENDANTS",
+                         descendants);
+      g_signal_connect (self,
+                        "destroy",
+                        G_CALLBACK (pnl_dock_item_destroy),
+                        NULL);
+    }
+
+  g_object_weak_ref (G_OBJECT (child),
+                     pnl_dock_item_child_weak_notify,
+                     self);
+}
+
 gboolean
 pnl_dock_item_adopt (PnlDockItem *self,
                      PnlDockItem *child)
@@ -131,6 +206,8 @@ pnl_dock_item_adopt (PnlDockItem *self,
     return FALSE;
   else if (child_manager == NULL)
     pnl_dock_item_set_manager (child, manager);
+
+  pnl_dock_item_track_child (self, child);
 
   return TRUE;
 }
