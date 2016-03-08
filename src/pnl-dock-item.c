@@ -219,7 +219,7 @@ pnl_dock_item_track_child (PnlDockItem *self,
                      pnl_dock_item_child_weak_notify,
                      self);
 
-  pnl_dock_item_update_visibility (self);
+  pnl_dock_item_update_visibility (child);
 }
 
 gboolean
