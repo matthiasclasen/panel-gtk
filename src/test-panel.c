@@ -30,12 +30,6 @@ main (gint   argc,
 
   gtk_init (&argc, &argv);
 
-  g_type_ensure (PNL_TYPE_DOCK_BIN);
-  g_type_ensure (PNL_TYPE_DOCK_OVERLAY);
-  g_type_ensure (PNL_TYPE_DOCK_PANED);
-  g_type_ensure (PNL_TYPE_DOCK_STACK);
-  g_type_ensure (PNL_TYPE_DOCK_WIDGET);
-
   provider = gtk_css_provider_new ();
   gtk_css_provider_load_from_path (provider, "test-panel.css", &error);
   g_assert_no_error (error);
