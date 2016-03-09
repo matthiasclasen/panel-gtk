@@ -19,7 +19,7 @@
 #include "pnl-dock-item.h"
 #include "pnl-dock-stack.h"
 #include "pnl-dock-widget.h"
-#include "pnl-tab-strip.h"
+#include "pnl-dock-tab-strip.h"
 
 typedef struct
 {
@@ -160,7 +160,7 @@ pnl_dock_stack_init (PnlDockStack *self)
                               "visible", TRUE,
                               NULL);
 
-  priv->tab_strip = g_object_new (PNL_TYPE_TAB_STRIP,
+  priv->tab_strip = g_object_new (PNL_TYPE_DOCK_TAB_STRIP,
                                   "edge", GTK_POS_TOP,
                                   "stack", priv->stack,
                                   "visible", TRUE,

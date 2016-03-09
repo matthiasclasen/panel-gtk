@@ -1,6 +1,6 @@
-/* pnl.h
+/* pnl-dock-tab-strip.c
  *
- * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
+ * Copyright (C) 2016 Christian Hergert <christian@hergert.me>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,35 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PNL_H
-#define PNL_H
-
-#include <gtk/gtk.h>
-
-G_BEGIN_DECLS
-
-#define PNL_INSIDE
-
-#include "pnl-dock.h"
-#include "pnl-dock-bin.h"
-#include "pnl-dock-item.h"
-#include "pnl-dock-manager.h"
-#include "pnl-dock-overlay.h"
-#include "pnl-dock-paned.h"
-#include "pnl-dock-stack.h"
 #include "pnl-dock-tab-strip.h"
-#include "pnl-dock-types.h"
-#include "pnl-dock-widget.h"
-#include "pnl-dock-window.h"
 
-#include "pnl-version.h"
+struct _PnlDockTabStrip
+{
+  PnlTabStrip parent;
+};
 
-#include "pnl-tab.h"
-#include "pnl-tab-strip.h"
-#include "pnl-multi-paned.h"
+enum {
+  PROP_0,
+  N_PROPS
+};
 
-#undef PNL_INSIDE
+G_DEFINE_TYPE (PnlDockTabStrip, pnl_dock_tab_strip, PNL_TYPE_TAB_STRIP)
 
-G_END_DECLS
+static void
+pnl_dock_tab_strip_class_init (PnlDockTabStripClass *klass)
+{
+}
 
-#endif /* PNL_H */
+static void
+pnl_dock_tab_strip_init (PnlDockTabStrip *strip)
+{
+}

@@ -42,6 +42,8 @@ libpanel_gtk_@API_VERSION@_la_SOURCES = \
 	pnl-dock-paned-private.h \
 	pnl-dock-paned.c \
 	pnl-dock-stack.c \
+	pnl-dock-tab-strip.c \
+	pnl-dock-tab-strip.h \
 	pnl-dock-widget.c \
 	pnl-dock-window.c \
 	pnl-dock.c \
