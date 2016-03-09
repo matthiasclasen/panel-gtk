@@ -74,6 +74,14 @@ dockbinedge.left dockstack {
   margin-right: 1px;
 }
 
+dockbinedge.bottom dockbinedgechild {
+  box-shadow: 0 1px 0 @borders inset;
+}
+
+dockbinedge.bottom dockstack {
+  margin-top: 1px;
+}
+
 textview {
   padding: 6px;
 }
