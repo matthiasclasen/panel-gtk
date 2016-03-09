@@ -20,6 +20,7 @@
               <object class="GtkTextView">
                 <property name="monospace">true</property>
                 <property name="visible">true</property>
+                <property name="buffer">buffer1</property>
               </object>
               <packing>
                 <property name="name">tab1</property>
@@ -30,6 +31,7 @@
               <object class="GtkTextView">
                 <property name="monospace">true</property>
                 <property name="visible">true</property>
+                <property name="buffer">buffer2</property>
               </object>
               <packing>
                 <property name="name">tab2</property>
@@ -40,6 +42,7 @@
               <object class="GtkTextView">
                 <property name="monospace">true</property>
                 <property name="visible">true</property>
+                <property name="buffer">buffer3</property>
               </object>
               <packing>
                 <property name="name">tab3</property>
@@ -50,6 +53,7 @@
               <object class="GtkTextView">
                 <property name="monospace">true</property>
                 <property name="visible">true</property>
+                <property name="buffer">buffer4</property>
               </object>
               <packing>
                 <property name="name">tab4</property>
@@ -60,5 +64,17 @@
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkTextBuffer" id="buffer1">
+    <property name="text">Page 1</property>
+  </object>
+  <object class="GtkTextBuffer" id="buffer2">
+    <property name="text">Page 2</property>
+  </object>
+  <object class="GtkTextBuffer" id="buffer3">
+    <property name="text">Page 3</property>
+  </object>
+  <object class="GtkTextBuffer" id="buffer4">
+    <property name="text">Page 4</property>
   </object>
 </interface>
