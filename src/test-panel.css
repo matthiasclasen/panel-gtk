@@ -2,6 +2,10 @@ dockwidget {
   background-color: transparent;
 }
 
+dockpaned {
+  border: 1px solid @borders;
+}
+
 tabstrip {
   background-color: #dfdfdf;
   padding-top: 3px;
@@ -17,7 +21,7 @@ tab {
   border-width: 2px;
   color: #8d9091;
   font-weight: bold;
-  min-height: 35px;
+  min-height: 22px;
   outline-offset: -6px;
   transition-duration: 300ms;
   transition-timing-function: ease;
