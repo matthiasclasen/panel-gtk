@@ -16,7 +16,8 @@
         </child>
         <child>
           <object class="GtkButton">
-            <property name="label">Toggle All</property>
+            <property name="label">T_oggle All</property>
+            <property name="use-underline">true</property>
             <property name="visible">true</property>
             <signal name="clicked" handler="toggle_all" />
           </object>
