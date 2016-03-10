@@ -1,7 +1,6 @@
 [default]
-name=Panel GTK (JHBuild)
+name=Panel GTK
 device=local
-runtime=jhbuild
-prefix=/opt/gnome
+runtime=host
 default=true
 config-opts=--disable-Werror --enable-silent-rules
