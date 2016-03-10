@@ -65,7 +65,7 @@ enum {
   LAST_SIGNAL
 };
 
-static GParamSpec *properties [LAST_CHILD_PROP];
+static GParamSpec *properties [LAST_PROP];
 static GParamSpec *child_properties [LAST_CHILD_PROP];
 static GParamSpec *style_properties [LAST_STYLE_PROP];
 static guint signals [LAST_SIGNAL];
