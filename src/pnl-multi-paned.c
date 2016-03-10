@@ -23,9 +23,30 @@
 
 typedef struct
 {
+  /*
+   * The child widget in question.
+   */
   GtkWidget *widget;
+
+  /*
+   * The input only window for resize grip.
+   * Has a cursor associated with it.
+   */
   GdkWindow *handle;
-  gint       position;
+
+  /*
+   * The position the handle has been dragged to.
+   * This is used to adjust size requests.
+   */
+  gint position;
+
+  /*
+   * A cached size allocation used during the size_allocate()
+   * cycle. This allows us to do a first pass to allocate
+   * natural sizes, and then followup when dealing with
+   * expanding children.
+   */
+  GtkAllocation alloc;
 } PnlMultiPanedChild;
 
 typedef struct
@@ -678,7 +699,6 @@ pnl_multi_paned_child_size_allocate (PnlMultiPaned      *self,
 {
   PnlMultiPanedPrivate *priv = pnl_multi_paned_get_instance_private (self);
   PnlMultiPanedChild *child = children;
-  GtkAllocation child_alloc = { 0 };
 
   g_assert (PNL_IS_MULTI_PANED (self));
   g_assert (n_children == 0 || children != NULL);
@@ -698,8 +718,8 @@ pnl_multi_paned_child_size_allocate (PnlMultiPaned      *self,
   if (!gtk_widget_get_visible (child->widget))
     goto next_child;
 
-  child_alloc.x = allocation->x;
-  child_alloc.y = allocation->y;
+  child->alloc.x = allocation->x;
+  child->alloc.y = allocation->y;
 
   if (priv->orientation == GTK_ORIENTATION_HORIZONTAL)
     {
@@ -721,7 +741,7 @@ pnl_multi_paned_child_size_allocate (PnlMultiPaned      *self,
                                                             &neighbor_min_width,
                                                             &neighbor_nat_width);
 
-      child_alloc.height = allocation->height;
+      child->alloc.height = allocation->height;
 
       position = child->position;
 
@@ -734,16 +754,16 @@ pnl_multi_paned_child_size_allocate (PnlMultiPaned      *self,
       if ((allocation->width - position - handle_size) < neighbor_min_width)
         position = allocation->width - handle_size - neighbor_min_width;
 
-      child_alloc.width = position;
+      child->alloc.width = position;
 
-      allocation->x += child_alloc.width + handle_size;
-      allocation->width -= child_alloc.width + handle_size;
+      allocation->x += child->alloc.width + handle_size;
+      allocation->width -= child->alloc.width + handle_size;
 
       if ((allocation->width > 0) &&
           pnl_multi_paned_is_last_visible_child (self, child) &&
           gtk_widget_get_hexpand (child->widget))
         {
-          child_alloc.width += allocation->width;
+          child->alloc.width += allocation->width;
           allocation->width = 0;
         }
     }
@@ -767,7 +787,7 @@ pnl_multi_paned_child_size_allocate (PnlMultiPaned      *self,
                                                             &neighbor_min_height,
                                                             &neighbor_nat_height);
 
-      child_alloc.width = allocation->width;
+      child->alloc.width = allocation->width;
 
       position = child->position;
 
@@ -780,16 +800,16 @@ pnl_multi_paned_child_size_allocate (PnlMultiPaned      *self,
       if ((allocation->height - position - handle_size) < neighbor_min_height)
         position = allocation->height - handle_size - neighbor_min_height;
 
-      child_alloc.height = position;
+      child->alloc.height = position;
 
-      allocation->y += child_alloc.height + handle_size;
-      allocation->height -= child_alloc.height + handle_size;
+      allocation->y += child->alloc.height + handle_size;
+      allocation->height -= child->alloc.height + handle_size;
 
       if ((allocation->height > 0) &&
           pnl_multi_paned_is_last_visible_child (self, child) &&
           gtk_widget_get_vexpand (child->widget))
         {
-          child_alloc.height += allocation->height;
+          child->alloc.height += allocation->height;
           allocation->height = 0;
         }
     }
@@ -799,22 +819,22 @@ pnl_multi_paned_child_size_allocate (PnlMultiPaned      *self,
       if (priv->orientation == GTK_ORIENTATION_HORIZONTAL)
         {
           gdk_window_move_resize (child->handle,
-                                  child_alloc.x + child_alloc.width - (HANDLE_WIDTH / 2),
-                                  child_alloc.y,
+                                  child->alloc.x + child->alloc.width - (HANDLE_WIDTH / 2),
+                                  child->alloc.y,
                                   HANDLE_WIDTH,
-                                  child_alloc.height);
+                                  child->alloc.height);
         }
       else
         {
           gdk_window_move_resize (child->handle,
-                                  child_alloc.x,
-                                  child_alloc.y + child_alloc.height - (HANDLE_HEIGHT / 2),
-                                  child_alloc.width,
+                                  child->alloc.x,
+                                  child->alloc.y + child->alloc.height - (HANDLE_HEIGHT / 2),
+                                  child->alloc.width,
                                   HANDLE_HEIGHT);
         }
     }
 
-  gtk_widget_size_allocate (child->widget, &child_alloc);
+  gtk_widget_size_allocate (child->widget, &child->alloc);
 
 next_child:
   pnl_multi_paned_child_size_allocate (self,
