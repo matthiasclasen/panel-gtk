@@ -135,7 +135,6 @@ enum {
 };
 
 /*
- * TODO: Subtract drag position from neighbor when position is < 0.
  * TODO: An obvious optimization here would be to move the constant
  *       branches outside the loops.
  */
