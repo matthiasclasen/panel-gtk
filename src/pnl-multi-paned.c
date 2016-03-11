@@ -23,6 +23,16 @@
 
 #define IS_HORIZONTAL(o) (o == GTK_ORIENTATION_HORIZONTAL)
 
+/**
+ * SECTION:pnl-multi-paned
+ * @title: PnlMultiPaned
+ * @short_description: A widget with multiple adjustable panes
+ *
+ * This widget is similar to #GtkPaned except that it allows adding more than
+ * two children to the widget. For each additional child added to the
+ * #PnlMultiPaned, an additional resize grip is added.
+ */
+
 typedef struct
 {
   /*
@@ -65,12 +75,47 @@ typedef struct
 
 typedef struct
 {
-  GArray             *children;
-  GtkGesturePan      *gesture;
-  GtkOrientation      orientation;
+  /*
+   * A GArray of PnlMultiPanedChild containing everything we need to
+   * do size requests, drag operations, resize handles, and temporary
+   * space needed in such operations.
+   */
+  GArray *children;
+
+  /*
+   * The gesture used for dragging resize handles.
+   *
+   * TODO: GtkPaned now uses two gestures, one for mouse and one for touch.
+   *       We should do the same as it improved things quite a bit.
+   */
+  GtkGesturePan *gesture;
+
+  /*
+   * For GtkOrientable:orientation.
+   */
+  GtkOrientation orientation;
+
+  /*
+   * This is the child that is currently being dragged. Keep in mind that
+   * the drag handle is immediately after the child. So the final visible
+   * child has the handle input-only window hidden.
+   */
   PnlMultiPanedChild *drag_begin;
-  gint                drag_begin_position;
-  gint                drag_extra_offset;
+
+  /*
+   * The position (width or height) of the child when the drag began.
+   * We use the pan delta offset to determine what the size should be
+   * by adding (or subtracting) to this value.
+   */
+  gint drag_begin_position;
+
+  /*
+   * If we are dragging a handle in a fashion that would shrink the
+   * previous widgets, we need to track how much to subtract from their
+   * target allocations. This is set during the drag operation and used
+   * in allocation_stage_drag_overflow() to adjust the neighbors.
+   */
+  gint drag_extra_offset;
 } PnlMultiPanedPrivate;
 
 typedef struct
