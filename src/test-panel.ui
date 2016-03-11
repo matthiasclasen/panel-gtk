@@ -92,9 +92,11 @@
             </child>
             <child type="right">
               <object class="PnlDockStack">
+                <property name="expand">true</property>
                 <property name="visible">true</property>
                 <child>
                   <object class="PnlDockWidget">
+                    <property name="expand">true</property>
                     <property name="title">Color</property>
                     <property name="visible">true</property>
                     <child>
@@ -106,6 +108,7 @@
                 </child>
                 <child>
                   <object class="PnlDockWidget">
+                    <property name="expand">true</property>
                     <property name="title">Swatches</property>
                     <property name="visible">true</property>
                     <child>
@@ -119,6 +122,7 @@
             </child>
             <child type="right">
               <object class="PnlDockStack">
+                <property name="expand">true</property>
                 <property name="visible">true</property>
                 <child>
                   <object class="PnlDockWidget">
@@ -126,8 +130,7 @@
                     <property name="visible">true</property>
                     <child>
                       <object class="GtkListBox">
-                        <property name="hexpand">true</property>
-                        <property name="vexpand">true</property>
+                        <property name="expand">true</property>
                         <property name="visible">true</property>
                       </object>
                     </child>
@@ -147,6 +150,7 @@
                 <property name="visible">true</property>
                 <child>
                   <object class="PnlDockWidget">
+                    <property name="expand">true</property>
                     <property name="title">_Layers</property>
                     <property name="visible">true</property>
                     <child>
@@ -159,12 +163,14 @@
                 </child>
                 <child>
                   <object class="PnlDockWidget">
+                    <property name="expand">true</property>
                     <property name="title">_Channels</property>
                     <property name="visible">true</property>
                   </object>
                 </child>
                 <child>
                   <object class="PnlDockWidget">
+                    <property name="expand">true</property>
                     <property name="title">_Paths</property>
                     <property name="visible">true</property>
                   </object>
@@ -176,12 +182,12 @@
                 <property name="visible">true</property>
                 <child>
                   <object class="PnlDockWidget">
+                    <property name="expand">true</property>
                     <property name="title">_Mini Bridge</property>
                     <property name="visible">true</property>
                     <child>
                       <object class="GtkListBox">
-                        <property name="hexpand">true</property>
-                        <property name="height-request">100</property>
+                        <property name="expand">true</property>
                         <property name="visible">true</property>
                       </object>
                     </child>
@@ -189,12 +195,11 @@
                 </child>
                 <child>
                   <object class="PnlDockWidget">
+                    <property name="expand">true</property>
                     <property name="title">_Timeline</property>
                     <property name="visible">true</property>
                     <child>
                       <object class="GtkListBox">
-                        <property name="hexpand">true</property>
-                        <property name="height-request">100</property>
                         <property name="visible">true</property>
                       </object>
                     </child>
@@ -207,12 +212,11 @@
                 <property name="visible">true</property>
                 <child>
                   <object class="PnlDockWidget">
+                    <property name="expand">true</property>
                     <property name="title">_Files</property>
                     <property name="visible">true</property>
                     <child>
                       <object class="GtkListBox">
-                        <property name="hexpand">true</property>
-                        <property name="vexpand">true</property>
                         <property name="visible">true</property>
                         <child>
                           <object class="GtkLabel">
@@ -227,6 +231,7 @@
                 </child>
                 <child>
                   <object class="PnlDockWidget">
+                    <property name="expand">true</property>
                     <property name="title">Targets</property>
                     <property name="visible">true</property>
                   </object>
@@ -238,6 +243,7 @@
                 <property name="visible">true</property>
                 <child>
                   <object class="PnlDockWidget">
+                    <property name="expand">true</property>
                     <property name="title">Documentation</property>
                     <property name="visible">true</property>
                   </object>
@@ -251,6 +257,7 @@
             <property name="visible">true</property>
             <child>
               <object class="PnlDockWidget">
+                <property name="expand">true</property>
                 <property name="title">_Documentation</property>
                 <property name="visible">true</property>
                 <child>
@@ -270,13 +277,11 @@
             <property name="visible">true</property>
             <child>
               <object class="PnlDockWidget">
+                <property name="expand">true</property>
                 <property name="title">_Symbols</property>
                 <property name="visible">true</property>
                 <child>
                   <object class="GtkTreeView">
-                    <property name="expand">true</property>
-                    <property name="width-request">100</property>
-                    <property name="height-request">100</property>
                     <property name="visible">true</property>
                   </object>
                 </child>
