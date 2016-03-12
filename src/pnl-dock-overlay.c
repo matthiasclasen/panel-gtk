@@ -29,6 +29,7 @@
 
 typedef struct
 {
+  GtkOverlay         *overlay;
   PnlDockOverlayEdge *edges [4];
   GtkAdjustment      *edge_adj [4];
   GtkAdjustment      *edge_handle_adj [4];
@@ -42,7 +43,7 @@ static void pnl_dock_overlay_set_child_reveal     (PnlDockOverlay       *self,
                                                    GtkWidget            *child,
                                                    gboolean              reveal);
 
-G_DEFINE_TYPE_EXTENDED (PnlDockOverlay, pnl_dock_overlay, GTK_TYPE_OVERLAY, 0,
+G_DEFINE_TYPE_EXTENDED (PnlDockOverlay, pnl_dock_overlay, GTK_TYPE_EVENT_BOX, 0,
                         G_ADD_PRIVATE (PnlDockOverlay)
                         G_IMPLEMENT_INTERFACE (GTK_TYPE_BUILDABLE, pnl_dock_overlay_init_buildable_iface)
                         G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM, pnl_dock_overlay_init_dock_item_iface)
@@ -181,13 +182,11 @@ pnl_dock_overlay_get_edge_position (PnlDockOverlay     *self,
 }
 
 static gboolean
-pnl_dock_overlay_get_child_position (GtkOverlay    *overlay,
-                                     GtkWidget     *widget,
-                                     GtkAllocation *allocation)
+pnl_dock_overlay_get_child_position (PnlDockOverlay *self,
+                                     GtkWidget      *widget,
+                                     GtkAllocation  *allocation)
 {
-  PnlDockOverlay *self = (PnlDockOverlay *)overlay;
-
-  g_assert (GTK_IS_OVERLAY (overlay));
+  g_assert (PNL_IS_DOCK_OVERLAY (self));
   g_assert (GTK_IS_WIDGET (widget));
   g_assert (allocation != NULL);
 
@@ -197,7 +196,7 @@ pnl_dock_overlay_get_child_position (GtkOverlay    *overlay,
       return TRUE;
     }
 
-  return GTK_OVERLAY_CLASS (pnl_dock_overlay_parent_class)->get_child_position (overlay, widget, allocation);
+  return FALSE;
 }
 
 static void
@@ -506,7 +505,6 @@ pnl_dock_overlay_class_init (PnlDockOverlayClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
-  GtkOverlayClass *overlay_class = GTK_OVERLAY_CLASS (klass);
   GtkBindingSet *binding_set;
 
   object_class->get_property = pnl_dock_overlay_get_property;
@@ -518,8 +516,6 @@ pnl_dock_overlay_class_init (PnlDockOverlayClass *klass)
   container_class->add = pnl_dock_overlay_add;
   container_class->get_child_property = pnl_dock_overlay_get_child_property;
   container_class->set_child_property = pnl_dock_overlay_set_child_property;
-
-  overlay_class->get_child_position = pnl_dock_overlay_get_child_position;
 
   klass->hide_edges = pnl_dock_overlay_hide_edges;
 
@@ -559,6 +555,19 @@ pnl_dock_overlay_init (PnlDockOverlay *self)
   PnlDockOverlayPrivate *priv = pnl_dock_overlay_get_instance_private (self);
   guint i;
 
+  priv->overlay = g_object_new (GTK_TYPE_OVERLAY,
+                                "visible", TRUE,
+                                NULL);
+
+  GTK_CONTAINER_CLASS (pnl_dock_overlay_parent_class)->add (GTK_CONTAINER (self),
+                                                            GTK_WIDGET (priv->overlay));
+
+  g_signal_connect_object (priv->overlay,
+                           "get-child-position",
+                           G_CALLBACK (pnl_dock_overlay_get_child_position),
+                           self,
+                           G_CONNECT_SWAPPED);
+
   for (i = 0; i <= GTK_POS_BOTTOM; i++)
     {
       PnlDockOverlayEdge *edge;
@@ -570,21 +579,21 @@ pnl_dock_overlay_init (PnlDockOverlay *self)
 
       pnl_set_weak_pointer (&priv->edges[i], edge);
 
-      gtk_overlay_add_overlay (GTK_OVERLAY (self), GTK_WIDGET (priv->edges [i]));
+      gtk_overlay_add_overlay (priv->overlay, GTK_WIDGET (priv->edges [i]));
 
       priv->edge_adj [i] = gtk_adjustment_new (1, 0, 1, 0, 0, 0);
 
       g_signal_connect_swapped (priv->edge_adj [i],
                                 "value-changed",
                                 G_CALLBACK (gtk_widget_queue_allocate),
-                                self);
+                                priv->overlay);
 
       priv->edge_handle_adj [i] = gtk_adjustment_new (0, 0, 1000, 0, 0, 0);
 
       g_signal_connect_swapped (priv->edge_handle_adj [i],
                                 "value-changed",
                                 G_CALLBACK (gtk_widget_queue_allocate),
-                                self);
+                                priv->overlay);
     }
 }
 
@@ -622,7 +631,7 @@ pnl_dock_overlay_add_child (GtkBuildable *buildable,
 
   if ((type == NULL) || (g_strcmp0 ("center", type) == 0))
     {
-      gtk_container_add (GTK_CONTAINER (self), GTK_WIDGET (child));
+      gtk_container_add (GTK_CONTAINER (priv->overlay), GTK_WIDGET (child));
       goto adopt;
     }
 

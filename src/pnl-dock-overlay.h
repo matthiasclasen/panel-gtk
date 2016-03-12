@@ -29,7 +29,7 @@ G_BEGIN_DECLS
 
 struct _PnlDockOverlayClass
 {
-  GtkOverlayClass parent;
+  GtkEventBoxClass parent;
 
   void (*hide_edges) (PnlDockOverlay *self);
 };
