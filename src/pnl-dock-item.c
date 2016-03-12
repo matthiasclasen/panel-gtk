@@ -234,6 +234,7 @@ pnl_dock_item_track_child (PnlDockItem *self,
                            PnlDockItem *child)
 {
   GPtrArray *descendants;
+  guint i;
 
   g_assert (PNL_IS_DOCK_ITEM (self));
   g_assert (PNL_IS_DOCK_ITEM (child));
@@ -248,6 +249,14 @@ pnl_dock_item_track_child (PnlDockItem *self,
                         "destroy",
                         G_CALLBACK (pnl_dock_item_destroy),
                         NULL);
+    }
+
+  for (i = 0; i < descendants->len; i++)
+    {
+      PnlDockItem *item = g_ptr_array_index (descendants, i);
+
+      if (item == child)
+        return;
     }
 
   g_object_weak_ref (G_OBJECT (child),
