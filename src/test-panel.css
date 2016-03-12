@@ -7,9 +7,9 @@ dockpaned {
 }
 
 tabstrip {
-  background-color: #dfdfdf;
+  background-color: @theme_bg_color;
   padding-top: 3px;
-  border-bottom: 1px solid #919191;
+  border-bottom: 1px solid @borders;
   padding: 0 6px 0 6px;
 }
 
@@ -19,7 +19,7 @@ tab {
   border-color: transparent;
   border-style: solid;
   border-width: 2px;
-  color: #8d9091;
+  color: @theme_fg_color;
   min-height: 22px;
   outline-offset: -6px;
   transition-duration: 200ms;
@@ -28,7 +28,7 @@ tab {
 
 tab:checked {
   border-bottom-color: @theme_selected_bg_color;
-  color: #2e3436;
+  color: @theme_fg_color;
 }
 
 tab label {
