@@ -766,17 +766,32 @@ pnl_dock_bin_size_allocate (GtkWidget     *widget,
 {
   PnlDockBin *self = (PnlDockBin *)widget;
   PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
+  GtkAllocation child_allocation;
   guint i;
 
   g_assert (PNL_IS_DOCK_BIN (self));
   g_assert (allocation != NULL);
 
-  GTK_WIDGET_CLASS (pnl_dock_bin_parent_class)->size_allocate (widget, allocation);
+  gtk_widget_set_allocation (widget, allocation);
+
+  child_allocation.x = 0;
+  child_allocation.y = 0;
+  child_allocation.width = allocation->width;
+  child_allocation.height = allocation->height;
+
+  if (gtk_widget_get_realized (widget))
+    {
+      gdk_window_move_resize (gtk_widget_get_window (widget),
+                              allocation->x,
+                              allocation->y,
+                              child_allocation.width,
+                              child_allocation.height);
+    }
 
   pnl_dock_bin_child_size_allocate (self,
                                     priv->children,
                                     G_N_ELEMENTS (priv->children),
-                                    allocation);
+                                    &child_allocation);
 
   /*
    * Hide all of the handle input windows that should be hidden
@@ -932,11 +947,35 @@ pnl_dock_bin_realize (GtkWidget *widget)
 {
   PnlDockBin *self = (PnlDockBin *)widget;
   PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
+  GdkWindowAttr attributes = { 0 };
+  GdkWindow *parent;
+  GdkWindow *window;
+  GtkAllocation alloc;
+  gint attributes_mask = 0;
   guint i;
 
   g_assert (PNL_IS_DOCK_BIN (self));
 
-  GTK_WIDGET_CLASS (pnl_dock_bin_parent_class)->realize (widget);
+  gtk_widget_get_allocation (GTK_WIDGET (self), &alloc);
+
+  gtk_widget_set_realized (GTK_WIDGET (self), TRUE);
+
+  parent = gtk_widget_get_parent_window (GTK_WIDGET (self));
+
+  attributes.window_type = GDK_WINDOW_CHILD;
+  attributes.wclass = GDK_INPUT_OUTPUT;
+  attributes.visual = gtk_widget_get_visual (GTK_WIDGET (self));
+  attributes.x = alloc.x;
+  attributes.y = alloc.y;
+  attributes.width = alloc.width;
+  attributes.height = alloc.height;
+  attributes.event_mask = 0;
+
+  attributes_mask = (GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL);
+
+  window = gdk_window_new (parent, &attributes, attributes_mask);
+  gtk_widget_set_window (GTK_WIDGET (self), window);
+  gtk_widget_register_window (GTK_WIDGET (self), window);
 
   for (i = 0; i < PNL_DOCK_BIN_CHILD_CENTER; i++)
     {
@@ -955,14 +994,14 @@ pnl_dock_bin_unrealize (GtkWidget *widget)
 
   g_assert (PNL_IS_DOCK_BIN (self));
 
-  GTK_WIDGET_CLASS (pnl_dock_bin_parent_class)->unrealize (widget);
-
   for (i = 0; i < PNL_DOCK_BIN_CHILD_CENTER; i++)
     {
       PnlDockBinChild *child = &priv->children [i];
 
       pnl_dock_bin_destroy_child_handle (self, child);
     }
+
+  GTK_WIDGET_CLASS (pnl_dock_bin_parent_class)->unrealize (widget);
 }
 
 static void
@@ -1470,7 +1509,7 @@ pnl_dock_bin_init (PnlDockBin *self)
     { "bottom-visible", NULL, NULL, "false", pnl_dock_bin_visible_action },
   };
 
-  gtk_widget_set_has_window (GTK_WIDGET (self), FALSE);
+  gtk_widget_set_has_window (GTK_WIDGET (self), TRUE);
 
   priv->actions = g_simple_action_group_new ();
   g_action_map_add_action_entries (G_ACTION_MAP (priv->actions),
