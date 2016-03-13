@@ -1137,6 +1137,30 @@ allocation_stage_expand (PnlMultiPaned   *self,
   g_assert (state->children != NULL);
   g_assert (state->n_children > 0);
 
+  if (state->n_children == 1)
+    {
+      PnlMultiPanedChild *child = state->children [0];
+
+      /*
+       * Special case for single child, just expand to the
+       * available space. Ideally we would have much shorter
+       * allocation stages in this case.
+       */
+
+      if (IS_HORIZONTAL (state->orientation))
+        {
+          if (gtk_widget_get_hexpand (child->widget))
+            child->alloc.width = state->top_alloc.width;
+        }
+      else
+        {
+          if (gtk_widget_get_vexpand (child->widget))
+            child->alloc.height = state->top_alloc.height;
+        }
+
+      return;
+    }
+
   for (i = 0; i < state->n_children; i++)
     {
       PnlMultiPanedChild *child = state->children [i];
