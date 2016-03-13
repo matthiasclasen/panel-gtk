@@ -30,12 +30,9 @@ G_BEGIN_DECLS
 #define PNL_TYPE_ANIMATION      (pnl_animation_get_type())
 #define PNL_TYPE_ANIMATION_MODE (pnl_animation_mode_get_type())
 
-G_DECLARE_FINAL_TYPE (PnlAnimation, pnl_animation,
-                      PNL, ANIMATION, GInitiallyUnowned)
+G_DECLARE_FINAL_TYPE (PnlAnimation, pnl_animation, PNL, ANIMATION, GInitiallyUnowned)
 
-typedef enum   _PnlAnimationMode    PnlAnimationMode;
-
-enum _PnlAnimationMode
+typedef enum
 {
   PNL_ANIMATION_LINEAR,
   PNL_ANIMATION_EASE_IN_QUAD,
@@ -46,7 +43,7 @@ enum _PnlAnimationMode
   PNL_ANIMATION_EASE_IN_OUT_CUBIC,
 
   PNL_ANIMATION_LAST
-};
+} PnlAnimationMode;
 
 GType         pnl_animation_mode_get_type (void);
 void          pnl_animation_start         (PnlAnimation     *animation);
