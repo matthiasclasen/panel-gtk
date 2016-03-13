@@ -1454,13 +1454,13 @@ pnl_multi_paned_draw (GtkWidget *widget,
                 gtk_render_handle (style_context,
                                    cr,
                                    alloc.x + alloc.width,
-                                   alloc.y,
+                                   0,
                                    handle_size,
                                    alloc.height);
               else
                 gtk_render_handle (style_context,
                                    cr,
-                                   alloc.x,
+                                   0,
                                    alloc.y + alloc.height,
                                    alloc.width,
                                    handle_size);
