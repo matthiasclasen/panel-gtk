@@ -19,20 +19,17 @@
 #ifndef PNL_DOCK_BIN_EDGE_PRIVATE_H
 #define PNL_DOCK_BIN_EDGE_PRIVATE_H
 
-#include <gtk/gtk.h>
+#include "pnl-dock-revealer.h"
 
 G_BEGIN_DECLS
 
 #define PNL_TYPE_DOCK_BIN_EDGE (pnl_dock_bin_edge_get_type())
 
-G_DECLARE_FINAL_TYPE (PnlDockBinEdge, pnl_dock_bin_edge, PNL, DOCK_BIN_EDGE, GtkRevealer)
+G_DECLARE_FINAL_TYPE (PnlDockBinEdge, pnl_dock_bin_edge, PNL, DOCK_BIN_EDGE, PnlDockRevealer)
 
-GtkPositionType pnl_dock_bin_edge_get_edge     (PnlDockBinEdge  *self);
-void            pnl_dock_bin_edge_set_edge     (PnlDockBinEdge  *self,
-                                                GtkPositionType  bin_edge);
-gint            pnl_dock_bin_edge_get_position (PnlDockBinEdge  *self);
-void            pnl_dock_bin_edge_set_position (PnlDockBinEdge  *self,
-                                                gint             position);
+GtkPositionType pnl_dock_bin_edge_get_edge (PnlDockBinEdge  *self);
+void            pnl_dock_bin_edge_set_edge (PnlDockBinEdge  *self,
+                                            GtkPositionType  bin_edge);
 
 G_END_DECLS
 

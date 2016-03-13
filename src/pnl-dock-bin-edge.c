@@ -17,20 +17,19 @@
  */
 
 #include "pnl-dock-bin-edge-private.h"
-#include "pnl-dock-bin-edge-child-private.h"
+#include "pnl-dock-revealer.h"
 
 struct _PnlDockBinEdge
 {
-  GtkRevealer     parent;
+  PnlDockRevealer parent;
   GtkPositionType edge : 3;
 };
 
-G_DEFINE_TYPE (PnlDockBinEdge, pnl_dock_bin_edge, GTK_TYPE_REVEALER)
+G_DEFINE_TYPE (PnlDockBinEdge, pnl_dock_bin_edge, PNL_TYPE_DOCK_REVEALER)
 
 enum {
   PROP_0,
   PROP_EDGE,
-  PROP_POSITION,
   LAST_PROP
 };
 
@@ -40,8 +39,10 @@ static void
 pnl_dock_bin_edge_update_edge (PnlDockBinEdge *self)
 {
   GtkStyleContext *style_context;
-  GtkRevealerTransitionType reveal_type = GTK_REVEALER_TRANSITION_TYPE_NONE;
+  PnlDockRevealerTransitionType transition_type;
   const gchar *class_name = NULL;
+  GtkWidget *child;
+  GtkOrientation orientation;
 
   g_assert (PNL_IS_DOCK_BIN_EDGE (self));
 
@@ -54,23 +55,27 @@ pnl_dock_bin_edge_update_edge (PnlDockBinEdge *self)
 
   if (self->edge == GTK_POS_LEFT)
     {
-      reveal_type = GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT;
       class_name = "left";
+      transition_type = PNL_DOCK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT;
+      orientation = GTK_ORIENTATION_VERTICAL;
     }
   else if (self->edge == GTK_POS_RIGHT)
     {
-      reveal_type = GTK_REVEALER_TRANSITION_TYPE_SLIDE_LEFT;
       class_name = "right";
+      transition_type = PNL_DOCK_REVEALER_TRANSITION_TYPE_SLIDE_LEFT;
+      orientation = GTK_ORIENTATION_VERTICAL;
     }
   else if (self->edge == GTK_POS_TOP)
     {
-      reveal_type = GTK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN;
       class_name = "top";
+      transition_type = PNL_DOCK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN;
+      orientation = GTK_ORIENTATION_HORIZONTAL;
     }
   else if (self->edge == GTK_POS_BOTTOM)
     {
-      reveal_type = GTK_REVEALER_TRANSITION_TYPE_SLIDE_UP;
       class_name = "bottom";
+      transition_type = PNL_DOCK_REVEALER_TRANSITION_TYPE_SLIDE_UP;
+      orientation = GTK_ORIENTATION_HORIZONTAL;
     }
   else
     {
@@ -79,7 +84,12 @@ pnl_dock_bin_edge_update_edge (PnlDockBinEdge *self)
     }
 
   gtk_style_context_add_class (style_context, class_name);
-  gtk_revealer_set_transition_type (GTK_REVEALER (self), reveal_type);
+  pnl_dock_revealer_set_transition_type (PNL_DOCK_REVEALER (self), transition_type);
+
+  child = gtk_bin_get_child (GTK_BIN (self));
+
+  if (PNL_IS_DOCK_PANED (child))
+    gtk_orientable_set_orientation (GTK_ORIENTABLE (child), orientation);
 }
 
 GtkPositionType
@@ -104,72 +114,21 @@ pnl_dock_bin_edge_set_edge (PnlDockBinEdge     *self,
     }
 }
 
-gint
-pnl_dock_bin_edge_get_position (PnlDockBinEdge *self)
-{
-  GtkWidget *child;
-
-  g_return_val_if_fail (PNL_IS_DOCK_BIN_EDGE (self), 0);
-
-  child = gtk_bin_get_child (GTK_BIN (self));
-  g_assert (PNL_IS_DOCK_BIN_EDGE_CHILD (child));
-
-  return pnl_dock_bin_edge_child_get_position (PNL_DOCK_BIN_EDGE_CHILD (child));
-}
-
-void
-pnl_dock_bin_edge_set_position (PnlDockBinEdge *self,
-                            gint         position)
-{
-  GtkWidget *child;
-
-  g_return_if_fail (PNL_IS_DOCK_BIN_EDGE (self));
-  g_return_if_fail (position >= 0);
-
-  child = gtk_bin_get_child (GTK_BIN (self));
-  g_assert (PNL_IS_DOCK_BIN_EDGE_CHILD (child));
-
-  pnl_dock_bin_edge_child_set_position (PNL_DOCK_BIN_EDGE_CHILD (child), position);
-  g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_POSITION]);
-}
-
 static void
 pnl_dock_bin_edge_add (GtkContainer *container,
-                   GtkWidget    *widget)
+                       GtkWidget    *widget)
 {
-  PnlDockBinEdge *self = (PnlDockBinEdge *)container;
   GtkWidget *child;
 
-  g_assert (PNL_IS_DOCK_BIN_EDGE (self));
+  g_assert (GTK_IS_CONTAINER (container));
   g_assert (GTK_IS_WIDGET (widget));
 
-  child = gtk_bin_get_child (GTK_BIN (self));
-  g_assert (PNL_IS_DOCK_BIN_EDGE_CHILD (child));
+  child = gtk_bin_get_child (GTK_BIN (container));
 
-  gtk_container_add (GTK_CONTAINER (child), widget);
-}
-
-static void
-pnl_dock_bin_edge_size_allocate (GtkWidget     *widget,
-                             GtkAllocation *allocation)
-{
-  PnlDockBinEdge *self = (PnlDockBinEdge *)widget;
-  gint position;
-
-  g_assert (PNL_IS_DOCK_BIN_EDGE (self));
-  g_assert (allocation != NULL);
-
-  if (self->edge == GTK_POS_LEFT || self->edge == GTK_POS_RIGHT)
-    position = allocation->width;
+  if (GTK_IS_CONTAINER (child))
+    gtk_container_add (GTK_CONTAINER (child), widget);
   else
-    position = allocation->height;
-
-  if (gtk_revealer_get_reveal_child (GTK_REVEALER (self)) &&
-      gtk_revealer_get_child_revealed (GTK_REVEALER (self)) &&
-      (position < pnl_dock_bin_edge_get_position (self)))
-    pnl_dock_bin_edge_set_position (self, position);
-
-  GTK_WIDGET_CLASS (pnl_dock_bin_edge_parent_class)->size_allocate (widget, allocation);
+    GTK_CONTAINER_CLASS (pnl_dock_bin_edge_parent_class)->add (container, widget);
 }
 
 static void
@@ -196,10 +155,6 @@ pnl_dock_bin_edge_get_property (GObject    *object,
       g_value_set_enum (value, pnl_dock_bin_edge_get_edge (self));
       break;
 
-    case PROP_POSITION:
-      g_value_set_int (value, pnl_dock_bin_edge_get_position (self));
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -219,10 +174,6 @@ pnl_dock_bin_edge_set_property (GObject      *object,
       pnl_dock_bin_edge_set_edge (self, g_value_get_enum (value));
       break;
 
-    case PROP_POSITION:
-      pnl_dock_bin_edge_set_position (self, g_value_get_int (value));
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -239,8 +190,6 @@ pnl_dock_bin_edge_class_init (PnlDockBinEdgeClass *klass)
   object_class->get_property = pnl_dock_bin_edge_get_property;
   object_class->set_property = pnl_dock_bin_edge_set_property;
 
-  widget_class->size_allocate = pnl_dock_bin_edge_size_allocate;
-
   container_class->add = pnl_dock_bin_edge_add;
 
   properties [PROP_EDGE] =
@@ -250,15 +199,6 @@ pnl_dock_bin_edge_class_init (PnlDockBinEdgeClass *klass)
                        GTK_TYPE_POSITION_TYPE,
                        GTK_POS_LEFT,
                        (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
-
-  properties [PROP_POSITION] =
-    g_param_spec_int ("position",
-                      "Position",
-                      "The size of the dock edge when displayed",
-                      0,
-                      G_MAXINT,
-                      0,
-                      (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   g_object_class_install_properties (object_class, LAST_PROP, properties);
 
@@ -270,11 +210,11 @@ pnl_dock_bin_edge_init (PnlDockBinEdge *self)
 {
   GtkWidget *child;
 
-  self->edge = GTK_POS_LEFT;
-
-  child = g_object_new (PNL_TYPE_DOCK_BIN_EDGE_CHILD,
+  child = g_object_new (PNL_TYPE_DOCK_PANED,
                         "visible", TRUE,
-                        "position", 0,
                         NULL);
   GTK_CONTAINER_CLASS (pnl_dock_bin_edge_parent_class)->add (GTK_CONTAINER (self), child);
+
+  pnl_dock_bin_edge_update_edge (self);
+
 }

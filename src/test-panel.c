@@ -4,16 +4,16 @@ static void
 toggle_all (GtkButton  *button,
             PnlDockBin *dock)
 {
-  GtkRevealer *edge;
+  PnlDockRevealer *edge;
 
-  edge = GTK_REVEALER (pnl_dock_bin_get_left_edge (dock));
-  gtk_revealer_set_reveal_child (edge, !gtk_revealer_get_reveal_child (edge));
+  edge = PNL_DOCK_REVEALER (pnl_dock_bin_get_left_edge (dock));
+  pnl_dock_revealer_set_reveal_child (edge, !pnl_dock_revealer_get_reveal_child (edge));
 
-  edge = GTK_REVEALER (pnl_dock_bin_get_right_edge (dock));
-  gtk_revealer_set_reveal_child (edge, !gtk_revealer_get_reveal_child (edge));
+  edge = PNL_DOCK_REVEALER (pnl_dock_bin_get_right_edge (dock));
+  pnl_dock_revealer_set_reveal_child (edge, !pnl_dock_revealer_get_reveal_child (edge));
 
-  edge = GTK_REVEALER (pnl_dock_bin_get_bottom_edge (dock));
-  gtk_revealer_set_reveal_child (edge, !gtk_revealer_get_reveal_child (edge));
+  edge = PNL_DOCK_REVEALER (pnl_dock_bin_get_bottom_edge (dock));
+  pnl_dock_revealer_set_reveal_child (edge, !pnl_dock_revealer_get_reveal_child (edge));
 }
 
 

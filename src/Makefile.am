@@ -13,6 +13,7 @@ headers_DATA = \
 	pnl-dock-manager.h \
 	pnl-dock-overlay.h \
 	pnl-dock-paned.h \
+	pnl-dock-revealer.h \
 	pnl-dock-stack.h \
 	pnl-dock-types.h \
 	pnl-dock-widget.h \
@@ -41,6 +42,7 @@ libpanel_gtk_@API_VERSION@_la_SOURCES = \
 	pnl-dock-overlay.c \
 	pnl-dock-paned-private.h \
 	pnl-dock-paned.c \
+	pnl-dock-revealer.c \
 	pnl-dock-stack.c \
 	pnl-dock-tab-strip.c \
 	pnl-dock-tab-strip.h \

@@ -805,7 +805,7 @@ pnl_dock_bin_size_allocate (GtkWidget     *widget,
       if (child->handle != NULL)
         {
           if (PNL_IS_DOCK_BIN_EDGE (child->widget) &&
-              gtk_revealer_get_reveal_child (GTK_REVEALER (child->widget)))
+              pnl_dock_revealer_get_reveal_child (PNL_DOCK_REVEALER (child->widget)))
             gdk_window_show (child->handle);
           else
             gdk_window_hide (child->handle);
@@ -845,7 +845,7 @@ pnl_dock_bin_visible_action (GSimpleAction *action,
 
   child = pnl_dock_bin_get_child_typed (self, type);
 
-  gtk_revealer_set_reveal_child (GTK_REVEALER (child->widget), reveal_child);
+  pnl_dock_revealer_set_reveal_child (PNL_DOCK_REVEALER (child->widget), reveal_child);
 }
 
 static gint
@@ -1129,7 +1129,7 @@ pnl_dock_bin_pan_gesture_drag_end (PnlDockBin    *self,
   else
     position = child_alloc.height;
 
-  pnl_dock_bin_edge_set_position (PNL_DOCK_BIN_EDGE (priv->drag_child->widget), position);
+  pnl_dock_revealer_set_position (PNL_DOCK_REVEALER (priv->drag_child->widget), position);
 
 cleanup:
   if (priv->drag_child != NULL)
@@ -1190,7 +1190,7 @@ pnl_dock_bin_pan_gesture_pan (PnlDockBin      *self,
 
   position = priv->drag_child->drag_offset + priv->drag_child->drag_begin_position;
   if (position >= 0)
-    pnl_dock_bin_edge_set_position (PNL_DOCK_BIN_EDGE (priv->drag_child->widget), position);
+    pnl_dock_revealer_set_position (PNL_DOCK_REVEALER (priv->drag_child->widget), position);
 }
 
 static void
@@ -1645,11 +1645,7 @@ pnl_dock_bin_add_child (GtkBuildable *buildable,
     bin_child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_LEFT);
 
   if (PNL_IS_DOCK_BIN_EDGE (bin_child->widget))
-    {
-      GtkWidget *grandchild = gtk_bin_get_child (GTK_BIN (bin_child->widget));
-
-      gtk_container_add (GTK_CONTAINER (grandchild), GTK_WIDGET (child));
-    }
+    gtk_container_add (GTK_CONTAINER (bin_child->widget), GTK_WIDGET (child));
 }
 
 static void
@@ -1677,7 +1673,7 @@ pnl_dock_bin_present_child (PnlDockItem *item,
       if (PNL_IS_DOCK_BIN_EDGE (child->widget) &&
           gtk_widget_is_ancestor (GTK_WIDGET (child->widget), child->widget))
         {
-          gtk_revealer_set_reveal_child (GTK_REVEALER (child->widget), TRUE);
+          pnl_dock_revealer_set_reveal_child (PNL_DOCK_REVEALER (child->widget), TRUE);
           return;
         }
     }
