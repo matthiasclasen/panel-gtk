@@ -30,8 +30,6 @@ headers_DATA = \
 libpanel_gtk_@API_VERSION@_la_SOURCES = \
 	$(headers_DATA) \
 	pnl-animation.c \
-	pnl-dock-bin-edge-child-private.h \
-	pnl-dock-bin-edge-child.c \
 	pnl-dock-bin-edge-private.h \
 	pnl-dock-bin-edge.c \
 	pnl-dock-bin.c \
