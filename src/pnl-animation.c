@@ -58,6 +58,7 @@ struct _PnlAnimation
   GdkFrameClock     *frame_clock;         /* An optional frame-clock for sync. */
   GDestroyNotify     notify;              /* Notify callback */
   gpointer           notify_data;         /* Data for notify */
+  guint              debug_ticks;         /* Number of tick updates */
 };
 
 G_DEFINE_TYPE (PnlAnimation, pnl_animation, G_TYPE_INITIALLY_UNOWNED)
@@ -475,6 +476,8 @@ pnl_animation_tick (PnlAnimation *animation,
   if (offset == animation->last_offset)
     return offset < 1.0;
 
+  animation->debug_ticks++;
+
   alpha = alpha_funcs[animation->mode](offset);
 
   /*
@@ -781,6 +784,11 @@ pnl_animation_finalize (GObject *object)
     }
 
   g_array_unref (self->tweens);
+
+  if (debug)
+    g_message ("%u tick updates, expected %d",
+               self->debug_ticks,
+               (int)(self->duration_msec / (1000.0 / FALLBACK_FRAME_RATE)));
 
   G_OBJECT_CLASS (pnl_animation_parent_class)->finalize (object);
 }
