@@ -52,7 +52,6 @@ struct _PnlAnimation
   guint              duration_msec;       /* Duration of animation */
   guint              mode;                /* Tween mode */
   gulong             tween_handler;       /* GSource or signal handler */
-  gulong             after_paint_handler; /* signal handler */
   gdouble            last_offset;         /* Track our last offset */
   GArray            *tweens;              /* Array of tweens to perform */
   GdkFrameClock     *frame_clock;         /* An optional frame-clock for sync. */
@@ -577,27 +576,6 @@ pnl_animation_widget_tick_cb (GdkFrameClock *frame_clock,
 }
 
 
-static void
-pnl_animation_widget_after_paint_cb (GdkFrameClock *frame_clock,
-                                     PnlAnimation  *animation)
-{
-  gint64 base_time;
-  gint64 interval;
-  gint64 next_frame_time;
-  gdouble offset;
-
-  g_assert (GDK_IS_FRAME_CLOCK (frame_clock));
-  g_assert (PNL_IS_ANIMATION (animation));
-
-  base_time = gdk_frame_clock_get_frame_time (frame_clock);
-  gdk_frame_clock_get_refresh_info (frame_clock, base_time, &interval, &next_frame_time);
-
-  offset = pnl_animation_get_offset (animation, next_frame_time);
-
-  pnl_animation_tick (animation, offset);
-}
-
-
 /**
  * pnl_animation_start:
  * @animation: (in): A #PnlAnimation.
@@ -623,11 +601,6 @@ pnl_animation_start (PnlAnimation *animation)
         g_signal_connect (animation->frame_clock,
                           "update",
                           G_CALLBACK (pnl_animation_widget_tick_cb),
-                          animation);
-      animation->after_paint_handler =
-        g_signal_connect (animation->frame_clock,
-                          "after-paint",
-                          G_CALLBACK (pnl_animation_widget_after_paint_cb),
                           animation);
       gdk_frame_clock_begin_updating (animation->frame_clock);
     }
@@ -679,7 +652,6 @@ pnl_animation_stop (PnlAnimation *animation)
         {
           gdk_frame_clock_end_updating (animation->frame_clock);
           g_signal_handler_disconnect (animation->frame_clock, animation->tween_handler);
-          g_signal_handler_disconnect (animation->frame_clock, animation->after_paint_handler);
           animation->tween_handler = 0;
         }
       else
