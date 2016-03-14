@@ -491,16 +491,16 @@ pnl_animation_tick (PnlAnimation *animation,
       if (!tween->is_child)
         {
           pnl_animation_update_property (animation,
-                                        animation->target,
-                                        tween,
-                                        &value);
+                                         animation->target,
+                                         tween,
+                                         &value);
         }
       else
         {
           pnl_animation_update_child_property (animation,
-                                              animation->target,
-                                              tween,
-                                              &value);
+                                               animation->target,
+                                               tween,
+                                               &value);
         }
       g_value_unset (&value);
     }
