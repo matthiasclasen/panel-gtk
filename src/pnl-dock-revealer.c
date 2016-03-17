@@ -150,6 +150,59 @@ pnl_dock_revealer_animation_done (gpointer user_data)
     }
 }
 
+static guint
+size_to_duration (gint size)
+{
+  return size * .9;
+}
+
+static guint
+pnl_dock_revealer_calculate_duration (PnlDockRevealer *self)
+{
+  PnlDockRevealerPrivate *priv = pnl_dock_revealer_get_instance_private (self);
+  GtkWidget *child;
+  GtkRequisition min_size;
+  GtkRequisition nat_size;
+
+  g_assert (PNL_IS_DOCK_REVEALER (self));
+
+  child = gtk_bin_get_child (GTK_BIN (self));
+
+  if (child == NULL)
+    return 0;
+
+  if (priv->transition_type == PNL_DOCK_REVEALER_TRANSITION_TYPE_NONE)
+    return 0;
+
+  if (priv->transition_duration != 0)
+    return priv->transition_duration;
+
+  gtk_widget_get_preferred_size (child, &min_size, &nat_size);
+
+  if (IS_HORIZONTAL (priv->transition_type))
+    {
+      if (priv->position_set)
+        {
+          if (priv->position_set && priv->position > min_size.width)
+            return size_to_duration (priv->position);
+          return size_to_duration (min_size.width);
+        }
+
+      return size_to_duration (nat_size.width);
+    }
+  else
+    {
+      if (priv->position_set)
+        {
+          if (priv->position_set && priv->position > min_size.height)
+            return size_to_duration (priv->position);
+          return size_to_duration (min_size.height);
+        }
+
+      return size_to_duration (nat_size.height);
+    }
+}
+
 void
 pnl_dock_revealer_set_reveal_child (PnlDockRevealer *self,
                                     gboolean         reveal_child)
@@ -181,10 +234,7 @@ pnl_dock_revealer_set_reveal_child (PnlDockRevealer *self,
 
           gtk_widget_set_child_visible (child, TRUE);
 
-          duration = priv->transition_duration;
-
-          if (priv->transition_type == PNL_DOCK_REVEALER_TRANSITION_TYPE_NONE)
-            duration = 0;
+          duration = pnl_dock_revealer_calculate_duration (self);
 
           animation = pnl_object_animate_full (priv->adjustment,
                                                PNL_ANIMATION_EASE_IN_OUT_CUBIC,
@@ -635,7 +685,7 @@ pnl_dock_revealer_init (PnlDockRevealer *self)
   priv->reveal_child = FALSE;
   priv->child_revealed = FALSE;
 
-  priv->transition_duration = 250;
+  priv->transition_duration = 0;
 
   priv->adjustment = g_object_new (GTK_TYPE_ADJUSTMENT,
                                    "lower", 0.0,
