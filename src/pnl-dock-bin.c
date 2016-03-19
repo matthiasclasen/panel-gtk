@@ -1683,7 +1683,7 @@ pnl_dock_bin_add_child (GtkBuildable *buildable,
                         const gchar  *type)
 {
   PnlDockBin *self = (PnlDockBin *)buildable;
-  PnlDockBinChild *bin_child;
+  GtkWidget *parent;
 
   g_assert (PNL_IS_DOCK_BIN (self));
   g_assert (GTK_IS_BUILDER (builder));
@@ -1711,16 +1711,16 @@ pnl_dock_bin_add_child (GtkBuildable *buildable,
     }
 
   if (g_strcmp0 ("top", type) == 0)
-    bin_child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_TOP);
+    parent = pnl_dock_bin_get_top_edge (self);
   else if (g_strcmp0 ("bottom", type) == 0)
-    bin_child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_BOTTOM);
+    parent = pnl_dock_bin_get_bottom_edge (self);
   else if (g_strcmp0 ("right", type) == 0)
-    bin_child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_RIGHT);
+    parent = pnl_dock_bin_get_right_edge (self);
   else
-    bin_child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_LEFT);
+    parent = pnl_dock_bin_get_left_edge (self);
 
-  if (PNL_IS_DOCK_BIN_EDGE (bin_child->widget))
-    gtk_container_add (GTK_CONTAINER (bin_child->widget), GTK_WIDGET (child));
+  if (PNL_IS_DOCK_BIN_EDGE (parent))
+    gtk_container_add (GTK_CONTAINER (parent), GTK_WIDGET (child));
 }
 
 static void

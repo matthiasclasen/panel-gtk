@@ -17,6 +17,7 @@
  */
 
 #include "pnl-dock-bin-edge.h"
+#include "pnl-dock-bin-edge-private.h"
 #include "pnl-dock-revealer.h"
 
 typedef struct
