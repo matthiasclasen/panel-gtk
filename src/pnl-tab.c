@@ -239,6 +239,11 @@ pnl_tab_set_edge (PnlTab          *self,
     }
 }
 
+/**
+ * pnl_tab_get_widget:
+ *
+ * Returns: (transfer none) (nullable): A #GtkWidget or %NULL.
+ */
 GtkWidget *
 pnl_tab_get_widget (PnlTab *self)
 {

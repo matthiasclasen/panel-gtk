@@ -362,6 +362,11 @@ pnl_tab_strip_new (void)
   return g_object_new (PNL_TYPE_TAB_STRIP, NULL);
 }
 
+/**
+ * pnl_tab_strip_get_stack:
+ *
+ * Returns: (transfer none) (nullable): A #GtkStack or %NULL.
+ */
 GtkStack *
 pnl_tab_strip_get_stack (PnlTabStrip *self)
 {

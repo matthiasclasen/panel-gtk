@@ -58,6 +58,9 @@ void                           pnl_dock_revealer_set_position             (PnlDo
 gboolean                       pnl_dock_revealer_get_position_set         (PnlDockRevealer               *self);
 void                           pnl_dock_revealer_set_position_set         (PnlDockRevealer               *self,
                                                                            gboolean                       position_set);
+guint                          pnl_dock_revealer_get_transition_duration  (PnlDockRevealer               *self);
+void                           pnl_dock_revealer_set_transition_duration  (PnlDockRevealer               *self,
+                                                                           guint                          transition_duration);
 
 G_END_DECLS
 

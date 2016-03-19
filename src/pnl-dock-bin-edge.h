@@ -1,4 +1,4 @@
-/* pnl.h
+/* pnl-dock-bin-edge.h
  *
  * Copyright (C) 2016 Christian Hergert <chergert@redhat.com>
  *
@@ -16,37 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef PNL_H
-#define PNL_H
+#ifndef PNL_DOCK_BIN_EDGE_H
+#define PNL_DOCK_BIN_EDGE_H
 
-#include <gtk/gtk.h>
+#include "pnl-dock-revealer.h"
 
 G_BEGIN_DECLS
 
-#define PNL_INSIDE
+#define PNL_TYPE_DOCK_BIN_EDGE (pnl_dock_bin_edge_get_type())
 
-#include "pnl-dock.h"
-#include "pnl-dock-bin.h"
-#include "pnl-dock-bin-edge.h"
-#include "pnl-dock-item.h"
-#include "pnl-dock-manager.h"
-#include "pnl-dock-overlay.h"
-#include "pnl-dock-paned.h"
-#include "pnl-dock-revealer.h"
-#include "pnl-dock-stack.h"
-#include "pnl-dock-tab-strip.h"
-#include "pnl-dock-types.h"
-#include "pnl-dock-widget.h"
-#include "pnl-dock-window.h"
+G_DECLARE_DERIVABLE_TYPE (PnlDockBinEdge, pnl_dock_bin_edge, PNL, DOCK_BIN_EDGE, PnlDockRevealer)
 
-#include "pnl-version.h"
-
-#include "pnl-tab.h"
-#include "pnl-tab-strip.h"
-#include "pnl-multi-paned.h"
-
-#undef PNL_INSIDE
+struct _PnlDockBinEdgeClass
+{
+  PnlDockRevealerClass parent;
+};
 
 G_END_DECLS
 
-#endif /* PNL_H */
+#endif /* PNL_DOCK_BIN_EDGE_H */

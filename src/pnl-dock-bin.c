@@ -1315,6 +1315,70 @@ pnl_dock_bin_grab_focus (GtkWidget *widget)
     }
 }
 
+static GtkWidget *
+pnl_dock_bin_real_create_edge (PnlDockBin *self)
+{
+  g_assert (PNL_IS_DOCK_BIN (self));
+
+  return g_object_new (PNL_TYPE_DOCK_BIN_EDGE,
+                       "visible", TRUE,
+                       "reveal-child", FALSE,
+                       NULL);
+}
+
+static void
+pnl_dock_bin_create_edge (PnlDockBin          *self,
+                          PnlDockBinChild     *child,
+                          PnlDockBinChildType  type)
+{
+  GAction *action;
+
+  g_assert (PNL_IS_DOCK_BIN (self));
+  g_assert (child != NULL);
+  g_assert (type >= PNL_DOCK_BIN_CHILD_LEFT);
+  g_assert (type < LAST_PNL_DOCK_BIN_CHILD);
+
+  child->widget = PNL_DOCK_BIN_GET_CLASS (self)->create_edge (self);
+
+  if (child->widget == NULL)
+    {
+      g_warning ("%s failed to create edge widget",
+                 G_OBJECT_TYPE_NAME (self));
+      return;
+    }
+  else if (!PNL_IS_DOCK_BIN_EDGE (child->widget))
+    {
+      g_warning ("%s child %s is not a PnlDockBinEdge",
+                 G_OBJECT_TYPE_NAME (self),
+                 G_OBJECT_TYPE_NAME (child));
+      return;
+    }
+
+  g_object_set (child->widget, "edge", (GtkPositionType)type, NULL);
+  gtk_widget_set_parent (g_object_ref_sink (child->widget), GTK_WIDGET (self));
+
+  action = pnl_dock_bin_get_action_for_type (self, type);
+  g_object_bind_property_full (child->widget, "reveal-child",
+                               action, "state",
+                               G_BINDING_SYNC_CREATE,
+                               map_boolean_to_variant,
+                               NULL, NULL, NULL);
+}
+
+static void
+pnl_dock_bin_init_child (PnlDockBin          *self,
+                         PnlDockBinChild     *child,
+                         PnlDockBinChildType  type)
+{
+  g_assert (PNL_IS_DOCK_BIN (self));
+  g_assert (child != NULL);
+  g_assert (type >= PNL_DOCK_BIN_CHILD_LEFT);
+  g_assert (type < LAST_PNL_DOCK_BIN_CHILD);
+
+  child->type = type;
+  child->priority = (int)type * 100;
+}
+
 static void
 pnl_dock_bin_destroy (GtkWidget *widget)
 {
@@ -1438,6 +1502,8 @@ pnl_dock_bin_class_init (PnlDockBinClass *klass)
   container_class->remove = pnl_dock_bin_remove;
   container_class->set_child_property = pnl_dock_bin_set_child_property;
 
+  klass->create_edge = pnl_dock_bin_real_create_edge;
+
   g_object_class_override_property (object_class, PROP_MANAGER, "manager");
 
   child_properties [CHILD_PROP_POSITION] =
@@ -1463,39 +1529,6 @@ pnl_dock_bin_class_init (PnlDockBinClass *klass)
 }
 
 static void
-pnl_dock_bin_init_child (PnlDockBin          *self,
-                         PnlDockBinChild     *child,
-                         PnlDockBinChildType  type)
-{
-  GAction *action;
-
-  g_assert (PNL_IS_DOCK_BIN (self));
-  g_assert (child != NULL);
-  g_assert (type >= PNL_DOCK_BIN_CHILD_LEFT);
-  g_assert (type < LAST_PNL_DOCK_BIN_CHILD);
-
-  child->type = type;
-  child->priority = (int)type * 100;
-
-  if (type == PNL_DOCK_BIN_CHILD_CENTER)
-    return;
-
-  child->widget = g_object_new (PNL_TYPE_DOCK_BIN_EDGE,
-                                "edge", (GtkPositionType)type,
-                                "reveal-child", FALSE,
-                                "visible", TRUE,
-                                NULL);
-  gtk_widget_set_parent (g_object_ref_sink (child->widget), GTK_WIDGET (self));
-
-  action = pnl_dock_bin_get_action_for_type (self, type);
-  g_object_bind_property_full (child->widget, "reveal-child",
-                               action, "state",
-                               G_BINDING_SYNC_CREATE,
-                               map_boolean_to_variant,
-                               NULL, NULL, NULL);
-}
-
-static void
 pnl_dock_bin_init (PnlDockBin *self)
 {
   PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
@@ -1517,12 +1550,6 @@ pnl_dock_bin_init (PnlDockBin *self)
                                    self);
   gtk_widget_insert_action_group (GTK_WIDGET (self), "dockbin", G_ACTION_GROUP (priv->actions));
 
-  pnl_dock_bin_init_child (self, &priv->children [0], PNL_DOCK_BIN_CHILD_LEFT);
-  pnl_dock_bin_init_child (self, &priv->children [1], PNL_DOCK_BIN_CHILD_RIGHT);
-  pnl_dock_bin_init_child (self, &priv->children [2], PNL_DOCK_BIN_CHILD_BOTTOM);
-  pnl_dock_bin_init_child (self, &priv->children [3], PNL_DOCK_BIN_CHILD_TOP);
-  pnl_dock_bin_init_child (self, &priv->children [4], PNL_DOCK_BIN_CHILD_CENTER);
-
   pnl_dock_bin_create_pan_gesture (self);
 
   gtk_drag_dest_set (GTK_WIDGET (self),
@@ -1534,7 +1561,11 @@ pnl_dock_bin_init (PnlDockBin *self)
   priv->dnd_drag_x = -1;
   priv->dnd_drag_y = -1;
 
-  pnl_dock_bin_update_focus_chain (self);
+  pnl_dock_bin_init_child (self, &priv->children [0], PNL_DOCK_BIN_CHILD_LEFT);
+  pnl_dock_bin_init_child (self, &priv->children [1], PNL_DOCK_BIN_CHILD_RIGHT);
+  pnl_dock_bin_init_child (self, &priv->children [2], PNL_DOCK_BIN_CHILD_BOTTOM);
+  pnl_dock_bin_init_child (self, &priv->children [3], PNL_DOCK_BIN_CHILD_TOP);
+  pnl_dock_bin_init_child (self, &priv->children [4], PNL_DOCK_BIN_CHILD_CENTER);
 }
 
 GtkWidget *
@@ -1564,36 +1595,80 @@ pnl_dock_bin_get_center_widget (PnlDockBin *self)
   return child->widget;
 }
 
+/**
+ * pnl_dock_bin_get_top_edge:
+ * Returns: (transfer none): A #GtkWidget
+ */
 GtkWidget *
 pnl_dock_bin_get_top_edge (PnlDockBin *self)
 {
-  g_assert (PNL_IS_DOCK_BIN (self));
+  PnlDockBinChild *child;
 
-  return pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_TOP)->widget;
+  g_return_val_if_fail (PNL_IS_DOCK_BIN (self), NULL);
+
+  child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_TOP);
+
+  if (child->widget == NULL)
+    pnl_dock_bin_create_edge (self, child, PNL_DOCK_BIN_CHILD_TOP);
+
+  return child->widget;
 }
 
+/**
+ * pnl_dock_bin_get_left_edge:
+ * Returns: (transfer none): A #GtkWidget
+ */
 GtkWidget *
 pnl_dock_bin_get_left_edge (PnlDockBin *self)
 {
-  g_assert (PNL_IS_DOCK_BIN (self));
+  PnlDockBinChild *child;
 
-  return pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_LEFT)->widget;
+  g_return_val_if_fail (PNL_IS_DOCK_BIN (self), NULL);
+
+  child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_LEFT);
+
+  if (child->widget == NULL)
+    pnl_dock_bin_create_edge (self, child, PNL_DOCK_BIN_CHILD_LEFT);
+
+  return child->widget;
 }
 
+/**
+ * pnl_dock_bin_get_bottom_edge:
+ * Returns: (transfer none): A #GtkWidget
+ */
 GtkWidget *
 pnl_dock_bin_get_bottom_edge (PnlDockBin *self)
 {
-  g_assert (PNL_IS_DOCK_BIN (self));
+  PnlDockBinChild *child;
 
-  return pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_BOTTOM)->widget;
+  g_return_val_if_fail (PNL_IS_DOCK_BIN (self), NULL);
+
+  child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_BOTTOM);
+
+  if (child->widget == NULL)
+    pnl_dock_bin_create_edge (self, child, PNL_DOCK_BIN_CHILD_BOTTOM);
+
+  return child->widget;
 }
 
+/**
+ * pnl_dock_bin_get_right_edge:
+ * Returns: (transfer none): A #GtkWidget
+ */
 GtkWidget *
 pnl_dock_bin_get_right_edge (PnlDockBin *self)
 {
-  g_assert (PNL_IS_DOCK_BIN (self));
+  PnlDockBinChild *child;
 
-  return pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_RIGHT)->widget;
+  g_return_val_if_fail (PNL_IS_DOCK_BIN (self), NULL);
+
+  child = pnl_dock_bin_get_child_typed (self, PNL_DOCK_BIN_CHILD_RIGHT);
+
+  if (child->widget == NULL)
+    pnl_dock_bin_create_edge (self, child, PNL_DOCK_BIN_CHILD_RIGHT);
+
+  return child->widget;
 }
 
 static void

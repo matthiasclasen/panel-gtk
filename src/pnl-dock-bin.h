@@ -23,13 +23,15 @@
 #ifndef PNL_DOCK_BIN_BIN_H
 #define PNL_DOCK_BIN_BIN_H
 
-#include "pnl-dock.h"
+#include "pnl-dock-types.h"
 
 G_BEGIN_DECLS
 
 struct _PnlDockBinClass
 {
   GtkContainerClass parent;
+
+  GtkWidget *(*create_edge) (PnlDockBin *self);
 };
 
 GtkWidget *pnl_dock_bin_new               (void);

@@ -16,16 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "pnl-dock-bin-edge-private.h"
+#include "pnl-dock-bin-edge.h"
 #include "pnl-dock-revealer.h"
 
-struct _PnlDockBinEdge
+typedef struct
 {
-  PnlDockRevealer parent;
   GtkPositionType edge : 3;
-};
+} PnlDockBinEdgePrivate;
 
-G_DEFINE_TYPE (PnlDockBinEdge, pnl_dock_bin_edge, PNL_TYPE_DOCK_REVEALER)
+G_DEFINE_TYPE_WITH_PRIVATE (PnlDockBinEdge, pnl_dock_bin_edge, PNL_TYPE_DOCK_REVEALER)
 
 enum {
   PROP_0,
@@ -38,6 +37,7 @@ static GParamSpec *properties [LAST_PROP];
 static void
 pnl_dock_bin_edge_update_edge (PnlDockBinEdge *self)
 {
+  PnlDockBinEdgePrivate *priv = pnl_dock_bin_edge_get_instance_private (self);
   GtkStyleContext *style_context;
   PnlDockRevealerTransitionType transition_type;
   const gchar *class_name = NULL;
@@ -53,25 +53,25 @@ pnl_dock_bin_edge_update_edge (PnlDockBinEdge *self)
   gtk_style_context_remove_class (style_context, "top");
   gtk_style_context_remove_class (style_context, "bottom");
 
-  if (self->edge == GTK_POS_LEFT)
+  if (priv->edge == GTK_POS_LEFT)
     {
       class_name = "left";
       transition_type = PNL_DOCK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT;
       orientation = GTK_ORIENTATION_VERTICAL;
     }
-  else if (self->edge == GTK_POS_RIGHT)
+  else if (priv->edge == GTK_POS_RIGHT)
     {
       class_name = "right";
       transition_type = PNL_DOCK_REVEALER_TRANSITION_TYPE_SLIDE_LEFT;
       orientation = GTK_ORIENTATION_VERTICAL;
     }
-  else if (self->edge == GTK_POS_TOP)
+  else if (priv->edge == GTK_POS_TOP)
     {
       class_name = "top";
       transition_type = PNL_DOCK_REVEALER_TRANSITION_TYPE_SLIDE_DOWN;
       orientation = GTK_ORIENTATION_HORIZONTAL;
     }
-  else if (self->edge == GTK_POS_BOTTOM)
+  else if (priv->edge == GTK_POS_BOTTOM)
     {
       class_name = "bottom";
       transition_type = PNL_DOCK_REVEALER_TRANSITION_TYPE_SLIDE_UP;
@@ -95,20 +95,24 @@ pnl_dock_bin_edge_update_edge (PnlDockBinEdge *self)
 GtkPositionType
 pnl_dock_bin_edge_get_edge (PnlDockBinEdge *self)
 {
+  PnlDockBinEdgePrivate *priv = pnl_dock_bin_edge_get_instance_private (self);
+
   g_return_val_if_fail (PNL_IS_DOCK_BIN_EDGE (self), 0);
 
-  return self->edge;
+  return priv->edge;
 }
 
 void
-pnl_dock_bin_edge_set_edge (PnlDockBinEdge     *self,
-                        GtkPositionType  edge)
+pnl_dock_bin_edge_set_edge (PnlDockBinEdge  *self,
+                            GtkPositionType  edge)
 {
+  PnlDockBinEdgePrivate *priv = pnl_dock_bin_edge_get_instance_private (self);
+
   g_return_if_fail (PNL_IS_DOCK_BIN_EDGE (self));
 
-  if (edge != self->edge)
+  if (edge != priv->edge)
     {
-      self->edge = edge;
+      priv->edge = edge;
       pnl_dock_bin_edge_update_edge (self);
       g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_EDGE]);
     }

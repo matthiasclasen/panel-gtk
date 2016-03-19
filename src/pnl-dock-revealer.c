@@ -63,6 +63,7 @@ enum {
   PROP_POSITION,
   PROP_POSITION_SET,
   PROP_REVEAL_CHILD,
+  PROP_TRANSITION_DURATION,
   PROP_TRANSITION_TYPE,
   N_PROPS
 };
@@ -73,6 +74,31 @@ GtkWidget *
 pnl_dock_revealer_new (void)
 {
   return g_object_new (PNL_TYPE_DOCK_REVEALER, NULL);
+}
+
+guint
+pnl_dock_revealer_get_transition_duration (PnlDockRevealer *self)
+{
+  PnlDockRevealerPrivate *priv = pnl_dock_revealer_get_instance_private (self);
+
+  g_return_val_if_fail (PNL_IS_DOCK_REVEALER (self), 0);
+
+  return priv->transition_duration;
+}
+
+void
+pnl_dock_revealer_set_transition_duration (PnlDockRevealer *self,
+                                           guint            transition_duration)
+{
+  PnlDockRevealerPrivate *priv = pnl_dock_revealer_get_instance_private (self);
+
+  g_return_if_fail (PNL_IS_DOCK_REVEALER (self));
+
+  if (priv->transition_duration != transition_duration)
+    {
+      priv->transition_duration = transition_duration;
+      g_object_notify_by_pspec (G_OBJECT (self), properties [PROP_TRANSITION_DURATION]);
+    }
 }
 
 PnlDockRevealerTransitionType
@@ -153,7 +179,7 @@ pnl_dock_revealer_animation_done (gpointer user_data)
 static guint
 size_to_duration (gint size)
 {
-  return size * .9;
+  return MIN (150, size * .9);
 }
 
 static guint
@@ -576,6 +602,10 @@ pnl_dock_revealer_get_property (GObject    *object,
       g_value_set_boolean (value, pnl_dock_revealer_get_reveal_child (self));
       break;
 
+    case PROP_TRANSITION_DURATION:
+      g_value_set_uint (value, pnl_dock_revealer_get_transition_duration (self));
+      break;
+
     case PROP_TRANSITION_TYPE:
       g_value_set_enum (value, pnl_dock_revealer_get_transition_type (self));
       break;
@@ -605,6 +635,10 @@ pnl_dock_revealer_set_property (GObject      *object,
 
     case PROP_POSITION_SET:
       pnl_dock_revealer_set_position_set (self, g_value_get_boolean (value));
+      break;
+
+    case PROP_TRANSITION_DURATION:
+      pnl_dock_revealer_set_transition_duration (self, g_value_get_uint (value));
       break;
 
     case PROP_TRANSITION_TYPE:
@@ -663,6 +697,15 @@ pnl_dock_revealer_class_init (PnlDockRevealerClass *klass)
                           "If the child should be revealed",
                           FALSE,
                           (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
+
+  properties [PROP_TRANSITION_DURATION] =
+    g_param_spec_uint ("transition-duration",
+                       "Transition Duration",
+                       "Length of duration in milliseconds",
+                       0,
+                       G_MAXUINT,
+                       0,
+                       (G_PARAM_READWRITE | G_PARAM_EXPLICIT_NOTIFY | G_PARAM_STATIC_STRINGS));
 
   properties [PROP_TRANSITION_TYPE] =
     g_param_spec_enum ("transition-type",
