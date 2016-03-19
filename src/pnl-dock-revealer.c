@@ -179,7 +179,7 @@ pnl_dock_revealer_animation_done (gpointer user_data)
 static guint
 size_to_duration (gint size)
 {
-  return MIN (150, size * .9);
+  return MAX (150, size * 1.2);
 }
 
 static guint
