@@ -1754,8 +1754,52 @@ pnl_dock_bin_present_child (PnlDockItem *item,
     }
 }
 
+static gboolean
+pnl_dock_bin_get_child_visible (PnlDockItem *item,
+                                PnlDockItem *child)
+{
+  PnlDockBin *self = (PnlDockBin *)item;
+  PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
+  GtkWidget *ancestor;
+
+  g_assert (PNL_IS_DOCK_BIN (self));
+  g_assert (PNL_IS_DOCK_ITEM (item));
+
+  ancestor = gtk_widget_get_ancestor (GTK_WIDGET (child), PNL_TYPE_DOCK_BIN_EDGE);
+
+  if (ancestor == NULL)
+    return FALSE;
+
+  if ((ancestor == priv->children [0].widget) ||
+      (ancestor == priv->children [1].widget) ||
+      (ancestor == priv->children [2].widget) ||
+      (ancestor == priv->children [3].widget))
+    return pnl_dock_revealer_get_reveal_child (PNL_DOCK_REVEALER (ancestor));
+
+  return FALSE;
+}
+
+static void
+pnl_dock_bin_set_child_visible (PnlDockItem *item,
+                                PnlDockItem *child,
+                                gboolean     child_visible)
+{
+  PnlDockBin *self = (PnlDockBin *)item;
+  GtkWidget *ancestor;
+
+  g_assert (PNL_IS_DOCK_BIN (self));
+  g_assert (PNL_IS_DOCK_ITEM (item));
+
+  ancestor = gtk_widget_get_ancestor (GTK_WIDGET (child), PNL_TYPE_DOCK_BIN_EDGE);
+
+  if (ancestor != NULL)
+    pnl_dock_revealer_set_reveal_child (PNL_DOCK_REVEALER (ancestor), child_visible);
+}
+
 static void
 pnl_dock_bin_init_dock_item_iface (PnlDockItemInterface *iface)
 {
   iface->present_child = pnl_dock_bin_present_child;
+  iface->get_child_visible = pnl_dock_bin_get_child_visible;
+  iface->set_child_visible = pnl_dock_bin_set_child_visible;
 }

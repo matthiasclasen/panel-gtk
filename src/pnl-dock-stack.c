@@ -267,8 +267,54 @@ pnl_dock_stack_present_child (PnlDockItem *item,
   gtk_stack_set_visible_child (priv->stack, GTK_WIDGET (child));
 }
 
+static gboolean
+pnl_dock_stack_get_child_visible (PnlDockItem *item,
+                                  PnlDockItem *child)
+{
+  PnlDockStack *self = (PnlDockStack *)item;
+  PnlDockStackPrivate *priv = pnl_dock_stack_get_instance_private (self);
+  GtkWidget *visible_child;
+
+  g_assert (PNL_IS_DOCK_STACK (self));
+  g_assert (PNL_IS_DOCK_ITEM (child));
+
+  visible_child = gtk_stack_get_visible_child (priv->stack);
+
+  if (visible_child != NULL)
+    return gtk_widget_is_ancestor (GTK_WIDGET (child), visible_child);
+
+  return FALSE;
+}
+
+static void
+pnl_dock_stack_set_child_visible (PnlDockItem *item,
+                                  PnlDockItem *child,
+                                  gboolean     child_visible)
+{
+  PnlDockStack *self = (PnlDockStack *)item;
+  PnlDockStackPrivate *priv = pnl_dock_stack_get_instance_private (self);
+  GtkWidget *parent;
+  GtkWidget *last_parent = (GtkWidget *)child;
+
+  g_assert (PNL_IS_DOCK_STACK (self));
+  g_assert (PNL_IS_DOCK_ITEM (child));
+
+  for (parent = gtk_widget_get_parent (GTK_WIDGET (child));
+       parent != NULL;
+       last_parent = parent, parent = gtk_widget_get_parent (parent))
+    {
+      if (parent == (GtkWidget *)priv->stack)
+        {
+          gtk_stack_set_visible_child (priv->stack, last_parent);
+          return;
+        }
+    }
+}
+
 static void
 pnl_dock_stack_init_dock_item_iface (PnlDockItemInterface *iface)
 {
   iface->present_child = pnl_dock_stack_present_child;
+  iface->get_child_visible = pnl_dock_stack_get_child_visible;
+  iface->set_child_visible = pnl_dock_stack_set_child_visible;
 }

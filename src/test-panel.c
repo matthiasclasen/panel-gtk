@@ -66,6 +66,7 @@ static struct {
 };
 static gint current_command;
 static GtkWidget *dockbin;
+static GtkWidget *class_entry;
 static GTimer *timer;
 
 static void
@@ -98,6 +99,12 @@ adjust_sizes (void)
 
   edge = pnl_dock_bin_get_bottom_edge (dock);
   pnl_dock_revealer_set_position (PNL_DOCK_REVEALER (edge), 300);
+}
+
+static void
+grab_class_entry (GtkWidget *button)
+{
+  gtk_widget_grab_focus (class_entry);
 }
 
 static gboolean
@@ -175,11 +182,15 @@ main (gint   argc,
 
   adjust_sizes ();
 
+  class_entry = GTK_WIDGET (gtk_builder_get_object (builder, "class_entry"));
+
 #if 0
   gtk_builder_add_callback_symbol (builder, "toggle_all", G_CALLBACK (toggle_all));
-  gtk_builder_connect_signals (builder, dockbin);
 #endif
+  gtk_builder_add_callback_symbol (builder, "grab_class_entry", G_CALLBACK (grab_class_entry));
+  gtk_builder_connect_signals (builder, dockbin);
 
+  if (0)
   g_timeout_add (commands [0].interval,
                  process_command,
                  NULL);

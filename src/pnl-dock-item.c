@@ -404,3 +404,48 @@ _pnl_dock_item_printf (PnlDockItem *self)
   g_printerr ("%s", str->str);
   g_string_free (str, TRUE);
 }
+
+PnlDockItem *
+pnl_dock_item_get_parent (PnlDockItem *self)
+{
+  GtkWidget *parent;
+
+  g_return_val_if_fail (PNL_IS_DOCK_ITEM (self), NULL);
+
+  for (parent = gtk_widget_get_parent (GTK_WIDGET (self));
+       parent != NULL;
+       parent = gtk_widget_get_parent (parent))
+    {
+      if (PNL_IS_DOCK_ITEM (parent))
+        return PNL_DOCK_ITEM (parent);
+    }
+
+  return NULL;
+}
+
+gboolean
+pnl_dock_item_get_child_visible (PnlDockItem *self,
+                                 PnlDockItem *child)
+{
+  g_return_val_if_fail (PNL_IS_DOCK_ITEM (self), FALSE);
+  g_return_val_if_fail (PNL_IS_DOCK_ITEM (child), FALSE);
+
+  if (PNL_DOCK_ITEM_GET_IFACE (self)->get_child_visible)
+    return PNL_DOCK_ITEM_GET_IFACE (self)->get_child_visible (self, child);
+
+  return TRUE;
+}
+
+void
+pnl_dock_item_set_child_visible (PnlDockItem *self,
+                                 PnlDockItem *child,
+                                 gboolean     child_visible)
+{
+  g_return_if_fail (PNL_IS_DOCK_ITEM (self));
+  g_return_if_fail (PNL_IS_DOCK_ITEM (child));
+
+  g_print ("set_child_visible (%s, %s) = %d\n", G_OBJECT_TYPE_NAME (self), G_OBJECT_TYPE_NAME (child), child_visible);
+
+  if (PNL_DOCK_ITEM_GET_IFACE (self)->set_child_visible)
+    PNL_DOCK_ITEM_GET_IFACE (self)->set_child_visible (self, child, child_visible);
+}

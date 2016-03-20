@@ -17,10 +17,13 @@
  */
 
 #include "pnl-dock-manager.h"
+#include "pnl-dock-transient-grab.h"
 
 typedef struct
 {
   GPtrArray *docks;
+  GPtrArray *toplevels;
+  PnlDockTransientGrab *grab;
 } PnlDockManagerPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (PnlDockManager, pnl_dock_manager, G_TYPE_OBJECT)
@@ -32,6 +35,104 @@ enum {
 };
 
 static guint signals [N_SIGNALS];
+
+static void
+pnl_dock_manager_set_focus (PnlDockManager *self,
+                            GtkWidget      *focus,
+                            GtkWidget      *toplevel)
+{
+  PnlDockManagerPrivate *priv = pnl_dock_manager_get_instance_private (self);
+  PnlDockTransientGrab *grab = NULL;
+  GtkWidget *parent;
+
+  g_assert (PNL_IS_DOCK_MANAGER (self));
+  g_assert (GTK_IS_WINDOW (toplevel));
+
+  /*
+   * Don't do anything if we get a NULL focus. Instead, wait for the focus
+   * to be updated with a widget.
+   */
+  if (focus == NULL)
+    return;
+
+  g_print ("Attempting to set focus on %s\n", G_OBJECT_TYPE_NAME (focus));
+
+  if (priv->grab != NULL)
+    {
+      /*
+       * If the current transient grab contains the new focus widget,
+       * then there is nothing for us to do now.
+       */
+      if (pnl_dock_transient_grab_is_descendant (priv->grab, focus))
+        return;
+    }
+
+  /*
+   * If their is a PnlDockItem in the hierarchy, create a new transient grab.
+   */
+  for (parent = focus;
+       parent != NULL;
+       parent = gtk_widget_get_parent (parent))
+    {
+      if (PNL_IS_DOCK_ITEM (parent))
+        {
+          if (grab == NULL)
+            grab = pnl_dock_transient_grab_new ();
+          pnl_dock_transient_grab_add_item (grab, PNL_DOCK_ITEM (parent));
+        }
+    }
+
+  /*
+   * Steal common hierarchy so that we don't hide it when breaking grabs.
+   */
+  if (priv->grab != NULL && grab != NULL)
+    pnl_dock_transient_grab_steal_common_ancestors (grab, priv->grab);
+
+  /*
+   * Release the previous grab.
+   */
+  if (priv->grab != NULL)
+    {
+      pnl_dock_transient_grab_release (priv->grab);
+      g_clear_object (&priv->grab);
+    }
+
+  /* Start the grab process */
+  if (grab != NULL)
+    {
+      priv->grab = grab;
+      pnl_dock_transient_grab_acquire (priv->grab);
+    }
+}
+
+static void
+pnl_dock_manager_watch_toplevel (PnlDockManager *self,
+                                 GtkWidget      *widget)
+{
+  PnlDockManagerPrivate *priv = pnl_dock_manager_get_instance_private (self);
+  GtkWidget *toplevel;
+  guint i;
+
+  g_assert (PNL_IS_DOCK_MANAGER (self));
+  g_assert (GTK_IS_WIDGET (widget));
+
+  toplevel = gtk_widget_get_toplevel (widget);
+
+  for (i = 0; i < priv->toplevels->len; i++)
+    {
+      GtkWidget *iter = g_ptr_array_index (priv->toplevels, i);
+
+      if (iter == toplevel)
+        return;
+    }
+
+  if (GTK_IS_WINDOW (toplevel))
+    g_signal_connect_object (toplevel,
+                             "set-focus",
+                             G_CALLBACK (pnl_dock_manager_set_focus),
+                             self,
+                             G_CONNECT_SWAPPED);
+}
 
 static void
 pnl_dock_manager_weak_notify (gpointer  data,
@@ -56,6 +157,7 @@ pnl_dock_manager_real_register_dock (PnlDockManager *self,
 
   g_object_weak_ref (G_OBJECT (dock), pnl_dock_manager_weak_notify, self);
   g_ptr_array_add (priv->docks, dock);
+  pnl_dock_manager_watch_toplevel (self, GTK_WIDGET (dock));
 }
 
 static void
@@ -161,6 +263,7 @@ pnl_dock_manager_init (PnlDockManager *self)
   PnlDockManagerPrivate *priv = pnl_dock_manager_get_instance_private (self);
 
   priv->docks = g_ptr_array_new ();
+  priv->toplevels = g_ptr_array_new ();
 }
 
 PnlDockManager *

@@ -23,6 +23,13 @@
           </object>
         </child>
         <child>
+          <object class="GtkButton">
+            <property name="label">Test Grab</property>
+            <property name="visible">true</property>
+            <signal name="clicked" handler="grab_class_entry"/>
+          </object>
+        </child>
+        <child>
           <object class="GtkBox">
             <property name="visible">true</property>
             <style>
@@ -140,6 +147,29 @@
                   <object class="PnlDockWidget">
                     <property name="title">Styles</property>
                     <property name="visible">true</property>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">true</property>
+                        <property name="border-width">12</property>
+                        <property name="spacing">6</property>
+                        <property name="vexpand">false</property>
+                        <property name="valign">start</property>
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label">Cl_ass</property>
+                            <property name="mnemonic-widget">class_entry</property>
+                            <property name="use-underline">true</property>
+                            <property name="visible">true</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkEntry" id="class_entry">
+                            <property name="hexpand">true</property>
+                            <property name="visible">true</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>

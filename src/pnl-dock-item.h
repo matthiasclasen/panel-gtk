@@ -35,6 +35,11 @@ struct _PnlDockItemInterface
   void            (*present_child)     (PnlDockItem    *self,
                                         PnlDockItem    *child);
   void            (*update_visibility) (PnlDockItem    *self);
+  gboolean        (*get_child_visible) (PnlDockItem    *self,
+                                        PnlDockItem    *child);
+  void            (*set_child_visible) (PnlDockItem    *self,
+                                        PnlDockItem    *child,
+                                        gboolean        child_visible);
 };
 
 PnlDockManager *pnl_dock_item_get_manager       (PnlDockItem    *self);
@@ -47,6 +52,12 @@ void            pnl_dock_item_present_child     (PnlDockItem    *self,
                                                  PnlDockItem    *child);
 void            pnl_dock_item_update_visibility (PnlDockItem    *self);
 gboolean        pnl_dock_item_has_widgets       (PnlDockItem    *self);
+gboolean        pnl_dock_item_get_child_visible (PnlDockItem    *self,
+                                                 PnlDockItem    *child);
+void            pnl_dock_item_set_child_visible (PnlDockItem    *self,
+                                                 PnlDockItem    *child,
+                                                 gboolean        child_visible);
+PnlDockItem    *pnl_dock_item_get_parent        (PnlDockItem    *self);
 void            _pnl_dock_item_printf           (PnlDockItem    *self);
 
 G_END_DECLS
