@@ -55,7 +55,9 @@ pnl_dock_manager_set_focus (PnlDockManager *self,
   if (focus == NULL)
     return;
 
+#if 0
   g_print ("Attempting to set focus on %s\n", G_OBJECT_TYPE_NAME (focus));
+#endif
 
   if (priv->grab != NULL)
     {

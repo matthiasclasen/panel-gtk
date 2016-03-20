@@ -444,8 +444,6 @@ pnl_dock_item_set_child_visible (PnlDockItem *self,
   g_return_if_fail (PNL_IS_DOCK_ITEM (self));
   g_return_if_fail (PNL_IS_DOCK_ITEM (child));
 
-  g_print ("set_child_visible (%s, %s) = %d\n", G_OBJECT_TYPE_NAME (self), G_OBJECT_TYPE_NAME (child), child_visible);
-
   if (PNL_DOCK_ITEM_GET_IFACE (self)->set_child_visible)
     PNL_DOCK_ITEM_GET_IFACE (self)->set_child_visible (self, child, child_visible);
 }

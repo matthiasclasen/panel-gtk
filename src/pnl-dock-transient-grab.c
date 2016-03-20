@@ -244,11 +244,6 @@ pnl_dock_transient_grab_acquire (PnlDockTransientGrab *self)
       PnlDockItem *parent = g_ptr_array_index (self->items, i - 1);
       PnlDockItem *child = g_ptr_array_index (self->items, i - 2);
 
-      g_print ("get_child_visible(%s, %s) = %d\n",
-               G_OBJECT_TYPE_NAME (parent),
-               G_OBJECT_TYPE_NAME (child),
-               pnl_dock_item_get_child_visible (parent, child));
-
       if (!pnl_dock_item_get_child_visible (parent, child))
         {
           pnl_dock_item_set_child_visible (parent, child, TRUE);
