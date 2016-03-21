@@ -305,9 +305,14 @@ pnl_dock_transient_grab_steal_common_ancestors (PnlDockTransientGrab *self,
 
       if (pnl_dock_transient_grab_contains (self, item))
         {
+          /*
+           * Since we are stealing the common ancestors, we don't want the
+           * previous grab to hide them when releasing, so clear the items
+           * from the hash of children it wants to hide.
+           */
+          g_hash_table_remove (other->hidden, item);
+
           pnl_dock_transient_grab_add_item (self, item);
-          if (g_hash_table_contains (other->hidden, item))
-            g_hash_table_insert (self->hidden, item, NULL);
           pnl_dock_transient_grab_remove_index (other, i - 1);
         }
     }

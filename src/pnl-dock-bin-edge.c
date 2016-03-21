@@ -25,7 +25,9 @@ typedef struct
   GtkPositionType edge : 3;
 } PnlDockBinEdgePrivate;
 
-G_DEFINE_TYPE_WITH_PRIVATE (PnlDockBinEdge, pnl_dock_bin_edge, PNL_TYPE_DOCK_REVEALER)
+G_DEFINE_TYPE_EXTENDED (PnlDockBinEdge, pnl_dock_bin_edge, PNL_TYPE_DOCK_REVEALER, 0,
+                        G_ADD_PRIVATE (PnlDockBinEdge)
+                        G_IMPLEMENT_INTERFACE (PNL_TYPE_DOCK_ITEM, NULL))
 
 enum {
   PROP_0,
@@ -221,5 +223,4 @@ pnl_dock_bin_edge_init (PnlDockBinEdge *self)
   GTK_CONTAINER_CLASS (pnl_dock_bin_edge_parent_class)->add (GTK_CONTAINER (self), child);
 
   pnl_dock_bin_edge_update_edge (self);
-
 }
