@@ -30,6 +30,8 @@ G_DECLARE_DERIVABLE_TYPE (PnlDockBinEdge, pnl_dock_bin_edge, PNL, DOCK_BIN_EDGE,
 struct _PnlDockBinEdgeClass
 {
   PnlDockRevealerClass parent;
+
+  void (*move_to_bin_child) (PnlDockBinEdge *self);
 };
 
 G_END_DECLS

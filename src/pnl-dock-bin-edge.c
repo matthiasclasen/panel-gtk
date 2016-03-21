@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "pnl-dock-bin.h"
 #include "pnl-dock-bin-edge.h"
 #include "pnl-dock-bin-edge-private.h"
 #include "pnl-dock-revealer.h"
@@ -32,10 +33,16 @@ G_DEFINE_TYPE_EXTENDED (PnlDockBinEdge, pnl_dock_bin_edge, PNL_TYPE_DOCK_REVEALE
 enum {
   PROP_0,
   PROP_EDGE,
-  LAST_PROP
+  N_PROPS
 };
 
-static GParamSpec *properties [LAST_PROP];
+enum {
+  MOVE_TO_BIN_CHILD,
+  N_SIGNALS
+};
+
+static GParamSpec *properties [N_PROPS];
+static guint signals [N_SIGNALS];
 
 static void
 pnl_dock_bin_edge_update_edge (PnlDockBinEdge *self)
@@ -139,6 +146,19 @@ pnl_dock_bin_edge_add (GtkContainer *container,
 }
 
 static void
+pnl_dock_bin_edge_real_move_to_bin_child (PnlDockBinEdge *self)
+{
+  GtkWidget *parent;
+
+  g_assert (PNL_IS_DOCK_BIN_EDGE (self));
+
+  parent = gtk_widget_get_parent (GTK_WIDGET (self));
+
+  if (PNL_IS_DOCK_BIN (parent))
+    gtk_widget_grab_focus (parent);
+}
+
+static void
 pnl_dock_bin_edge_constructed (GObject *object)
 {
   PnlDockBinEdge *self = (PnlDockBinEdge *)object;
@@ -192,12 +212,15 @@ pnl_dock_bin_edge_class_init (PnlDockBinEdgeClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
   GtkContainerClass *container_class = GTK_CONTAINER_CLASS (klass);
+  GtkBindingSet *binding_set;
 
   object_class->constructed = pnl_dock_bin_edge_constructed;
   object_class->get_property = pnl_dock_bin_edge_get_property;
   object_class->set_property = pnl_dock_bin_edge_set_property;
 
   container_class->add = pnl_dock_bin_edge_add;
+
+  klass->move_to_bin_child = pnl_dock_bin_edge_real_move_to_bin_child;
 
   properties [PROP_EDGE] =
     g_param_spec_enum ("edge",
@@ -207,7 +230,17 @@ pnl_dock_bin_edge_class_init (PnlDockBinEdgeClass *klass)
                        GTK_POS_LEFT,
                        (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  g_object_class_install_properties (object_class, LAST_PROP, properties);
+  g_object_class_install_properties (object_class, N_PROPS, properties);
+
+  signals [MOVE_TO_BIN_CHILD] =
+    g_signal_new ("move-to-bin-child",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+                  G_STRUCT_OFFSET (PnlDockBinEdgeClass, move_to_bin_child),
+                  NULL, NULL, NULL, G_TYPE_NONE, 0);
+
+  binding_set = gtk_binding_set_by_class (klass);
+  gtk_binding_entry_add_signal (binding_set, GDK_KEY_Escape, 0, "move-to-bin-child", 0);
 
   gtk_widget_class_set_css_name (widget_class, "dockbinedge");
 }
