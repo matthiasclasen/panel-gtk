@@ -405,6 +405,13 @@ _pnl_dock_item_printf (PnlDockItem *self)
   g_string_free (str, TRUE);
 }
 
+/**
+ * pnl_dock_item_get_parent:
+ *
+ * Gets the parent #PnlDockItem, or %NULL.
+ *
+ * Returns: (transfer none) (nullable): A #PnlDockItem or %NULL.
+ */
 PnlDockItem *
 pnl_dock_item_get_parent (PnlDockItem *self)
 {
