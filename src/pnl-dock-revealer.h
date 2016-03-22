@@ -41,6 +41,15 @@ typedef enum
 struct _PnlDockRevealerClass
 {
   GtkBinClass parent;
+
+  void (*padding1) (void);
+  void (*padding2) (void);
+  void (*padding3) (void);
+  void (*padding4) (void);
+  void (*padding5) (void);
+  void (*padding6) (void);
+  void (*padding7) (void);
+  void (*padding8) (void);
 };
 
 GType                          pnl_dock_revealer_transition_type_get_type (void);

@@ -35,6 +35,15 @@ struct _PnlDockManagerClass
                            PnlDock        *dock);
   void (*unregister_dock) (PnlDockManager *self,
                            PnlDock        *dock);
+
+  void (*padding1) (void);
+  void (*padding2) (void);
+  void (*padding3) (void);
+  void (*padding4) (void);
+  void (*padding5) (void);
+  void (*padding6) (void);
+  void (*padding7) (void);
+  void (*padding8) (void);
 };
 
 PnlDockManager *pnl_dock_manager_new             (void);

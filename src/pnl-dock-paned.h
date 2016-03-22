@@ -30,6 +30,15 @@ G_BEGIN_DECLS
 struct _PnlDockPanedClass
 {
   PnlMultiPanedClass parent;
+
+  void (*padding1) (void);
+  void (*padding2) (void);
+  void (*padding3) (void);
+  void (*padding4) (void);
+  void (*padding5) (void);
+  void (*padding6) (void);
+  void (*padding7) (void);
+  void (*padding8) (void);
 };
 
 GtkWidget *pnl_dock_paned_new (void);

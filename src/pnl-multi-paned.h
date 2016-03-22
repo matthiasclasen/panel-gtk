@@ -40,6 +40,15 @@ struct _PnlMultiPanedClass
                              GtkWidget     *child);
   void (*resize_drag_end)   (PnlMultiPaned *self,
                              GtkWidget     *child);
+
+  void (*padding1) (void);
+  void (*padding2) (void);
+  void (*padding3) (void);
+  void (*padding4) (void);
+  void (*padding5) (void);
+  void (*padding6) (void);
+  void (*padding7) (void);
+  void (*padding8) (void);
 };
 
 GtkWidget *pnl_multi_paned_new            (void);

@@ -32,6 +32,15 @@ struct _PnlDockBinEdgeClass
   PnlDockRevealerClass parent;
 
   void (*move_to_bin_child) (PnlDockBinEdge *self);
+
+  void (*padding1) (void);
+  void (*padding2) (void);
+  void (*padding3) (void);
+  void (*padding4) (void);
+  void (*padding5) (void);
+  void (*padding6) (void);
+  void (*padding7) (void);
+  void (*padding8) (void);
 };
 
 G_END_DECLS

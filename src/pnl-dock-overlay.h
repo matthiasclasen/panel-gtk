@@ -32,6 +32,15 @@ struct _PnlDockOverlayClass
   GtkEventBoxClass parent;
 
   void (*hide_edges) (PnlDockOverlay *self);
+
+  void (*padding1) (void);
+  void (*padding2) (void);
+  void (*padding3) (void);
+  void (*padding4) (void);
+  void (*padding5) (void);
+  void (*padding6) (void);
+  void (*padding7) (void);
+  void (*padding8) (void);
 };
 
 GtkWidget *pnl_dock_overlay_new (void);
