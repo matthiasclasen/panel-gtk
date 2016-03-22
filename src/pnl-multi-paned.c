@@ -159,25 +159,25 @@ G_DEFINE_TYPE_EXTENDED (PnlMultiPaned, pnl_multi_paned, GTK_TYPE_CONTAINER, 0,
 enum {
   PROP_0,
   PROP_ORIENTATION,
-  LAST_PROP
+  N_PROPS
 };
 
 enum {
   CHILD_PROP_0,
   CHILD_PROP_POSITION,
-  LAST_CHILD_PROP
+  N_CHILD_PROPS
 };
 
 enum {
   STYLE_PROP_0,
   STYLE_PROP_HANDLE_SIZE,
-  LAST_STYLE_PROP
+  N_STYLE_PROPS
 };
 
 enum {
   RESIZE_DRAG_BEGIN,
   RESIZE_DRAG_END,
-  LAST_SIGNAL
+  N_SIGNALS
 };
 
 /*
@@ -185,10 +185,10 @@ enum {
  *       branches outside the loops.
  */
 
-static GParamSpec *properties [LAST_PROP];
-static GParamSpec *child_properties [LAST_CHILD_PROP];
-static GParamSpec *style_properties [LAST_STYLE_PROP];
-static guint signals [LAST_SIGNAL];
+static GParamSpec *properties [N_PROPS];
+static GParamSpec *child_properties [N_CHILD_PROPS];
+static GParamSpec *style_properties [N_STYLE_PROPS];
+static guint signals [N_SIGNALS];
 static AllocationStage allocation_stages[] = {
   allocation_stage_borders,
   allocation_stage_cache_request,
@@ -1794,7 +1794,7 @@ pnl_multi_paned_class_init (PnlMultiPanedClass *klass)
                        GTK_ORIENTATION_VERTICAL,
                        (G_PARAM_READWRITE | G_PARAM_CONSTRUCT | G_PARAM_STATIC_STRINGS));
 
-  g_object_class_install_properties (object_class, LAST_PROP, properties);
+  g_object_class_install_properties (object_class, N_PROPS, properties);
 
   child_properties [CHILD_PROP_POSITION] =
     g_param_spec_int ("position",
@@ -1805,7 +1805,7 @@ pnl_multi_paned_class_init (PnlMultiPanedClass *klass)
                       0,
                       (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  gtk_container_class_install_child_properties (container_class, LAST_CHILD_PROP, child_properties);
+  gtk_container_class_install_child_properties (container_class, N_CHILD_PROPS, child_properties);
 
   style_properties [STYLE_PROP_HANDLE_SIZE] =
     g_param_spec_int ("handle-size",

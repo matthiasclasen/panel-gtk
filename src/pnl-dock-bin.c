@@ -132,17 +132,17 @@ G_DEFINE_TYPE_EXTENDED (PnlDockBin, pnl_dock_bin, GTK_TYPE_CONTAINER, 0,
 enum {
   PROP_0,
   PROP_MANAGER,
-  LAST_PROP
+  N_PROPS
 };
 
 enum {
   CHILD_PROP_0,
   CHILD_PROP_POSITION,
   CHILD_PROP_PRIORITY,
-  LAST_CHILD_PROP
+  N_CHILD_PROPS
 };
 
-static GParamSpec *child_properties [LAST_CHILD_PROP];
+static GParamSpec *child_properties [N_CHILD_PROPS];
 
 static gboolean
 map_boolean_to_variant (GBinding     *binding,
@@ -652,6 +652,7 @@ pnl_dock_bin_child_size_allocate (PnlDockBin      *self,
       pnl_dock_bin_get_children_preferred_height (self, child, 1,
                                                   &child->min_req.height,
                                                   &child->nat_req.height);
+
       pnl_dock_bin_get_children_preferred_width (self, child, 1,
                                                  &child->min_req.width,
                                                  &child->nat_req.width);
@@ -1516,7 +1517,7 @@ pnl_dock_bin_class_init (PnlDockBinClass *klass)
                       0,
                       (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
-  gtk_container_class_install_child_properties (container_class, LAST_CHILD_PROP, child_properties);
+  gtk_container_class_install_child_properties (container_class, N_CHILD_PROPS, child_properties);
 
   gtk_widget_class_set_css_name (widget_class, "dockbin");
 }
