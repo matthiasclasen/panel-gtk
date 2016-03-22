@@ -45,6 +45,7 @@ set_tab_state (GSimpleAction *action,
 {
   PnlTabStrip *self = user_data;
   PnlTabStripPrivate *priv = pnl_tab_strip_get_instance_private (self);
+  PnlTab *tab = NULL;
   const GList *iter;
   GList *list;
   gint stateval;
@@ -71,10 +72,19 @@ set_tab_state (GSimpleAction *action,
 
       if (position == stateval)
         {
+          tab = g_object_get_data (G_OBJECT (child), "PNL_TAB");
           gtk_stack_set_visible_child (priv->stack, child);
           break;
         }
     }
+
+  /*
+   * When clicking an active toggle button, we get the state callback but then
+   * the toggle button disables the checked state. So ensure it stays on by
+   * manually setting the state.
+   */
+  if (PNL_IS_TAB (tab))
+    gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (tab), TRUE);
 
   g_list_free (list);
 }
