@@ -22,7 +22,6 @@
 typedef struct
 {
   GPtrArray *docks;
-  GPtrArray *toplevels;
   PnlDockTransientGrab *grab;
 } PnlDockManagerPrivate;
 
@@ -108,25 +107,22 @@ pnl_dock_manager_set_focus (PnlDockManager *self,
 }
 
 static void
-pnl_dock_manager_watch_toplevel (PnlDockManager *self,
-                                 GtkWidget      *widget)
+pnl_dock_manager_hierarchy_changed (PnlDockManager *self,
+                                    GtkWidget      *old_toplevel,
+                                    GtkWidget      *widget)
 {
-  PnlDockManagerPrivate *priv = pnl_dock_manager_get_instance_private (self);
   GtkWidget *toplevel;
-  guint i;
 
   g_assert (PNL_IS_DOCK_MANAGER (self));
+  g_assert (!old_toplevel || GTK_IS_WIDGET (old_toplevel));
   g_assert (GTK_IS_WIDGET (widget));
 
+  if (GTK_IS_WINDOW (old_toplevel))
+    g_signal_handlers_disconnect_by_func (old_toplevel,
+                                          G_CALLBACK (pnl_dock_manager_set_focus),
+                                          self);
+
   toplevel = gtk_widget_get_toplevel (widget);
-
-  for (i = 0; i < priv->toplevels->len; i++)
-    {
-      GtkWidget *iter = g_ptr_array_index (priv->toplevels, i);
-
-      if (iter == toplevel)
-        return;
-    }
 
   if (GTK_IS_WINDOW (toplevel))
     g_signal_connect_object (toplevel,
@@ -134,6 +130,22 @@ pnl_dock_manager_watch_toplevel (PnlDockManager *self,
                              G_CALLBACK (pnl_dock_manager_set_focus),
                              self,
                              G_CONNECT_SWAPPED);
+}
+
+static void
+pnl_dock_manager_watch_toplevel (PnlDockManager *self,
+                                 GtkWidget      *widget)
+{
+  g_assert (PNL_IS_DOCK_MANAGER (self));
+  g_assert (GTK_IS_WIDGET (widget));
+
+  g_signal_connect_object (widget,
+                           "hierarchy-changed",
+                           G_CALLBACK (pnl_dock_manager_hierarchy_changed),
+                           self,
+                           G_CONNECT_SWAPPED);
+
+  pnl_dock_manager_hierarchy_changed (self, NULL, widget);
 }
 
 static void
@@ -265,7 +277,6 @@ pnl_dock_manager_init (PnlDockManager *self)
   PnlDockManagerPrivate *priv = pnl_dock_manager_get_instance_private (self);
 
   priv->docks = g_ptr_array_new ();
-  priv->toplevels = g_ptr_array_new ();
 }
 
 PnlDockManager *
