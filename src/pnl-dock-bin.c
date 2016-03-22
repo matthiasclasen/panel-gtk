@@ -45,12 +45,6 @@ typedef struct
   GtkWidget *widget;
 
   /*
-   * The type of child. The PNL_DOCK_BIN_CHILD_CENTER is always
-   * the last child, and our sort function ensures that.
-   */
-  PnlDockBinChildType type;
-
-  /*
    * The GdkWindow for the handle to resize the edge.
    * This is an input only window, the pane handle is drawn
    * with CSS by whatever styling the application has chose.
@@ -85,10 +79,10 @@ typedef struct
   GtkRequisition nat_req;
 
   /*
-   * If we animated in this panel during DnD, we want to restore
-   * it unless we dragged onto this panel.
+   * The type of child. The PNL_DOCK_BIN_CHILD_CENTER is always
+   * the last child, and our sort function ensures that.
    */
-  guint hide_after_dnd : 1;
+  PnlDockBinChildType type : 3;
 } PnlDockBinChild;
 
 typedef struct
@@ -118,7 +112,6 @@ typedef struct
    * We need to track the position during a DnD request. We can use this
    * to highlight the area where the drop will occur.
    */
-  guint in_dnd : 1;
   gint dnd_drag_x;
   gint dnd_drag_y;
 } PnlDockBinPrivate;
