@@ -282,9 +282,12 @@ pnl_dock_transient_grab_is_descendant (PnlDockTransientGrab *self,
 
   if (self->items->len > 0)
     {
-      PnlDockItem *item = g_ptr_array_index (self->items, 0);
+      GtkWidget *item = g_ptr_array_index (self->items, 0);
+      GtkWidget *ancestor;
 
-      return gtk_widget_is_ancestor (widget, GTK_WIDGET (item));
+      ancestor = gtk_widget_get_ancestor (widget, PNL_TYPE_DOCK_ITEM);
+
+      return (item == ancestor);
     }
 
   return FALSE;
