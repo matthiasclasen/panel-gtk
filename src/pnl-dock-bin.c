@@ -142,7 +142,14 @@ enum {
   N_CHILD_PROPS
 };
 
+enum {
+  STYLE_PROP_0,
+  STYLE_PROP_HANDLE_SIZE,
+  N_STYLE_PROPS
+};
+
 static GParamSpec *child_properties [N_CHILD_PROPS];
+static GParamSpec *style_properties [N_STYLE_PROPS];
 
 static gboolean
 map_boolean_to_variant (GBinding     *binding,
@@ -388,6 +395,7 @@ pnl_dock_bin_get_children_preferred_width (PnlDockBin      *self,
   gint child_nat_width = 0;
   gint neighbor_min_width = 0;
   gint neighbor_nat_width = 0;
+  gint handle_size = 0;
 
   g_assert (PNL_IS_DOCK_BIN (self));
   g_assert (children != NULL);
@@ -397,6 +405,10 @@ pnl_dock_bin_get_children_preferred_width (PnlDockBin      *self,
 
   *min_width = 0;
   *nat_width = 0;
+
+  gtk_widget_style_get (GTK_WIDGET (self),
+                        "handle-size", &handle_size,
+                        NULL);
 
   /*
    * We have a fairly simple rule for deducing the size request of
@@ -449,23 +461,23 @@ pnl_dock_bin_get_children_preferred_width (PnlDockBin      *self,
 
   if (n_children > 1)
     pnl_dock_bin_get_children_preferred_width (self,
-                                           &children [1],
-                                           n_children - 1,
-                                           &neighbor_min_width,
-                                           &neighbor_nat_width);
+                                               &children [1],
+                                               n_children - 1,
+                                               &neighbor_min_width,
+                                               &neighbor_nat_width);
 
   switch (child->type)
     {
     case PNL_DOCK_BIN_CHILD_LEFT:
     case PNL_DOCK_BIN_CHILD_RIGHT:
-      *min_width = (child_min_width + neighbor_min_width);
-      *nat_width = (child_nat_width + neighbor_nat_width);
+      *min_width = (child_min_width + neighbor_min_width + handle_size);
+      *nat_width = (child_nat_width + neighbor_nat_width + handle_size);
       break;
 
     case PNL_DOCK_BIN_CHILD_TOP:
     case PNL_DOCK_BIN_CHILD_BOTTOM:
-      *min_width = MAX (child_min_width, neighbor_min_width);
-      *nat_width = MAX (child_nat_width, neighbor_nat_width);
+      *min_width = MAX (child_min_width, neighbor_min_width + handle_size);
+      *nat_width = MAX (child_nat_width, neighbor_nat_width + handle_size);
       break;
 
     case PNL_DOCK_BIN_CHILD_CENTER:
@@ -514,6 +526,7 @@ pnl_dock_bin_get_children_preferred_height (PnlDockBin      *self,
   gint child_nat_height = 0;
   gint neighbor_min_height = 0;
   gint neighbor_nat_height = 0;
+  gint handle_size = 0;
 
   g_assert (PNL_IS_DOCK_BIN (self));
   g_assert (children != NULL);
@@ -523,6 +536,10 @@ pnl_dock_bin_get_children_preferred_height (PnlDockBin      *self,
 
   *min_height = 0;
   *nat_height = 0;
+
+  gtk_widget_style_get (GTK_WIDGET (self),
+                        "handle-size", &handle_size,
+                        NULL);
 
   /*
    * See pnl_dock_bin_get_children_preferred_width() for more information on
@@ -548,14 +565,14 @@ pnl_dock_bin_get_children_preferred_height (PnlDockBin      *self,
     {
     case PNL_DOCK_BIN_CHILD_LEFT:
     case PNL_DOCK_BIN_CHILD_RIGHT:
-      *min_height = MAX (child_min_height, neighbor_min_height);
-      *nat_height = MAX (child_nat_height, neighbor_nat_height);
+      *min_height = MAX (child_min_height, neighbor_min_height + handle_size);
+      *nat_height = MAX (child_nat_height, neighbor_nat_height + handle_size);
       break;
 
     case PNL_DOCK_BIN_CHILD_TOP:
     case PNL_DOCK_BIN_CHILD_BOTTOM:
-      *min_height = (child_min_height + neighbor_min_height);
-      *nat_height = (child_nat_height + neighbor_nat_height);
+      *min_height = (child_min_height + neighbor_min_height + handle_size);
+      *nat_height = (child_nat_height + neighbor_nat_height + handle_size);
       break;
 
     case PNL_DOCK_BIN_CHILD_CENTER:
@@ -626,6 +643,7 @@ pnl_dock_bin_child_size_allocate (PnlDockBin      *self,
                                   GtkAllocation   *allocation)
 {
   PnlDockBinChild *child = children;
+  gint handle_size = 0;
 
   g_assert (PNL_IS_DOCK_BIN (self));
   g_assert (children != NULL);
@@ -641,6 +659,10 @@ pnl_dock_bin_child_size_allocate (PnlDockBin      *self,
 
       return;
     }
+
+  gtk_widget_style_get (GTK_WIDGET (self),
+                        "handle-size", &handle_size,
+                        NULL);
 
   if (child->widget != NULL && gtk_widget_get_visible (child->widget))
     {
@@ -683,30 +705,34 @@ pnl_dock_bin_child_size_allocate (PnlDockBin      *self,
           child_alloc.x = allocation->x;
           child_alloc.y = allocation->y;
           child_alloc.height = allocation->height;
-          allocation->x += child_alloc.width;
-          allocation->width -= child_alloc.width;
+          child_alloc.width -= handle_size;
+          allocation->x += child_alloc.width + handle_size;
+          allocation->width -= child_alloc.width + handle_size;
           break;
 
         case PNL_DOCK_BIN_CHILD_RIGHT:
+          child_alloc.width -= handle_size;
           child_alloc.x = allocation->x + allocation->width - child_alloc.width;
           child_alloc.y = allocation->y;
           child_alloc.height = allocation->height;
-          allocation->width -= child_alloc.width;
+          allocation->width -= child_alloc.width + handle_size;
           break;
 
         case PNL_DOCK_BIN_CHILD_TOP:
           child_alloc.x = allocation->x;
           child_alloc.y = allocation->y;
           child_alloc.width = allocation->width;
-          allocation->y += child_alloc.height;
-          allocation->height -= child_alloc.height;
+          child_alloc.height -= handle_size;
+          allocation->y += child_alloc.height + handle_size;
+          allocation->height -= child_alloc.height + handle_size;
           break;
 
         case PNL_DOCK_BIN_CHILD_BOTTOM:
+          child_alloc.height -= handle_size;
           child_alloc.x = allocation->x;
           child_alloc.y = allocation->y + allocation->height - child_alloc.height;
           child_alloc.width = allocation->width;
-          allocation->height -= child_alloc.height;
+          allocation->height -= child_alloc.height + handle_size;
           break;
 
         case PNL_DOCK_BIN_CHILD_CENTER:
@@ -1359,6 +1385,82 @@ pnl_dock_bin_create_edge (PnlDockBin          *self,
                                NULL, NULL, NULL);
 }
 
+static gboolean
+pnl_dock_bin_draw (GtkWidget *widget,
+                   cairo_t   *cr)
+{
+  PnlDockBin *self = (PnlDockBin *)widget;
+  PnlDockBinPrivate *priv = pnl_dock_bin_get_instance_private (self);
+  GtkStyleContext *style_context;
+  gboolean ret;
+  guint i;
+  gint handle_size = 0;
+
+  g_assert (PNL_IS_DOCK_BIN (self));
+  g_assert (cr != NULL);
+
+  ret = GTK_WIDGET_CLASS (pnl_dock_bin_parent_class)->draw (widget, cr);
+
+  if (ret == GDK_EVENT_STOP)
+    return ret;
+
+  gtk_widget_style_get (widget,
+                        "handle-size", &handle_size,
+                        NULL);
+
+  if (handle_size == 0)
+    return ret;
+
+  style_context = gtk_widget_get_style_context (widget);
+
+  for (i = 0; i < PNL_DOCK_BIN_CHILD_CENTER; i++)
+    {
+      PnlDockBinChild *child = &priv->children [i];
+
+      if ((child->widget != NULL) &&
+          gtk_widget_get_visible (child->widget) &&
+          gtk_widget_get_child_visible (child->widget))
+        {
+          GtkAllocation handle;
+
+          gtk_widget_get_allocation (child->widget, &handle);
+
+          switch (child->type)
+            {
+            case PNL_DOCK_BIN_CHILD_LEFT:
+              handle.x += handle.width;
+              handle.width = handle_size;
+              break;
+
+            case PNL_DOCK_BIN_CHILD_RIGHT:
+              handle.x -= handle_size;
+              handle.width = handle_size;
+              break;
+
+            case PNL_DOCK_BIN_CHILD_TOP:
+              handle.y += handle.height;
+              handle.height = handle_size;
+              break;
+
+            case PNL_DOCK_BIN_CHILD_BOTTOM:
+              handle.y -= handle_size;
+              handle.height = handle_size;
+              break;
+
+            case PNL_DOCK_BIN_CHILD_CENTER:
+            case LAST_PNL_DOCK_BIN_CHILD:
+            default:
+              g_assert_not_reached ();
+              break;
+            }
+
+          gtk_render_handle (style_context, cr, handle.x, handle.y, handle.width, handle.height);
+        }
+    }
+
+  return ret;
+}
+
 static void
 pnl_dock_bin_init_child (PnlDockBin          *self,
                          PnlDockBinChild     *child,
@@ -1478,6 +1580,7 @@ pnl_dock_bin_class_init (PnlDockBinClass *klass)
   object_class->get_property = pnl_dock_bin_get_property;
   object_class->set_property = pnl_dock_bin_set_property;
 
+  widget_class->draw = pnl_dock_bin_draw;
   widget_class->destroy = pnl_dock_bin_destroy;
   widget_class->drag_leave = pnl_dock_bin_drag_leave;
   widget_class->drag_motion = pnl_dock_bin_drag_motion;
@@ -1518,6 +1621,16 @@ pnl_dock_bin_class_init (PnlDockBinClass *klass)
                       (G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   gtk_container_class_install_child_properties (container_class, N_CHILD_PROPS, child_properties);
+
+  style_properties [STYLE_PROP_HANDLE_SIZE] =
+    g_param_spec_int ("handle-size",
+                      "Handle Size",
+                      "Width of the resize handle",
+                      0,
+                      G_MAXINT,
+                      1,
+                      (G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
+  gtk_widget_class_install_style_property (widget_class, style_properties [STYLE_PROP_HANDLE_SIZE]);
 
   gtk_widget_class_set_css_name (widget_class, "dockbin");
 }
