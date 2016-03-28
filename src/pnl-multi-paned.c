@@ -382,6 +382,37 @@ pnl_multi_paned_destroy_child_handle (PnlMultiPaned      *self,
     }
 }
 
+static void
+pnl_multi_paned_update_child_handles (PnlMultiPaned *self)
+{
+  PnlMultiPanedPrivate *priv = pnl_multi_paned_get_instance_private (self);
+  GtkWidget *widget = GTK_WIDGET (self);
+
+  if (gtk_widget_get_realized (widget))
+    {
+      GdkCursor *cursor;
+      guint i;
+
+      if (gtk_widget_is_sensitive (widget))
+        cursor = gdk_cursor_new_from_name (gtk_widget_get_display (widget),
+                                           priv->orientation == GTK_ORIENTATION_HORIZONTAL
+                                           ? "col-resize"
+                                           : "row-resize");
+      else
+        cursor = NULL;
+
+      for (i = 0; i < priv->children->len; i++)
+        {
+          PnlMultiPanedChild *child = &g_array_index (priv->children, PnlMultiPanedChild, i);
+
+          gdk_window_set_cursor (child->handle, cursor);
+        }
+
+      if (cursor)
+        g_object_unref (cursor);
+    }
+}
+
 static PnlMultiPanedChild *
 pnl_multi_paned_get_child (PnlMultiPaned *self,
                            GtkWidget     *widget)
@@ -1744,12 +1775,22 @@ pnl_multi_paned_set_property (GObject      *object,
     {
     case PROP_ORIENTATION:
       priv->orientation = g_value_get_enum (value);
+      pnl_multi_paned_update_child_handles (self);
       gtk_widget_queue_resize (GTK_WIDGET (self));
       break;
 
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
+}
+
+static void
+pnl_multi_paned_state_flags_changed (GtkWidget     *widget,
+                                     GtkStateFlags  previous_state)
+{
+  pnl_multi_paned_update_child_handles (PNL_MULTI_PANED (widget));
+
+  GTK_WIDGET_CLASS (pnl_multi_paned_parent_class)->state_flags_changed (widget, previous_state);
 }
 
 static void
@@ -1774,6 +1815,7 @@ pnl_multi_paned_class_init (PnlMultiPanedClass *klass)
   widget_class->map = pnl_multi_paned_map;
   widget_class->unmap = pnl_multi_paned_unmap;
   widget_class->draw = pnl_multi_paned_draw;
+  widget_class->state_flags_changed = pnl_multi_paned_state_flags_changed;
 
   container_class->add = pnl_multi_paned_add;
   container_class->remove = pnl_multi_paned_remove;
