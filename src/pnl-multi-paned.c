@@ -309,7 +309,7 @@ pnl_multi_paned_create_child_handle (PnlMultiPaned      *self,
   GdkWindowAttr attributes = { 0 };
   GdkDisplay *display;
   GdkWindow *parent;
-  GdkCursorType cursor_type;
+  const char *cursor_name;
   GdkRectangle handle_rect;
 
   g_assert (PNL_IS_MULTI_PANED (self));
@@ -319,9 +319,9 @@ pnl_multi_paned_create_child_handle (PnlMultiPaned      *self,
   display = gtk_widget_get_display (GTK_WIDGET (self));
   parent = gtk_widget_get_window (GTK_WIDGET (self));
 
-  cursor_type = (priv->orientation == GTK_ORIENTATION_HORIZONTAL)
-              ? GDK_SB_H_DOUBLE_ARROW
-              : GDK_SB_V_DOUBLE_ARROW;
+  cursor_name = (priv->orientation == GTK_ORIENTATION_HORIZONTAL)
+                ? "col-resize"
+                : "row-resize";
 
   pnl_multi_paned_get_handle_rect (self, child, &handle_rect);
 
@@ -337,7 +337,7 @@ pnl_multi_paned_create_child_handle (PnlMultiPaned      *self,
                            GDK_ENTER_NOTIFY_MASK |
                            GDK_LEAVE_NOTIFY_MASK |
                            GDK_POINTER_MOTION_MASK);
-  attributes.cursor = gdk_cursor_new_for_display (display, cursor_type);
+  attributes.cursor = gdk_cursor_new_from_name (display, cursor_name);
 
   child->handle = gdk_window_new (parent, &attributes, GDK_WA_CURSOR);
   gtk_widget_register_window (GTK_WIDGET (self), child->handle);
